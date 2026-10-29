@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowMate — the course outlives the mentor</title>
+<style>
+  :root {
+    --paper: #f3ead9;
+    --paper-deep: #e7dcc6;
+    --ink: #1d1a15;
+    --ink-soft: #3a342c;
+    --user: #173628;
+    --user-wash: #f7f3ea;
+    --coach: #3d5160;
+    --coach-wash: #e3eaee;
+    --walnut: #7a4e32;
+    --grey: #c9c3b6;
+    --blue: #2a5fbf;
+    --green: #1e8a52;
+    --quit: #c4453c;
+    --bronze: #8d5a34;
+    --silver: #8b949e;
+    --gold: #a67c2d;
+    --serif: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    --sans: "Segoe UI", Candara, "Trebuchet MS", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+
+  body {
+    margin: 0;
+    color: var(--ink);
+    background:
+      radial-gradient(1200px 700px at 10% -10%, rgba(255,255,255,.7), transparent 50%),
+      radial-gradient(900px 500px at 110% 8%, rgba(166,124,45,.08), transparent 46%),
+      var(--paper);
+    font-family: var(--serif);
+    line-height: 1.5;
+  }
+
+  ::selection { background: #e6c56a; color: var(--ink); }
+
+  :focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  a { color: inherit; }
+  button, input, textarea { font: inherit; color: inherit; }
+  button {
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: .5rem .95rem;
+    cursor: pointer;
+    font-family: var(--sans);
+    font-size: .92rem;
+    letter-spacing: .01em;
+  }
+  button:hover { background: rgba(29,26,21,.06); }
+  button[aria-pressed="true"], button.primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  button.primary:hover { background: #000; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+
+  .shell {
+    display: grid;
+    grid-template-columns: 210px 1fr;
+    min-height: 100vh;
+  }
+
+  .rail {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    padding: 1.4rem 1rem 1.4rem 1.15rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .35rem;
+    background: rgba(243,234,217,.92);
+    border-right: 1px solid rgba(29,26,21,.12);
+    z-index: 2;
+  }
+  .rail p {
+    margin: 0 0 .8rem;
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+  .rail a {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    text-decoration: none;
+    font-family: var(--sans);
+    font-size: .86rem;
+    padding: .28rem .2rem;
+    border-radius: 999px;
+    color: var(--ink-soft);
+  }
+  .rail a[aria-current="true"] { color: var(--ink); font-weight: 650; }
+  .dot {
+    width: .7rem;
+    height: .7rem;
+    border-radius: 50%;
+    flex: none;
+    box-shadow: inset 0 0 0 1.5px rgba(29,26,21,.35);
+  }
+  .dot.role { background: #d7c4a3; }
+  .dot.white { background: #f7f4ee; }
+  .dot.red { background: #c23b3b; }
+  .dot.yellow { background: #e3c04a; }
+  .dot.black { background: #1d1a15; }
+  .dot.green { background: #3d8c5a; }
+  .dot.blue { background: #2c5aa0; }
+  .dot.loop { background: var(--gold); }
+
+  main { min-width: 0; }
+
+  .band { padding: 4.5rem 6vw; }
+  .narrow { max-width: 68ch; }
+  .kicker {
+    font-family: var(--sans);
+    font-size: .75rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    margin: 0 0 .8rem;
+  }
+  h1, h2, h3 { font-weight: 500; letter-spacing: -.02em; }
+  h1 {
+    font-size: clamp(3.2rem, 8vw, 6.4rem);
+    line-height: .9;
+    margin: 0 0 1.2rem;
+    max-width: 11ch;
+  }
+  h2 {
+    font-size: clamp(2.1rem, 4.4vw, 3.4rem);
+    line-height: 1.02;
+    margin: 0 0 1rem;
+  }
+  h3 { font-size: 1.35rem; margin: 0 0 .4rem; }
+
+  .lede { font-size: 1.28rem; max-width: 42ch; }
+
+  .who {
+    display: inline-block;
+    font-family: var(--sans);
+    font-size: .68rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    margin-bottom: .35rem;
+  }
+  .voice-user, .voice-coach, .set-down {
+    margin: 1rem 0;
+    padding: 1rem 1.15rem 1.05rem;
+    border-radius: 14px;
+  }
+  .voice-user {
+    background: var(--user-wash);
+    color: var(--user);
+    box-shadow: inset 3px 0 0 var(--user);
+    font-size: 1.18rem;
+  }
+  .voice-user p, .voice-coach p, .set-down p { margin: .35rem 0; }
+  .voice-coach {
+    background: var(--coach-wash);
+    color: var(--coach);
+    font-family: var(--sans);
+    font-size: .98rem;
+    margin-left: 1.5rem;
+    box-shadow: inset 3px 0 0 #8aa0b0;
+  }
+  .voice-user.big, .decision {
+    font-size: clamp(1.35rem, 2.4vw, 1.85rem);
+    line-height: 1.25;
+  }
+  .set-down {
+    background: repeating-linear-gradient(-12deg, transparent, transparent 8px, rgba(122,78,50,.05) 8px, rgba(122,78,50,.05) 9px), #efe4d4;
+    color: var(--walnut);
+    box-shadow: inset 3px 0 0 var(--walnut);
+  }
+  .set-down .who { color: var(--walnut); }
+  .stamp {
+    display: inline-block;
+    border: 1.5px solid currentColor;
+    padding: .08rem .4rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    font-family: var(--sans);
+    font-size: .68rem;
+    transform: rotate(-2deg);
+    margin-left: .4rem;
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem 1rem;
+    margin-top: 1.6rem;
+    font-family: var(--sans);
+    font-size: .85rem;
+  }
+  .legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+  }
+  .swatch {
+    width: .85rem;
+    height: .85rem;
+    border-radius: 2px;
+  }
+  .swatch.user { background: var(--user); }
+  .swatch.coach { background: #8aa0b0; }
+  .swatch.down { background: var(--walnut); }
+
+  .path-hero { width: min(640px, 100%); height: auto; margin: 1.5rem 0 0; }
+
+  .hats {
+    display: flex;
+    align-items: flex-end;
+    gap: .35rem;
+    margin-bottom: 1rem;
+  }
+  .hat { width: 54px; height: 40px; position: relative; color: var(--ink); }
+  .hat i, .hat b { position: absolute; display: block; }
+  .hat b {
+    left: 8px; right: 8px; top: 2px; bottom: 8px;
+    background: currentColor;
+    border-radius: 28px 28px 4px 4px;
+  }
+  .hat i {
+    left: -6px; right: -6px; bottom: 0; height: 9px;
+    background: currentColor;
+    border-radius: 50%;
+  }
+  .hat.white { color: #f4f1ea; filter: drop-shadow(0 0 0.4px #1d1a15); }
+  .hat.white b, .hat.white i { box-shadow: inset 0 0 0 1.5px #1d1a15; }
+  .hat.red { color: #c23b3b; }
+  .hat.yellow { color: #e3c04a; }
+  .hat.black { color: #1d1a15; }
+  .hat.green { color: #2f7d49; }
+  .hat.blue { color: #2c5aa0; }
+
+  .cover { padding-top: 8vh; padding-bottom: 6rem; }
+
+  .brought {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2.2rem;
+    max-width: 920px;
+  }
+  .brought article {
+    padding: 1.1rem 1.15rem 1.2rem;
+    border-radius: 16px;
+    min-height: 100%;
+  }
+  .brought h3 { font-family: var(--sans); font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; }
+  .in { background: rgba(255,255,255,.35); border: 1px dashed rgba(29,26,21,.25); }
+  .out { background: #fffaf1; border: 1px solid rgba(29,26,21,.16); }
+
+  #role { background: #efe2cc; }
+  #white { background: #f7f5f0; }
+  #red { background: #f6e6dc; }
+  #yellow { background: #f8f0cf; }
+  #black { background: #1d1a15; color: #f3ead9; }
+  #green {
+    background:
+      linear-gradient(rgba(29,26,21,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(29,26,21,.04) 1px, transparent 1px),
+      #e5f0e4;
+    background-size: 28px 28px, 28px 28px, auto;
+  }
+  #blue { background: #e5eef6; }
+  #unopened { background: #efeae1; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+  #loop {
+    background:
+      radial-gradient(800px 400px at 80% 0%, rgba(166,124,45,.16), transparent 55%),
+      #f7f1e4;
+  }
+
+  .play { max-width: 760px; }
+  .stage-dir {
+    font-family: var(--sans);
+    font-size: .92rem;
+    font-style: italic;
+    color: var(--ink-soft);
+    margin: 1.2rem 0 .4rem;
+  }
+
+  .clock {
+    margin-top: 1.6rem;
+    background: #fffaf1;
+    border-radius: 18px;
+    padding: 1.1rem 1.1rem 1.25rem;
+    box-shadow: 0 10px 30px rgba(80,50,20,.06);
+  }
+  .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: .4rem;
+    margin: .8rem 0 1rem;
+  }
+  .day {
+    min-height: 92px;
+    border-radius: 10px;
+    background: rgba(201,195,182,.35);
+    padding: .45rem;
+    font-family: var(--sans);
+    font-size: .75rem;
+  }
+  .day strong { display: block; font-size: .8rem; }
+  .day.on { background: #1d1a15; color: #f3ead9; }
+  .day.quiet { color: #6d675e; }
+  .admin-out {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: end;
+    border-top: 1px dashed rgba(29,26,21,.2);
+    margin-top: .4rem;
+    padding-top: .8rem;
+    font-family: var(--sans);
+    font-size: .9rem;
+  }
+  .admin-out em { font-style: normal; color: var(--walnut); }
+
+  .blank-frame {
+    margin-top: 1.2rem;
+    min-height: 220px;
+    border: 1.5px dashed rgba(29,26,21,.35);
+    border-radius: 18px;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255,255,255,.45);
+  }
+  .blank-frame p { margin: .2rem 0; font-size: 1.4rem; }
+  .cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .8rem;
+    margin-top: 1rem;
+  }
+  .back {
+    width: 180px;
+    min-height: 120px;
+    border-radius: 12px;
+    background:
+      repeating-linear-gradient(45deg, #efeae0, #efeae0 8px, #e4ddd0 8px, #e4ddd0 16px);
+    border: 1px solid rgba(29,26,21,.15);
+    padding: .8rem;
+    transform: rotate(-2deg);
+  }
+  .back:nth-child(2) { transform: rotate(1.5deg); }
+  .back:nth-child(3) { transform: rotate(-1deg); }
+  .back span {
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  #black .hats .hat { color: #f3ead9; }
+  #black .voice-user { background: #f3ead9; }
+  #black .voice-coach { background: #2a3338; color: #d5e2ea; }
+  #black .set-down { background: #2a241c; color: #e2c2a4; }
+  .question {
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    line-height: 1.12;
+    max-width: 18ch;
+    margin: .4rem 0 1rem;
+  }
+
+  .slip {
+    background: #fffdf8;
+    color: var(--ink);
+    border-radius: 16px;
+    padding: 1.1rem 1.15rem 1.2rem;
+    box-shadow: 0 12px 28px rgba(80,60,10,.08);
+    max-width: 640px;
+  }
+  .slip .line {
+    font-size: clamp(1.25rem, 2.4vw, 1.7rem);
+    line-height: 1.3;
+    margin: .4rem 0 .9rem;
+  }
+  .blank {
+    border-bottom: 1px solid var(--ink);
+    padding: 0 .15rem;
+  }
+  .row { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+  .result {
+    margin-top: .9rem;
+    padding-top: .8rem;
+    border-top: 1px solid rgba(29,26,21,.12);
+    font-size: 1.2rem;
+  }
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .6rem;
+    margin-top: .7rem;
+  }
+  .pair div {
+    border: 1px solid rgba(29,26,21,.16);
+    border-radius: 10px;
+    padding: .6rem .7rem;
+    font-family: var(--sans);
+    font-size: .9rem;
+  }
+  .outside {
+    margin-top: .7rem;
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: .8rem;
+    align-items: center;
+  }
+  textarea {
+    width: 100%;
+    min-height: 90px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(29,26,21,.3);
+    background: #fff;
+    padding: .7rem .8rem;
+    resize: vertical;
+  }
+  .note-out {
+    font-size: 1.15rem;
+    margin-top: .7rem;
+  }
+
+  .bench { max-width: 860px; }
+  .track {
+    height: 34px;
+    background: var(--grey);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: .7rem 0 .4rem;
+  }
+  .fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    transition: width .35s ease, background .35s ease;
+  }
+  .fill[data-state="empty"] { width: 0; }
+  .fill[data-state="half"] { width: 50%; background: var(--blue); }
+  .fill[data-state="full"] { width: 100%; background: var(--green); }
+  .fill[data-state="quit"] { width: 100%; background: var(--quit); }
+  .bar-name {
+    font-family: var(--sans);
+    min-height: 1.4em;
+    margin: 0 0 .8rem;
+  }
+  .roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .8rem;
+    margin: .4rem 0 1rem;
+  }
+  .roles article, .gate, .board, .person, .try-box, .upload {
+    background: rgba(255,253,248,.86);
+    border-radius: 14px;
+    padding: .9rem 1rem;
+  }
+  .roles h3 { font-family: var(--sans); font-size: .75rem; letter-spacing: .14em; text-transform: uppercase; }
+
+  .gates { display: grid; gap: .7rem; }
+  .gate { border-top: 8px solid var(--bronze); }
+  .gate.silver { border-top-color: var(--silver); }
+  .gate.gold { border-top-color: var(--gold); }
+  .gate h3 { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
+  .nothing {
+    font-family: var(--sans);
+    font-size: .95rem;
+    margin: .3rem 0 .6rem;
+  }
+  .tries { display: flex; gap: .4rem; margin: .4rem 0 .7rem; }
+  .token {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: grid;
+    place-items: center;
+    font-family: var(--sans);
+    font-size: .75rem;
+  }
+  .token.used { opacity: .28; text-decoration: line-through; }
+  .month {
+    display: none;
+    margin: .4rem 0 .6rem;
+    font-family: var(--sans);
+  }
+  .month.show { display: block; }
+  .moon {
+    width: 28px; height: 28px; border-radius: 50%;
+    box-shadow: inset -8px -2px 0 0 var(--ink);
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: .4rem;
+  }
+  .permission {
+    display: none;
+    margin-top: .7rem;
+    padding: .8rem;
+    border: 1.5px solid var(--gold);
+    border-radius: 12px;
+  }
+  .permission.show { display: block; }
+  .key {
+    width: 46px; height: 22px; display: inline-block; vertical-align: middle; margin-right: .35rem;
+  }
+
+  .board { margin-top: 1rem; position: relative; }
+  .board ol { margin: .4rem 0 .2rem; padding-left: 1.1rem; }
+  .board li { padding: .15rem 0; }
+  .scores { text-decoration: line-through; color: var(--walnut); }
+  .upload { margin: .8rem 0; }
+
+  .docket {
+    display: grid;
+    gap: .55rem;
+    max-width: 720px;
+  }
+  .docket li {
+    list-style: none;
+    background: #f8fbfe;
+    border-radius: 12px;
+    padding: .75rem .9rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .7rem;
+    align-items: start;
+  }
+  .docket { margin: 0; padding: 0; }
+  .seal {
+    font-family: var(--sans);
+    font-size: .72rem;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    width: 4.2rem;
+    height: 4.2rem;
+    display: grid;
+    place-items: center;
+    text-align: center;
+    transform: rotate(-8deg);
+    margin: 1rem 0;
+  }
+
+  .people { display: grid; gap: .6rem; margin-top: .8rem; }
+  .person header { display: flex; justify-content: space-between; gap: .5rem; align-items: baseline; }
+  .mini {
+    height: 12px;
+    background: var(--grey);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: .45rem 0;
+  }
+  .mini i {
+    display: block;
+    height: 100%;
+    width: 0;
+  }
+  .mini.half i { width: 50%; background: var(--blue); }
+  .mini.full i { width: 100%; background: var(--green); }
+  .mini.quit i { width: 100%; background: var(--quit); }
+  .again { margin-top: .45rem; font-family: var(--sans); font-size: .9rem; }
+
+  .folder {
+    display: inline-block;
+    border: 1.5px dashed rgba(29,26,21,.4);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    min-width: min(100%, 280px);
+    background: rgba(255,255,255,.3);
+  }
+  .folder strong { display: block; font-size: 1.3rem; }
+
+  .procession { list-style: none; margin: 2rem 0 0; padding: 0; max-width: 820px; }
+  .procession li {
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 1rem;
+    align-items: center;
+    padding: 1.15rem 0;
+    border-top: 1px solid rgba(29,26,21,.14);
+    font-size: clamp(1.45rem, 3vw, 2.15rem);
+    line-height: 1.2;
+  }
+  .procession svg { width: 64px; height: 64px; }
+  .return-line {
+    margin-top: .4rem;
+    max-width: 820px;
+    font-size: clamp(1.6rem, 3.4vw, 2.4rem);
+    line-height: 1.15;
+  }
+  .spine-note { font-family: var(--sans); max-width: 62ch; }
+
+  .fan {
+    display: flex;
+    gap: .35rem;
+    align-items: flex-end;
+    height: 46px;
+  }
+  .fan span {
+    display: block;
+    width: 3px;
+    background: var(--ink);
+    border-radius: 3px;
+    transform-origin: bottom center;
+  }
+  .fan span:nth-child(1) { height: 28px; transform: rotate(-18deg); }
+  .fan span:nth-child(2) { height: 40px; }
+  .fan span:nth-child(3) { height: 28px; transform: rotate(18deg); }
+
+  footer.colophon {
+    padding: 2rem 6vw 3rem;
+    font-family: var(--sans);
+    font-size: .85rem;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .rail {
+      position: sticky;
+      top: 0;
+      height: auto;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      justify-content: flex-start;
+      gap: .2rem;
+      padding: .55rem .7rem;
+      border-right: 0;
+      border-bottom: 1px solid rgba(29,26,21,.12);
+    }
+    .rail p { display: none; }
+    .rail a { white-space: nowrap; padding: .35rem .45rem; }
+    .band { padding: 3rem 1.15rem; }
+    .brought, .roles, .pair, .outside { grid-template-columns: 1fr; }
+    .days { grid-template-columns: repeat(4, 1fr); }
+    .voice-coach { margin-left: 0; }
+    h1 { font-size: 3rem; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="rail" aria-label="Session order">
+    <p>In the order used</p>
+    <a href="#cover"><i class="dot loop"></i>The afternoon</a>
+    <a href="#role"><i class="dot role"></i>Role playing</a>
+    <a href="#white"><i class="dot white"></i>White hat</a>
+    <a href="#red"><i class="dot red"></i>Red hat</a>
+    <a href="#yellow"><i class="dot yellow"></i>Yellow hat</a>
+    <a href="#black"><i class="dot black"></i>Black hat</a>
+    <a href="#green"><i class="dot green"></i>Green hat</a>
+    <a href="#blue"><i class="dot blue"></i>Blue hat</a>
+    <a href="#loop"><i class="dot loop"></i>The loop</a>
+  </nav>
+
+  <main>
+    <header class="band cover" id="cover">
+      <p class="kicker">GrowMate · 24 October 2026 · partner session, kept loose</p>
+      <h1>The course outlives the mentor.</h1>
+      <svg class="path-hero" viewBox="0 0 640 160" aria-hidden="true">
+        <path d="M16 112 C 90 112, 120 36, 210 36 S 330 128, 430 96 S 540 40, 624 48" fill="none" stroke="#1d1a15" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="250" cy="52" r="7" fill="none" stroke="#1d1a15" stroke-width="1.7"/>
+        <path d="M250 60 L242 92 M242 92 L228 108 M242 92 L258 110 M250 74 L232 84 M250 74 L266 78" fill="none" stroke="#1d1a15" stroke-width="1.7" stroke-linecap="round"/>
+        <path d="M430 96 l14 -8 l-2 16 z" fill="#1d1a15"/>
+      </svg>
+      <p class="lede">A person can step off. The course stays on the path, and someone else can be accepted onto it.</p>
+      <div class="brought">
+        <article class="in">
+          <h3>Brought into the room</h3>
+          <p>A product plan so employees can learn skills, find mentors, pass assessments, earn badges, and put verified skills and certificates on resumes.</p>
+          <p>From the readme they started with: Employee and Admin; learn, mentor, a three-level assessment, a Gold badge, a one-month reattempt wait, certificates on resumes, notifications.</p>
+        </article>
+        <article class="out">
+          <h3>Still standing at the close</h3>
+          <p>GrowMate is a match-and-proof loop. Courses are published. A mentor is accepted. Talks stay outside the app. Course Completed opens bronze, then silver, then gold. Gold is only the right to mentor that course.</p>
+        </article>
+      </div>
+      <div class="legend" aria-label="How to read the voices">
+        <span><i class="swatch user"></i> Said at the table</span>
+        <span><i class="swatch coach"></i> Coach, in pencil</span>
+        <span><i class="swatch down"></i> Spoken, then set down</span>
+      </div>
+    </header>
+
+    <section class="band" id="role">
+      <div class="hats" aria-hidden="true"><span class="hat"><b></b><i></i></span></div>
+      <p class="kicker">First technique · Role playing</p>
+      <h2>Three chairs, then a clock.</h2>
+      <p class="narrow">They tried on a new hire, an experienced employee, and Admin. A seven-day clock survived. The rest of this act was rewritten or sealed out of Admin’s hand.</p>
+
+      <div class="play">
+        <p class="stage-dir">The coach takes the new hire’s chair.</p>
+        <blockquote class="voice-coach">
+          <span class="who">Coach</span>
+          <p>As a new hire: I want a mentor this week for a skill I already use, and I fear the three-level assessment plus a one-month reattempt lockout blocks both proof and mentorship eligibility for months.</p>
+        </blockquote>
+        <p class="stage-dir">At the table, the experienced employee.</p>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>Experienced employees become mentors through Admin verification and manage their own availability.</p>
+        </blockquote>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>Mentor verification needs published criteria, a transparent decision, and a way to appeal a rejection.</p>
+        </blockquote>
+        <blockquote class="voice-coach">
+          <span class="who">Coach</span>
+          <p>Two doors: a Gold-badge exam for a tested skill, and a one-time Admin verification for tenure. After verification the mentor alone sets months and hours. Admin can suspend, not edit the calendar. A rejection cites the failed checklist item. An appeal brings one new piece of evidence. The original reason stays visible.</p>
+        </blockquote>
+        <div class="set-down">
+          <span class="who">Set down later <span class="stamp">not Admin’s work</span></span>
+          <p>Verification, appeals, calendars, and suspension never entered the closed list of Admin features. Gold is not a badge exam with a second door. There is no availability calendar in the plan that closed.</p>
+        </div>
+
+        <p class="stage-dir">What they actually kept from this act is a clock, and Admin is not invited to wind it.</p>
+        <blockquote class="voice-user decision">
+          <span class="who">Decision · at the table</span>
+          <p>Day 0, the request is sent. Day 3, an in-app reminder if there is no decision. Day 6, it auto-cancels, and the learner is notified to send a new request to continue.</p>
+        </blockquote>
+        <blockquote class="voice-user">
+          <span class="who">Direction · at the table</span>
+          <p>Admin must not be involved in the reminder, the auto-cancel, or the re-request.</p>
+        </blockquote>
+        <blockquote class="voice-coach">
+          <span class="who">Coach · kept with that direction</span>
+          <p>The day-3 reminder goes to the learner and the mentor. The day-6 cancel notifies only those two. No admin queue, and no admin visibility. Day 6 clears the request without calling it a rejection.</p>
+        </blockquote>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>After ignored requests, the mentor does nothing. No required follow-up, and no change they must make. If a mentor never answers, the learner requests other mentors and keeps learning.</p>
+        </blockquote>
+        <blockquote class="voice-coach">
+          <span class="who">Coach · with the decision that the mentor does nothing</span>
+          <p>Silence is a finished outcome. The product never nags the mentor after an ignored request.</p>
+        </blockquote>
+
+        <div class="clock" id="clock">
+          <h3>The request clock</h3>
+          <p class="stage-dir" style="margin-top:0">Only day 0, day 3, and day 6 do anything. The quiet days are empty on purpose.</p>
+          <div class="days" aria-hidden="true">
+            <div class="day on" data-day="0"><strong>Day 0</strong>Sent</div>
+            <div class="day quiet"><strong>1</strong></div>
+            <div class="day quiet"><strong>2</strong></div>
+            <div class="day" data-day="3"><strong>Day 3</strong></div>
+            <div class="day quiet"><strong>4</strong></div>
+            <div class="day quiet"><strong>5</strong></div>
+            <div class="day" data-day="6"><strong>Day 6</strong></div>
+          </div>
+          <div class="row">
+            <button type="button" data-clock="0" aria-pressed="true">Day 0 · sent</button>
+            <button type="button" data-clock="3">Day 3 · reminder</button>
+            <button type="button" data-clock="6">Day 6 · cancel</button>
+          </div>
+          <p id="clock-say" class="result">The request is sent. Nothing is asked of Admin.</p>
+          <div class="admin-out">
+            <span>Admin’s chair, during the whole clock</span>
+            <em>Empty. Not in this flow.</em>
+          </div>
+        </div>
+
+        <div class="set-down">
+          <span class="who">Also said in this act <span class="stamp">set down</span></span>
+          <p>Experienced people taking the Gold badge exam do not need a mentor.</p>
+          <p>New-skill learners start only after approval, and the mentor cannot drop out until every test and badge is done, unless the learner asks to stop.</p>
+          <p>The mentor’s decision is accept or reject. Then: remove reject, and they read a reason and accept. A reason only has to be present.</p>
+          <p>On a day-6 cancel, the coach offered other mentors with open hours, a limit the dead request would not count against, and an Admin view of ignored requests. The coach also said a dead request would not block the next lesson or the next test, and that availability would stay as last set. Admin was then kept out, and the calendar was not part of the plan that closed.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="white">
+      <div class="hats" aria-hidden="true"><span class="hat white"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · facts</p>
+      <h2>Nothing is fixed yet.</h2>
+      <p class="narrow">This pass emptied the table. The choices that look like rules were still only lines in a readme.</p>
+      <blockquote class="voice-user big">
+        <span class="who">At the table</span>
+        <p>The three assessments are not a fixed fact yet. Nothing else about GrowMate is already fixed.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>The readme lines on three levels, a Gold badge, and a one-month reattempt wait are unset, not decided rules.</p>
+      </blockquote>
+      <div class="blank-frame">
+        <div>
+          <p>Already fixed</p>
+          <p style="font-family:var(--sans);font-size:1rem">The frame stays empty. That was the fact.</p>
+        </div>
+      </div>
+      <div class="cards">
+        <article class="back"><span>Unset</span><p>Three levels</p></article>
+        <article class="back"><span>Unset</span><p>A Gold badge</p></article>
+        <article class="back"><span>Unset</span><p>One-month wait</p></article>
+      </div>
+      <p class="narrow">Later, in their own words, they did choose three stages and a one-month wait. Not as a badge, and not as the readme had them. Those choices live in the green hat.</p>
+    </section>
+
+    <section class="band" id="red">
+      <div class="hats" aria-hidden="true"><span class="hat red"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · feelings</p>
+      <h2>A wait, then a wish to stop.</h2>
+      <p class="narrow">The feelings belonged to rules that were about to change. The wait until someone accepts is still the request. The way of stopping is not.</p>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>The new learner feels exposed after sending the reason, because until someone accepts they can only wait.</p>
+      </blockquote>
+      <div class="set-down">
+        <span class="who">The reason <span class="stamp">set down</span></span>
+        <p>The request soon needed no reason at all. What remains of this feeling is the wait, not the exposure of a written why.</p>
+      </div>
+      <blockquote class="set-down">
+        <span class="who">At the table <span class="stamp">set down</span></span>
+        <p>The mentor just accepts. If the learner wants to stop, the mentor cannot do anything else.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>The mentor feels the match is not theirs to steer: accept is the only move, and the learner’s stop ends it with no reply from the mentor.</p>
+      </blockquote>
+      <blockquote class="set-down">
+        <span class="who">At the table <span class="stamp">set down</span></span>
+        <p>To stop, the learner informs a reason and waits for the mentor to approve. Then it stops.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach · soon rewritten</span>
+        <p>Stopping matches starting: a reason, Accept only, no reject, and the match ends when the mentor accepts the stop.</p>
+      </blockquote>
+      <p class="narrow">They did not keep an approved stop. The next hat lets either person leave without being accepted out.</p>
+    </section>
+
+    <section class="band" id="yellow">
+      <div class="hats" aria-hidden="true"><span class="hat yellow"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · benefits</p>
+      <h2>Leaving is easy. The request is bare.</h2>
+      <p class="narrow">This is where the standing match was spoken. A benefit they wanted — the mentor, free for the next learner — became a quit that does not ask permission.</p>
+
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>The learner can leave without a fight, because the mentor cannot refuse the stop, and the reason stays on the record.</p>
+      </blockquote>
+      <blockquote class="set-down">
+        <span class="who">At the table <span class="stamp">set down</span></span>
+        <p>When the mentor accepts a stop, they become available for the next learner.</p>
+      </blockquote>
+      <blockquote class="voice-user big">
+        <span class="who">Question · at the table</span>
+        <p>Explain again how a new learner can be accepted without waiting for the old course to finish.</p>
+      </blockquote>
+      <blockquote class="voice-user decision">
+        <span class="who">Decision · at the table</span>
+        <p>Both learner and mentor can quit. No accept or reject on the quit. Send an in-app acknowledgement.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach · reading that decision</span>
+        <p>This replaces the earlier stop. The quit takes effect when it is sent. The other person is notified, not asked to approve. The mentor is free for the next learner immediately.</p>
+      </blockquote>
+
+      <blockquote class="voice-user big">
+        <span class="who">Question · at the table</span>
+        <p>Explain the start flow: the learner sends a reason and the mentor accepts.</p>
+      </blockquote>
+      <blockquote class="voice-user decision">
+        <span class="who">Decision · at the table</span>
+        <p>A mentorship request needs no reason. The request itself is enough.</p>
+      </blockquote>
+      <div class="set-down">
+        <span class="who">A one-line swerve <span class="stamp">set down</span></span>
+        <p>For a moment the request showed Accept and Reject. The next sentence took Reject away.</p>
+        <p><s>Accept and Reject</s></p>
+      </div>
+      <blockquote class="voice-user decision">
+        <span class="who">At the table</span>
+        <p>The mentor sees one line: “[Learner name] wants you to guide him with [Course name]”, and an Accept button.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>That one sentence plus Accept. No reason, no reject, and the course name is the only subject.</p>
+      </blockquote>
+
+      <div class="slip" id="request-slip">
+        <span class="who">The request, as spoken</span>
+        <p class="line">“<span class="blank">Learner name</span> wants you to guide him with <span class="blank">Course name</span>.”</p>
+        <div class="row">
+          <button type="button" class="primary" id="accept-btn">Accept</button>
+        </div>
+        <div id="accepted" class="result" hidden>
+          <p>He accepted your request. <span class="blank">Mentor name</span> is your mentor for this <span class="blank">Course</span>.</p>
+          <div class="pair">
+            <div><strong>What the mentor sees</strong><br>The learner name<br>The course</div>
+            <div><strong>What is not here</strong><br>No message thread<br>No calls</div>
+          </div>
+          <div class="outside">
+            <svg viewBox="0 0 120 90" aria-hidden="true">
+              <rect x="18" y="16" width="52" height="68" rx="2" fill="none" stroke="#1d1a15" stroke-width="2"/>
+              <path d="M70 18 h28 v64 h-28" fill="none" stroke="#1d1a15" stroke-width="2"/>
+              <path d="M78 40 h12 M78 48 h16 M78 56 h10" stroke="#1d1a15" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <p style="margin:0">The talk is drawn outside the frame. GrowMate keeps the pairing only.</p>
+          </div>
+        </div>
+      </div>
+
+      <blockquote class="voice-user">
+        <span class="who">At the table</span>
+        <p>On accept, the learner sees: “He accepted your request. [Mentor name] is your mentor for this [Course].”</p>
+      </blockquote>
+      <blockquote class="voice-user">
+        <span class="who">At the table</span>
+        <p>After accept, the mentor sees the learner name and the course. All conversation happens outside the app. No chat in GrowMate.</p>
+      </blockquote>
+      <blockquote class="voice-user">
+        <span class="who">Direction · at the table</span>
+        <p>Where the conversation happens is out of scope. It will happen in Teams or somewhere else.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>That in-app line is the moment the match is live. GrowMate stores the pairing. It does not connect to Teams, and it does not track the talks. The match screen is a pairing record: no message thread, no in-app calls.</p>
+      </blockquote>
+
+      <h3 style="margin-top:2rem">The only place a reason exists</h3>
+      <blockquote class="voice-user">
+        <span class="who">At the table</span>
+        <p>The quit acknowledgement includes a reason. On quit, they can write whatever they want. The quit reason is free text. There is no required sentence.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>Whoever quits writes the reason, and that reason is the body of the notice the other person receives. The match ends when the quit is sent.</p>
+      </blockquote>
+
+      <div class="slip" id="quit-slip">
+        <span class="who">Either person may send this</span>
+        <div class="row" style="margin:.6rem 0">
+          <button type="button" id="who-learner" aria-pressed="true">Learner quits</button>
+          <button type="button" id="who-mentor" aria-pressed="false">Mentor quits</button>
+        </div>
+        <label for="quit-text">Write whatever you want</label>
+        <textarea id="quit-text" placeholder="No required sentence."></textarea>
+        <div class="row" style="margin-top:.6rem">
+          <button type="button" class="primary" id="send-quit">Send the acknowledgement</button>
+        </div>
+        <p id="quit-out" class="note-out" hidden></p>
+      </div>
+    </section>
+
+    <section class="band" id="black">
+      <div class="hats" aria-hidden="true"><span class="hat black"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · risks</p>
+      <h2>The risk was turned over.</h2>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>A mentor can end a live match mid-course with a free-text note, and the learner’s only path is to request someone else.</p>
+      </blockquote>
+      <p class="question">How does a mentor quitting mid-course become a risk?</p>
+      <blockquote class="voice-user decision">
+        <span class="who">Decision · at the table</span>
+        <p>A mentor quitting mid-course is normal. A new mentor comes and they talk.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>A mid-course quit is not a failure. GrowMate does not preserve the old talks, and it does not block the next match.</p>
+      </blockquote>
+      <blockquote class="voice-user big">
+        <span class="who">At the table</span>
+        <p>Nothing in the mentorship match flow is a problem.</p>
+      </blockquote>
+    </section>
+
+    <section class="band" id="green">
+      <div class="hats" aria-hidden="true"><span class="hat green"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · new ideas</p>
+      <h2>What the talks cannot record.</h2>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>After the match is live, the app still needs a learning record the talks do not provide, because conversations stay outside GrowMate.</p>
+      </blockquote>
+      <blockquote class="voice-user">
+        <span class="who">At the table</span>
+        <p>Once the match is live, learner and mentor talk offline until the course ends. Student sees only Quit Course. Mentor sees Course Completed and Quit Course.</p>
+      </blockquote>
+
+      <div class="bench">
+        <h3>A bar with no numbers</h3>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>Both see status Not yet started, in progress, Completed, or rejected. The progress bar has no numbers. Not yet started is empty grey. In progress is half blue. Completed is full green. Quit is red.</p>
+        </blockquote>
+        <p class="stage-dir">They also said the fourth status as “rejected.” The paint they gave that place is Quit, in red. A request that dies on day 6 is a cancel, not this bar.</p>
+        <div class="track" aria-hidden="true"><div class="fill" id="status-fill" data-state="empty"></div></div>
+        <p class="bar-name" id="bar-name">Not yet started</p>
+        <div class="row" role="group" aria-label="Status bar">
+          <button type="button" data-state="empty" aria-pressed="true">Not yet started</button>
+          <button type="button" data-state="half">In progress</button>
+          <button type="button" data-state="full">Completed</button>
+          <button type="button" data-state="quit">Quit</button>
+        </div>
+
+        <div class="roles" style="margin-top:1rem">
+          <article>
+            <h3>Mentor sees</h3>
+            <div class="row">
+              <button type="button" class="primary" id="course-done">Course Completed</button>
+              <button type="button" id="mentor-quit">Quit Course</button>
+            </div>
+          </article>
+          <article>
+            <h3>Learner sees</h3>
+            <div class="row">
+              <button type="button" id="learner-quit">Quit Course</button>
+            </div>
+            <p class="nothing">Only that. The learner cannot mark the course complete, and cannot open the assessment early.</p>
+          </article>
+        </div>
+        <p id="action-say" class="stage-dir">Course Completed is the mentor’s gate. Quit Course is on both sides, and it does not ask for a decision.</p>
+
+        <div class="set-down">
+          <span class="who">Said first, then said more simply <span class="stamp">set down</span></span>
+          <p>After Course Completed, the mentor would see Enable Assessment, and enabling it would show the assessment. The later sentence is the one that stands: the click itself gives the learner the assessment.</p>
+        </div>
+
+        <h3>Three gates, and two of them give nothing</h3>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>Admin adds assessments based on the course. Each course has three stages: bronze, then silver, then gold. The learner sees bronze first. Silver appears only after bronze is cleared. Gold appears only after silver is cleared.</p>
+        </blockquote>
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>Admin decides what clears a stage. Admin can upload an assessment and set its pass mark. Bronze and silver give nothing of their own. Passing gold makes the learner eligible for mentorship. After gold, nothing else stays on the learner’s record.</p>
+        </blockquote>
+        <blockquote class="voice-coach">
+          <span class="who">Coach</span>
+          <p>The stages belong to the course, not the match. Course Completed reveals bronze only. Each stage is an uploaded assessment with its own pass mark. Hitting that mark clears the stage and reveals the next. Gold leaves the right to mentor that course. No certificate, no badge, and no resume line is added.</p>
+        </blockquote>
+
+        <article class="upload">
+          <h3>Admin’s upload</h3>
+          <p>Three assessments — bronze, silver, gold — and a pass mark written for each. The mark is whatever Admin sets. It is not a fixed product rule, so this line is left blank.</p>
+          <p class="blank" style="display:inline-block; min-width: 8rem">&nbsp;</p>
+        </article>
+
+        <div class="gates" id="gates">
+          <article class="gate" id="gate-bronze" hidden>
+            <h3>Bronze <span class="nothing">gives nothing</span></h3>
+            <div class="tries" data-tries="bronze"></div>
+            <p class="month" id="month-bronze"><i class="moon" aria-hidden="true"></i>One month. This stage stays locked. Silver stays hidden.</p>
+            <div class="row">
+              <button type="button" data-miss="bronze">Miss</button>
+              <button type="button" data-clear="bronze">Clear, at the mark Admin set</button>
+              <button type="button" data-wait="bronze" hidden>The month has passed</button>
+            </div>
+          </article>
+          <article class="gate silver" id="gate-silver" hidden>
+            <h3>Silver <span class="nothing">gives nothing</span></h3>
+            <div class="tries" data-tries="silver"></div>
+            <p class="month" id="month-silver"><i class="moon" aria-hidden="true"></i>One month. This stage stays locked. Gold stays hidden.</p>
+            <div class="row">
+              <button type="button" data-miss="silver">Miss</button>
+              <button type="button" data-clear="silver">Clear, at the mark Admin set</button>
+              <button type="button" data-wait="silver" hidden>The month has passed</button>
+            </div>
+          </article>
+          <article class="gate gold" id="gate-gold" hidden>
+            <h3>Gold</h3>
+            <div class="tries" data-tries="gold"></div>
+            <p class="month" id="month-gold"><i class="moon" aria-hidden="true"></i>One month. Then two tries again.</p>
+            <div class="row">
+              <button type="button" data-miss="gold">Miss</button>
+              <button type="button" data-clear="gold">Clear, at the mark Admin set</button>
+              <button type="button" data-wait="gold" hidden>The month has passed</button>
+            </div>
+            <div class="permission" id="permission">
+              <svg class="key" viewBox="0 0 46 22" aria-hidden="true">
+                <circle cx="9" cy="11" r="7" fill="none" stroke="#a67c2d" stroke-width="2"/>
+                <path d="M16 11 h24 M32 11 v6 M38 11 v4" fill="none" stroke="#a67c2d" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              Eligible to mentor this course. Nothing else is added to the record.
+            </div>
+          </article>
+        </div>
+        <p id="gate-hint" class="stage-dir">Bronze appears when the mentor clicks Course Completed. Not before.</p>
+
+        <blockquote class="voice-user">
+          <span class="who">At the table</span>
+          <p>A learner who fails a stage can retake once immediately. A second failure means they wait one month. After that month, they get two tries again.</p>
+        </blockquote>
+        <blockquote class="voice-coach">
+          <span class="who">Coach</span>
+          <p>Two tries, then a month, then two tries again. The month resets the pair. It repeats, and it never drops to a single try. The next stage stays hidden until this one is passed.</p>
+        </blockquote>
+
+        <h3 style="margin-top:1.6rem">The board lost its scores</h3>
+        <div class="board" id="board">
+          <div class="row" style="margin-bottom:.6rem">
+            <button type="button" id="board-now" aria-pressed="true">As it stands</button>
+            <button type="button" id="board-then">Earlier sketches</button>
+          </div>
+          <div id="board-standing">
+            <h3>Upskilling</h3>
+            <ol>
+              <li>an employee</li>
+              <li>an employee</li>
+              <li>an employee</li>
+            </ol>
+            <p>A list of employees who are upskilling. Nothing more. Everyone can open it. It is for tracking only. It does not match a mentor, grant a reward, or give Admin an action.</p>
+          </div>
+          <div id="board-old" hidden>
+            <p class="scores">Ranked by points from bronze, silver, and gold. People who passed gold. Off the board until then.</p>
+            <p class="scores">A board only Admin could see, for learner visibility inside Admin.</p>
+            <p>Both sketches were set down. Rank does not trigger anything.</p>
+          </div>
+        </div>
+        <p class="stage-dir">Said, in this order: a board ranked by points; a board for learners; a board for Admin to track, with nothing specific coming from it; a board for everyone; then just a list of employees who are upskilling. Nothing more.</p>
+        <p class="narrow">One closing picture still called bronze and silver gates and points, not rewards. The picture they then called fine does not score the stages. Bronze and silver give nothing of their own.</p>
+      </div>
+    </section>
+
+    <section class="band" id="blue">
+      <div class="hats" aria-hidden="true"><span class="hat blue"><b></b><i></i></span></div>
+      <p class="kicker">Six hats · process</p>
+      <h2>Admin’s closed hand.</h2>
+      <p class="stage-dir">They asked to review every feature mentioned so far, then to discuss Admin.</p>
+      <blockquote class="voice-user decision">
+        <span class="who">Decision · at the table</span>
+        <p>Admin features are only these. Nothing more.</p>
+      </blockquote>
+      <ul class="docket">
+        <li><span class="stamp">1</span><span>Add courses, visible to all employees.</span></li>
+        <li><span class="stamp">2</span><span>Upload bronze, silver, and gold, and set the pass marks.</span></li>
+        <li><span class="stamp">3</span><span>See the leaderboard, for tracking. The same list everyone can open.</span></li>
+        <li><span class="stamp">4</span><span>Stay out of the request flow.</span></li>
+        <li><span class="stamp">5</span><span>Assign a group of people to one mentor and one course.</span></li>
+      </ul>
+      <div class="seal">Nothing more</div>
+
+      <h3>One Accept, then many matches</h3>
+      <blockquote class="voice-user">
+        <span class="who">At the table</span>
+        <p>Admin can assign a group of people to one mentor and one course. The mentor still has to accept, and accepts the whole group at once. The group follows the same flow as a one-to-one request, including the day-3 reminder and the day-6 cancel. After the accept, each person is their own match, with their own quit and their own Course Completed. A person who quits can still request a mentor for that same course on their own.</p>
+      </blockquote>
+      <blockquote class="voice-coach">
+        <span class="who">Coach</span>
+        <p>The assignment creates the requests. One Accept starts the course for every person in the group. There is not a separate accept per person. After that, one person’s quit or Course Completed does not change the others. The assessment opens per person. Quitting does not block the course. The new request is an ordinary one-to-one. A group assignment and a one-to-one request are the same door. After Accept, the match forgets how it started.</p>
+      </blockquote>
+
+      <div class="slip" id="group-slip">
+        <span class="who">Before anyone is matched</span>
+        <p class="line">One mentor. One course. A group. The same clock: day 3 reminds, day 6 cancels, Admin stays out.</p>
+        <div class="row">
+          <button type="button" class="primary" id="accept-group">Accept the whole group</button>
+          <button type="button" id="expire-group">Day 6, no accept</button>
+        </div>
+        <p id="group-msg" class="result">Waiting on one Accept. Not one Accept per person.</p>
+        <div class="people" id="people" hidden>
+          <article class="person" data-person="0">
+            <header><strong>One person</strong><span class="who">own match</span></header>
+            <div class="mini" data-mini="0"><i></i></div>
+            <div class="row">
+              <button type="button" data-done="0">Course Completed</button>
+              <button type="button" data-quit="0">Quit Course</button>
+            </div>
+            <p class="again" data-again="0" hidden>This person can request the same course again, one-to-one.</p>
+          </article>
+          <article class="person" data-person="1">
+            <header><strong>Another person</strong><span class="who">own match</span></header>
+            <div class="mini" data-mini="1"><i></i></div>
+            <div class="row">
+              <button type="button" data-done="1">Course Completed</button>
+              <button type="button" data-quit="1">Quit Course</button>
+            </div>
+            <p class="again" data-again="1" hidden>This person can request the same course again, one-to-one.</p>
+          </article>
+          <article class="person" data-person="2">
+            <header><strong>A third</strong><span class="who">own match</span></header>
+            <div class="mini" data-mini="2"><i></i></div>
+            <div class="row">
+              <button type="button" data-done="2">Course Completed</button>
+              <button type="button" data-quit="2">Quit Course</button>
+            </div>
+            <p class="again" data-again="2" hidden>This person can request the same course again, one-to-one.</p>
+          </article>
+        </div>
+        <div id="solo" class="result" hidden>
+          <p class="line">“<span class="blank">Learner name</span> wants you to guide him with <span class="blank">Course name</span>.”</p>
+          <button type="button" class="primary" id="accept-solo">Accept</button>
+          <p id="solo-live" hidden>He accepted your request. This match is one-to-one. It does not pull the others back.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="band" id="unopened">
+      <p class="kicker">Named, and not opened</p>
+      <div class="folder">
+        <span class="who">Third technique</span>
+        <strong>Mind mapping</strong>
+        <p>Chosen in the order, after the hats. The session closed before a map was drawn.</p>
+      </div>
+      <blockquote class="voice-user" style="max-width:68ch">
+        <span class="who">Direction · at the table</span>
+        <p>Nothing further to open. The session is ready to close.</p>
+      </blockquote>
+    </section>
+
+    <section class="band" id="loop">
+      <p class="kicker">The picture they said was fine</p>
+      <h2>A match-and-proof loop.</h2>
+      <p class="spine-note">The coach had offered one loop as the thing to prove. What was confirmed is this, without a score and without a prize.</p>
+      <ol class="procession">
+        <li>
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="14" y="10" width="36" height="44" rx="2" fill="none" stroke="#1d1a15" stroke-width="2"/>
+            <path d="M22 22 h20 M22 30 h16 M22 38 h18" stroke="#1d1a15" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <span>Courses are published.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="22" width="48" height="20" rx="10" fill="#1d1a15"/>
+            <text x="32" y="36" text-anchor="middle" fill="#f3ead9" font-family="Segoe UI, sans-serif" font-size="11">Accept</text>
+          </svg>
+          <span>A mentor is accepted.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="6" y="14" width="30" height="38" fill="none" stroke="#1d1a15" stroke-width="2"/>
+            <path d="M36 16 h20 v34 H36" fill="none" stroke="#1d1a15" stroke-width="2"/>
+            <path d="M42 30 h10 M42 36 h12" stroke="#1d1a15" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span>Talks stay outside the app.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <path d="M10 44 V22 h12 v22 M26 44 V16 h12 v28 M42 44 V26 h12 v18" fill="none" stroke="#1d1a15" stroke-width="2"/>
+            <circle cx="16" cy="18" r="3" fill="#8d5a34"/>
+            <circle cx="32" cy="12" r="3" fill="#8b949e"/>
+            <circle cx="48" cy="22" r="3" fill="#a67c2d"/>
+          </svg>
+          <span>Course Completed opens bronze, then silver, then gold.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="18" cy="32" r="8" fill="none" stroke="#a67c2d" stroke-width="2.4"/>
+            <path d="M26 32 h24 M42 32 v8 M48 32 v5" fill="none" stroke="#a67c2d" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+          <span>Gold is only the right to mentor that course.</span>
+        </li>
+        <li>
+          <span class="fan" aria-hidden="true"><span></span><span></span><span></span></span>
+          <span>Admin group assignment only creates many one-to-one matches at once.</span>
+        </li>
+      </ol>
+      <p class="return-line">Quit is normal, and the course outlives any one mentor.</p>
+      <svg class="path-hero" viewBox="0 0 640 150" aria-hidden="true">
+        <path d="M16 100 C 100 100, 140 28, 230 28 S 360 120, 470 88 600 36, 624 42" fill="none" stroke="#1d1a15" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="268" cy="40" r="6" fill="none" stroke="#c4453c" stroke-width="2"/>
+        <path d="M268 48 v22 M268 62 l-8 12 M268 62 l10 14" fill="none" stroke="#c4453c" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M470 88 l16 -6 -2 14 z" fill="#1d1a15"/>
+      </svg>
+      <p class="spine-note">Quit is the only place a reason is written. After Accept, a match forgets whether it began as one request or as one of a group. The person who left can ask again. The course is still published.</p>
+    </section>
+
+    <footer class="colophon">
+      Notes closed 24 October 2026. Partner mode. Role playing, then the six hats. Mind mapping was named and left unopened.
+    </footer>
+  </main>
+</div>
+<script>
+(function () {
+  var clockSay = document.getElementById("clock-say");
+  var clockButtons = document.querySelectorAll("[data-clock]");
+  var dayCells = document.querySelectorAll(".day[data-day]");
+  var clockCopy = {
+    "0": "The request is sent. Nothing is asked of Admin.",
+    "3": "An in-app reminder goes to the learner and the mentor. Admin is not told.",
+    "6": "Cancelled. Not a rejection. The learner is notified to send a new request. The mentor does nothing, and is not asked to change anything."
+  };
+  clockButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var day = btn.getAttribute("data-clock");
+      clockButtons.forEach(function (b) {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      dayCells.forEach(function (cell) {
+        var n = Number(cell.getAttribute("data-day"));
+        cell.classList.toggle("on", n <= Number(day) && (n === 0 || n === 3 || n === 6));
+        cell.classList.remove("quiet");
+      });
+      document.querySelectorAll(".days .day:not([data-day])").forEach(function (cell) {
+        cell.classList.add("quiet");
+      });
+      if (day === "3") {
+        document.querySelector('[data-day="3"]').textContent = "";
+        document.querySelector('[data-day="3"]').innerHTML = "<strong>Day 3</strong>Reminder";
+      }
+      if (day === "6") {
+        document.querySelector('[data-day="3"]').innerHTML = "<strong>Day 3</strong>Reminder";
+        document.querySelector('[data-day="6"]').innerHTML = "<strong>Day 6</strong>Cleared";
+      }
+      if (day === "0") {
+        document.querySelector('[data-day="3"]').innerHTML = "<strong>Day 3</strong>";
+        document.querySelector('[data-day="6"]').innerHTML = "<strong>Day 6</strong>";
+      }
+      clockSay.textContent = clockCopy[day];
+    });
+  });
+
+  var acceptBtn = document.getElementById("accept-btn");
+  acceptBtn.addEventListener("click", function () {
+    acceptBtn.hidden = true;
+    document.getElementById("accepted").hidden = false;
+  });
+
+  var quitter = "learner";
+  var whoLearner = document.getElementById("who-learner");
+  var whoMentor = document.getElementById("who-mentor");
+  function setWho(next) {
+    quitter = next;
+    whoLearner.setAttribute("aria-pressed", next === "learner" ? "true" : "false");
+    whoMentor.setAttribute("aria-pressed", next === "mentor" ? "true" : "false");
+  }
+  whoLearner.addEventListener("click", function () { setWho("learner"); });
+  whoMentor.addEventListener("click", function () { setWho("mentor"); });
+
+  document.getElementById("send-quit").addEventListener("click", function () {
+    var words = document.getElementById("quit-text").value;
+    var other = quitter === "learner" ? "the mentor" : "the learner";
+    var body = words.trim() ? words.trim() : "(no set words — there is no required sentence)";
+    var extra = quitter === "mentor"
+      ? " A mentor quitting is normal. A new mentor can come, and they talk. The old talks are not kept."
+      : " The mentor is free for a next learner. The course remains.";
+    var out = document.getElementById("quit-out");
+    out.hidden = false;
+    out.textContent = "Sent to " + other + ": “" + body + "”. The match ends when this is sent. No one accepts it, and no one rejects it." + extra;
+    paint("quit");
+  });
+
+  var actionSay = document.getElementById("action-say");
+  document.getElementById("mentor-quit").addEventListener("click", function () {
+    setWho("mentor");
+    paint("quit");
+    actionSay.textContent = "The mentor’s Quit Course ends the match. The note is free text, sent as the acknowledgement. No one approves it. A new mentor can come, and they talk.";
+  });
+  document.getElementById("learner-quit").addEventListener("click", function () {
+    setWho("learner");
+    paint("quit");
+    actionSay.textContent = "The learner’s only course action is Quit Course. The note is free text. The match ends when it is sent. The mentor is free, and the course remains.";
+  });
+
+  var fill = document.getElementById("status-fill");
+  var barName = document.getElementById("bar-name");
+  var names = {
+    empty: "Not yet started",
+    half: "In progress",
+    full: "Completed",
+    quit: "Quit"
+  };
+  function paint(state) {
+    fill.setAttribute("data-state", state);
+    barName.textContent = names[state];
+    document.querySelectorAll("[data-state]").forEach(function (btn) {
+      if (!btn.getAttribute("data-clock")) {
+        btn.setAttribute("aria-pressed", btn.getAttribute("data-state") === state ? "true" : "false");
+      }
+    });
+  }
+  document.querySelectorAll("button[data-state]").forEach(function (btn) {
+    btn.addEventListener("click", function () { paint(btn.getAttribute("data-state")); });
+  });
+
+  var stages = ["bronze", "silver", "gold"];
+  var tries = { bronze: 2, silver: 2, gold: 2 };
+  var locked = { bronze: false, silver: false, gold: false };
+  var cleared = { bronze: false, silver: false, gold: false };
+
+  function drawTries(stage) {
+    var box = document.querySelector('[data-tries="' + stage + '"]');
+    box.innerHTML = "";
+    var left = tries[stage];
+    for (var i = 0; i < 2; i++) {
+      var token = document.createElement("span");
+      token.className = "token" + (i >= left ? " used" : "");
+      token.textContent = "try";
+      box.appendChild(token);
+    }
+  }
+  stages.forEach(drawTries);
+
+  document.getElementById("course-done").addEventListener("click", function () {
+    paint("full");
+    document.getElementById("gate-bronze").hidden = false;
+    document.getElementById("gate-hint").textContent = "Bronze is open. Silver stays hidden until bronze is cleared. Gold waits behind silver. Neither bronze nor silver gives anything.";
+  });
+
+  document.querySelectorAll("[data-miss]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var stage = btn.getAttribute("data-miss");
+      if (locked[stage] || cleared[stage]) return;
+      if (tries[stage] > 0) tries[stage] -= 1;
+      drawTries(stage);
+      if (tries[stage] === 0) {
+        locked[stage] = true;
+        document.getElementById("month-" + stage).classList.add("show");
+        btn.disabled = true;
+        document.querySelector('[data-clear="' + stage + '"]').disabled = true;
+        document.querySelector('[data-wait="' + stage + '"]').hidden = false;
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-wait]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var stage = btn.getAttribute("data-wait");
+      locked[stage] = false;
+      tries[stage] = 2;
+      drawTries(stage);
+      document.getElementById("month-" + stage).classList.remove("show");
+      document.querySelector('[data-miss="' + stage + '"]').disabled = false;
+      document.querySelector('[data-clear="' + stage + '"]').disabled = false;
+      btn.hidden = true;
+    });
+  });
+
+  function showNext(stage) {
+    if (stage === "bronze") document.getElementById("gate-silver").hidden = false;
+    if (stage === "silver") document.getElementById("gate-gold").hidden = false;
+    if (stage === "gold") document.getElementById("permission").classList.add("show");
+  }
+
+  document.querySelectorAll("[data-clear]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var stage = btn.getAttribute("data-clear");
+      if (locked[stage] || cleared[stage]) return;
+      cleared[stage] = true;
+      btn.disabled = true;
+      document.querySelector('[data-miss="' + stage + '"]').disabled = true;
+      showNext(stage);
+    });
+  });
+
+  document.getElementById("board-now").addEventListener("click", function () {
+    document.getElementById("board-standing").hidden = false;
+    document.getElementById("board-old").hidden = true;
+    this.setAttribute("aria-pressed", "true");
+    document.getElementById("board-then").setAttribute("aria-pressed", "false");
+  });
+  document.getElementById("board-then").addEventListener("click", function () {
+    document.getElementById("board-standing").hidden = true;
+    document.getElementById("board-old").hidden = false;
+    this.setAttribute("aria-pressed", "true");
+    document.getElementById("board-now").setAttribute("aria-pressed", "false");
+  });
+
+  var groupAccepted = false;
+  var groupExpired = false;
+  var groupMsg = document.getElementById("group-msg");
+  document.getElementById("accept-group").addEventListener("click", function () {
+    if (groupAccepted || groupExpired) return;
+    groupAccepted = true;
+    this.hidden = true;
+    document.getElementById("expire-group").hidden = true;
+    document.getElementById("people").hidden = false;
+    groupMsg.textContent = "One Accept. Three matches. Each can quit, and each can be marked Course Completed, alone.";
+  });
+  document.getElementById("expire-group").addEventListener("click", function () {
+    if (groupAccepted) return;
+    groupExpired = true;
+    this.hidden = true;
+    document.getElementById("accept-group").hidden = true;
+    groupMsg.textContent = "Day 6 cleared the group request, the same way a one-to-one request clears. Not a rejection. No matches were opened. Admin was not in it.";
+  });
+
+  function mini(i, kind) {
+    var el = document.querySelector('[data-mini="' + i + '"]');
+    el.classList.remove("half", "full", "quit");
+    if (kind) el.classList.add(kind);
+  }
+
+  document.querySelectorAll("[data-done]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var i = btn.getAttribute("data-done");
+      mini(i, "full");
+      document.querySelector('[data-again="' + i + '"]').hidden = true;
+    });
+  });
+  document.querySelectorAll("[data-quit]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      var i = btn.getAttribute("data-quit");
+      mini(i, "quit");
+      document.querySelector('[data-again="' + i + '"]').hidden = false;
+      var solo = document.getElementById("solo");
+      solo.hidden = false;
+      document.getElementById("accept-solo").hidden = false;
+      document.getElementById("solo-live").hidden = true;
+    });
+  });
+  document.getElementById("accept-solo").addEventListener("click", function () {
+    this.hidden = true;
+    document.getElementById("solo-live").hidden = false;
+  });
+
+  var links = document.querySelectorAll(".rail a");
+  var sections = [];
+  links.forEach(function (a) {
+    var id = a.getAttribute("href").slice(1);
+    var el = document.getElementById(id);
+    if (el) sections.push({ link: a, el: el });
+  });
+  function markRail() {
+    var y = window.scrollY + 120;
+    var current = sections[0];
+    sections.forEach(function (s) {
+      if (s.el.offsetTop <= y) current = s;
+    });
+    sections.forEach(function (s) {
+      if (s === current) s.link.setAttribute("aria-current", "true");
+      else s.link.removeAttribute("aria-current");
+    });
+  }
+  markRail();
+  window.addEventListener("scroll", markRail, { passive: true });
+})();
+</script>
+</body>
+</html>
