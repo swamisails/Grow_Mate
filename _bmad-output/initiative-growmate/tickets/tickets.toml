@@ -1,0 +1,58 @@
+# GrowMate epics in build order. Table order is build order; `id` is permanent.
+
+[[epic]]
+id = 1
+slug = "epic-accounts-courses-first-mentors"
+title = "Accounts, Courses and the first Mentors"
+description = """On the deployed web app, Employees sign up and sign in, and Admin publishes Courses with three Stage Assessments. Admin's Registration decisions create the first Mentors.
+
+Owns the shared foundations later epics build on:
+- the platform baseline, plus the seed data and end-to-end test harness;
+- the in-app notification mechanism (it delivers only the Registration-decision notice itself);
+- the Mentor-route record, with all three route values and one grant-Mentor operation;
+- the stored refused Registration decisions that epic 4 reads.
+
+Seed order: Admin, then Courses, then Employees (R2 needs published Courses)."""
+covers = ["R1", "R2", "R3", "R4", "R5", "R22"]
+
+[[epic]]
+id = 2
+slug = "epic-requests-and-matches"
+title = "Learners get a Mentor and are judged ready"
+description = """A Learner requests a listed Mentor, and the Mentor Accepts. The day-3 reminder and the day-6 Cancel run on a controllable clock. Either party can Quit. The Mentor clicks Course Completed, which unlocks Bronze.
+
+Delivers:
+- the plain bar with Not yet started, In progress and Quit (R20 part);
+- the Upskilling list;
+- the R22 part: new Request, Accept, day-3, day-6, Quit and Bronze-available notices.
+
+Hands to epic 3: Course Completed opening Bronze, the Progress status model, and the clock.
+Hands to epic 4: Requests under the clock, Accept, and Matches."""
+covers = ["R6", "R7", "R8", "R9", "R12", "R13", "R14", "R15", "R20", "R21", "R22"]
+after = [{ epic = 1, needs = "accounts, published Courses, Mentors with a Mentor-route record, and the in-app notification mechanism" }]
+
+[[epic]]
+id = 3
+slug = "epic-stages-and-gold"
+title = "Learners prove the Course and become Mentors"
+description = """After Course Completed, a Learner takes Bronze, Silver and Gold in order. Attempts follow the Retake rule, with its fixed one-month Lock on epic 2's clock. Passing Gold calls epic 1's grant-Mentor operation through the Gold pass route.
+
+Delivers the R20 part: In progress continuing through the Stages, and Completed (green)."""
+covers = ["R16", "R17", "R18", "R19", "R20"]
+after = [
+  { epic = 1, needs = "Stage Assessments with Pass marks, and the grant-Mentor operation" },
+  { epic = 2, needs = "Course Completed unlocking Bronze, the Progress status model, and the controllable clock" },
+]
+
+[[epic]]
+id = 4
+slug = "epic-group-assignment"
+title = "Admin staffs a Course with a group"
+description = """Admin assigns several Learners to one chosen Employee for a Course. Anyone refused that Course at registration is excluded as the chosen Employee. One Accept starts independent Matches, and epic 1's grant-Mentor operation makes the chosen Employee a Mentor through the Group assignment accepted route.
+
+Delivers the R22 part: the new-Request notice for each Request of a Group assignment, with no group origin shown."""
+covers = ["R10", "R11", "R22"]
+after = [
+  { epic = 1, needs = "stored refused Registration decisions, and the grant-Mentor operation" },
+  { epic = 2, needs = "Requests under the day-3/day-6 clock, Accept, and Matches" },
+]

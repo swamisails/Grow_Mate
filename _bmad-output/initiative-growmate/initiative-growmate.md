@@ -49,9 +49,10 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
   - The Learner sees only "[Mentor] is your mentor for [Course]."
   - A Mentor's live Matches are unlimited.
 - R9 (prd FR-9): An un-Accepted Request triggers one in-app reminder to both parties on day 3. On day 6 it is Cancelled, with a notice to both that tells the Learner to request again. After a Cancel, the Learner has no Progress status on that Course unless they have Stage progress there. Nothing else happens on any other day, and Admin receives nothing.
-- R10 (prd FR-10): Admin can assign one or more Learners to one chosen Employee for a Course. This creates a pending Request from each Learner, under R9's timing.
+- R10 (prd FR-10, FR-7): Admin can assign one or more Learners to one chosen Employee for a Course. This creates a pending Request from each Learner, under R9's timing.
   - An Employee refused that Course at registration can't be chosen.
   - The chosen Employee needn't already be a Mentor for it.
+  - R7's refusals apply to each assigned Learner: Admin can't assign a Learner who already has a pending Request or live Match on that Course, has had Course Completed on it, or is a Mentor for it.
   - Learners get no assignment notice.
 - R11 (prd FR-11): The chosen Employee Accepts the whole group with one Accept, never per Learner.
   - Accept creates one independent Match per Learner.
@@ -127,3 +128,25 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
 - prd — `_bmad-output/initiative-growmate/prd-growmate/prd-growmate.md`: §1.1 principles, §4 features (FR-1 to FR-22), §5 non-goals, §6 scope, §7 metrics, §8 guardrails.
 - glossary — `_bmad-output/initiative-growmate/glossary.md`.
 - addendum — `_bmad-output/initiative-growmate/prd-growmate/addendum.md`: §A rejected alternatives, §B research context.
+- breakdown — `_bmad-output/initiative-growmate/tickets/tickets.toml`: epics 1–4 in build order.
+
+## Notes
+
+Decisions, all 2026-11-02:
+- Decision: Sliced by capability, following the PRD's feature groups, into four epics. There is no code yet, so there were no deployment boundaries to cut on.
+- Decision: Epic 1 is the opening, platform-baseline epic. It owns:
+  - the seed data and end-to-end test harness;
+  - the in-app notification mechanism;
+  - the Mentor-route record, with all three route values and one grant-Mentor operation that epics 3 and 4 call;
+  - the stored refused Registration decisions.
+- Decision: The first Mentors come from Registration approval in epic 1, because Gold pass needs an existing Mentor. Seed order is Admin, then Courses, then Employees.
+- Decision: Constraints C1–C3 are owned by epic 1. C4–C10 bind every epic.
+- Decision: Shared technical decisions are settled by a `bmad-architecture` run before epic 1's stories:
+  - stack and data model;
+  - the notification mechanism;
+  - a controllable clock for day 3, day 6 and the one-month Lock;
+  - the deploy target.
+- Decision: Epic 3 is built before epic 4, because Gold pass is the core proof (SM-2). The two have no dependency on each other and may run in parallel.
+- Decision: R7's refusals apply to Group assignment (R10 updated).
+- Decision: An Employee holds one Mentor status per Course. When a second route would also qualify them, the first route is kept.
+- Decision: The full SM-1 seeded run belongs to the initiative's closure check, because it spans epics 3 and 4.
