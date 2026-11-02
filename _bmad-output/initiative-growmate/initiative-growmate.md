@@ -4,7 +4,9 @@ title: GrowMate
 parent: none
 sources:
   - _bmad-output/initiative-growmate/prd-growmate/prd-growmate.md
+  - _bmad-output/initiative-growmate/architecture-growmate/architecture-growmate.md
 companions:
+  - _bmad-output/initiative-growmate/architecture-growmate/architecture-growmate.md
   - _bmad-output/initiative-growmate/glossary.md
   - _bmad-output/initiative-growmate/prd-growmate/addendum.md
 after: []
@@ -38,7 +40,7 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
   - Decisions are final.
   - The Employee is notified, and sees approved and refused Courses as two separate lists.
 - R4 (prd FR-4): Admin can create a Course with a title and description and publish it. A published Course is visible to all Employees.
-- R5 (prd FR-5): Admin can enter a multiple-choice Assessment (one correct answer per question) and a Pass mark percentage for each of Bronze, Silver and Gold. A Course missing any Assessment or Pass mark can't be published and isn't visible.
+- R5 (prd FR-5): Admin can enter a multiple-choice Assessment (one correct answer per question) and a Pass mark percentage for each of Bronze, Silver and Gold. A Course missing any Assessment or Pass mark can't be published and isn't visible. Once published, a Course's Assessments and Pass marks are frozen.
 - R6 (prd FR-6): An Employee viewing a Course sees every Mentor for it, without the Mentor route and excluding themselves.
 - R7 (prd FR-7): A Learner can send a Request, with no reason, to one listed Mentor. The Request is refused when:
   - the Learner already has a pending Request or live Match on that Course;
@@ -98,7 +100,7 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
 
   Admin has no view of, or action on, Requests or Matches.
 - C5 (prd §1.1, §5): A free-text reason exists only on Quit. Requests, Accept, Registration decisions, Group assignments and Course Completed carry no reason or comment field, and there is no Reject response.
-- C6 (prd §1.1, §8): No Employee-facing screen or notification reveals a Mentor route or whether a Match came from a Group assignment. Admin sees a Mentor's route only for Courses Admin decided or assigned.
+- C6 (prd §1.1, §8): No Employee-facing screen or notification reveals a Mentor route or whether a Match came from a Group assignment. Admin sees only the Registration decisions and Group assignments Admin created, and never Mentor routes, Request or Match state, or whether a Group assignment was Accepted.
 - C7 (prd §1.1, §5): No chat, calls, scheduling, file sharing or integration with Teams or any conversation tool. No talk content is stored.
 - C8 (prd §1.1, §5): No badges, certificates, points, ranks, résumé or LinkedIn export, mentor calendars, capacity settings or suspension.
 - C9 (prd §1.1): The empty middle is intended behaviour: the unchanged half-blue bar, the bare readiness click and Admin's scoreless yes/no. There are no helper text, nudges, "lamps" or progress signals to fill it.
@@ -107,6 +109,7 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
   - Assessment attempts, scores and Locks;
   - Mentor-route records, including refused Registration decisions;
   - Quit reasons.
+- C11 (architecture AD-17): "Deployed", in every Done when, means the GrowMate Docker stack running from built images on any Docker host, the developer's machine included. End-to-end checks run in the `e2e` environment, and the test clock never exists in production.
 
 ## Done when
 
@@ -129,6 +132,7 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
 - glossary — `_bmad-output/initiative-growmate/glossary.md`.
 - addendum — `_bmad-output/initiative-growmate/prd-growmate/addendum.md`: §A rejected alternatives, §B research context.
 - breakdown — `_bmad-output/initiative-growmate/tickets/tickets.toml`: epics 1–4 in build order.
+- architecture — `_bmad-output/initiative-growmate/architecture-growmate/architecture-growmate.md`: AD-1 to AD-17, epic-to-module table, Capability map.
 
 ## Notes
 
