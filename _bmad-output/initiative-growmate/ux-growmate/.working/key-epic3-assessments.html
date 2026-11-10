@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowMate — Epic 3 key screens (Assessments and Stages)</title>
+<style>
+/*
+  Key-screen mock: epic 3 (Stages, Assessment taking, Retake rule, Gold pass).
+  Governed by:
+    DESIGN.md      — Colors (status tokens only on the bar), Typography, Layout & Spacing (single-column pages; two-column
+                     detail grid), Components (App header, Page title tile, Card + card header, Option list, Button primary
+                     incl. disabled treatment, Button secondary, Progress bar with state word, Stage block), Do's and Don'ts
+                     (Gold as plain as Bronze; no rewards, C8).
+    EXPERIENCE.md  — IA (Assessment, Assessment result, Course page), Voice and Tone ("Passed." / "Not passed."),
+                     Component Patterns (Assessment form, Stage block), State Patterns, Accessibility Floor (fieldset/legend,
+                     bar accessible name + state word), Key Flows (Flow 1 UJ-1 step 7, Edge (Lock), climax).
+  Decided picks: authored question/option order; no score shown; no notices for Stage results.
+  Reference: imports/ref-list-screen.png, imports/ref-detail-screen.png. Spines win on conflict.
+  Static mock: no JS, no network. Fonts fall back to system-ui when Lexend / Nunito Sans aren't installed.
+*/
+.light{
+  --brand:#4B2AAD; --brand-fg:#FFFFFF; --nav-indicator:#A8E3EE;
+  --action:#4B2AAD; --action-fg:#FFFFFF; --link:#4B2AAD; --focus-ring:#4B2AAD;
+  --surface-base:#F7F8FC; --surface-raised:#FFFFFF; --surface-band:#EEF2FA;
+  --ink-heading:#14151B; --ink-primary:#1E1F26; --ink-secondary:#5F6370; --ink-disabled:#A3A7B3;
+  --border:#DFE2EA; --border-strong:#B8BCC8;
+  --status-track:#E6E8EF; --status-not-started:#80868B; --status-in-progress:#2F6FDB;
+  --status-completed:#1E8E3E; --status-quit:#C5221F;
+  --shadow:0 2px 8px rgba(20,21,40,.06);
+}
+.dark{
+  --brand:#2E1B70; --brand-fg:#FFFFFF; --nav-indicator:#A8E3EE;
+  --action:#9D8CF2; --action-fg:#14121F; --link:#B3A6F6; --focus-ring:#B3A6F6;
+  --surface-base:#121219; --surface-raised:#1C1C26; --surface-band:#252536;
+  --ink-heading:#F5F5FA; --ink-primary:#E9E9F2; --ink-secondary:#A4A7B5; --ink-disabled:#5E6170;
+  --border:#33343F; --border-strong:#5A5D6B;
+  --status-track:#2C2D38; --status-not-started:#8A9096; --status-in-progress:#6C9EF0;
+  --status-completed:#4CB46A; --status-quit:#E5605C;
+  --shadow:0 2px 8px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:#8C8FA0;font-family:system-ui,sans-serif}
+.caption{max-width:1280px;margin:0 auto 12px;font-size:14px;line-height:1.45;color:#101116}
+.caption b{font-weight:700}
+.frame{width:1280px;margin:0 auto 40px;border:1px solid #3B3E4A;border-radius:8px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.chrome{height:34px;background:#D5D8DC;display:flex;align-items:center;gap:8px;padding:0 12px}
+.chrome i{width:11px;height:11px;border-radius:50%;background:#9AA0A6;display:block}
+.chrome .url{margin-left:12px;flex:1;height:22px;border-radius:4px;background:#F3F4F6;font-size:12px;line-height:22px;padding:0 10px;color:#5B6169}
+
+.app{background:var(--surface-base);color:var(--ink-primary);font:400 15px/1.5 "Nunito Sans",system-ui,sans-serif;min-height:480px}
+.svg{width:20px;height:20px;fill:currentColor;flex:none}
+
+/* App header */
+.header{height:72px;background:var(--brand);color:var(--brand-fg);display:flex;align-items:center;padding:0 28px;gap:36px}
+.brand{font:600 22px/1 Lexend,system-ui,sans-serif;letter-spacing:-.01em}
+.nav{display:flex;gap:8px;height:100%}
+.nav a{display:flex;align-items:center;gap:8px;color:var(--brand-fg);text-decoration:none;font:500 16px/1.2 Lexend,system-ui,sans-serif;padding:0 14px;border-bottom:2px solid transparent;height:100%}
+.nav a.current{border-bottom-color:var(--nav-indicator)}
+.right{margin-left:auto;display:flex;align-items:center;gap:20px;font:500 15px/1 "Nunito Sans",system-ui,sans-serif}
+.right a{color:var(--brand-fg)}
+.iconbtn{background:none;border:0;color:var(--brand-fg);padding:6px;border-radius:8px;display:flex}
+.iconbtn .svg{width:22px;height:22px}
+
+/* Page */
+.content{padding:36px 28px 40px}
+.pagehead{display:flex;align-items:center;gap:16px;margin-bottom:12px}
+.tile{width:48px;height:48px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center}
+.dark .tile{background:var(--action);color:var(--action-fg)}
+.tile .svg{width:24px;height:24px}
+h1{font:600 28px/1.2 Lexend,system-ui,sans-serif;color:var(--ink-heading);margin:0}
+.desc{margin:0 0 14px 64px;max-width:760px}
+.progress{display:flex;align-items:center;gap:12px;margin-left:64px}
+.bar{width:160px;height:10px;border-radius:9999px;background:var(--status-track);border:1px solid var(--border-strong);overflow:hidden;position:relative}
+.bar::after{content:"";position:absolute;inset:0}
+.bar.in-progress::after{background:var(--status-in-progress);right:50%}
+.bar.completed::after{background:var(--status-completed)}
+.state-word{font-size:14px;color:var(--ink-secondary)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px;margin-top:28px;align-items:start}
+.stack{display:flex;flex-direction:column;gap:28px;margin-top:28px}
+.card{background:var(--surface-raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.card-header{background:var(--surface-band);border-bottom:1px solid var(--border);padding:16px 20px;font:600 20px/1.3 Lexend,system-ui,sans-serif;color:var(--ink-heading)}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--border);min-height:60px}
+.row:last-child{border-bottom:0}
+.meta{font-size:14px;color:var(--ink-secondary)}
+.label{font-weight:600}
+.btn{font:600 15px/1.4 "Nunito Sans",system-ui,sans-serif;border-radius:8px;padding:9px 20px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-primary{background:var(--action);color:var(--action-fg);border:1px solid var(--action)}
+.btn-secondary{background:var(--surface-raised);color:var(--link);border:1px solid var(--border-strong)}
+.btn[disabled]{background:var(--border);color:var(--ink-disabled);border-color:var(--border);cursor:not-allowed}
+
+/* Assessment form: one card per question; the card header band is the fieldset legend */
+fieldset.card{margin:0;padding:0;min-width:0}
+fieldset.card legend{float:left;width:100%;margin:0;background:var(--surface-band);border-bottom:1px solid var(--border);padding:16px 20px;font:600 17px/1.4 Lexend,system-ui,sans-serif;color:var(--ink-heading)}
+fieldset.card legend code,.opts code{font:500 14px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--surface-band);padding:1px 5px;border-radius:4px}
+fieldset.card legend code{background:var(--surface-raised)}
+.opts{clear:both;padding:8px 20px 12px}
+.opts label{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);cursor:pointer}
+.opts label:last-child{border-bottom:0}
+.opts input{accent-color:var(--action);width:18px;height:18px;margin:0}
+.formfoot{display:flex;justify-content:flex-end;margin-top:28px}
+
+/* Result */
+.result{padding:40px 20px;text-align:center}
+.result p{margin:0 0 24px;font:600 22px/1.3 Lexend,system-ui,sans-serif;color:var(--ink-heading)}
+.narrow{max-width:640px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
+  <symbol id="i-course" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99C3.88 3 3.01 3.9 3.01 5L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></symbol>
+  <symbol id="i-quiz" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-5.99 13c-.59 0-1.05-.47-1.05-1.05 0-.59.47-1.04 1.05-1.04.59 0 1.04.45 1.04 1.04-.01.58-.45 1.05-1.04 1.05zm2.5-6.17c-.63.93-1.23 1.21-1.56 1.81-.13.24-.18.4-.18 1.18h-1.52c0-.41-.06-1.08.26-1.65.41-.73 1.18-1.16 1.63-1.8.48-.68.21-1.94-1.14-1.94-.88 0-1.32.67-1.5 1.23l-1.37-.57C11.51 5.96 12.52 5 13.99 5c1.23 0 2.08.56 2.51 1.26.37.61.59 1.73.01 2.57z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></symbol>
+</svg>
+
+<!-- ============ 1. Assessment form ============ -->
+<p class="caption"><b>1 · Light — Assessment form (UJ-1 step 7).</b> Priya takes Silver for Python Basics. All four questions are on one page in the order Admin wrote them, one radio group each. Submit answers stays disabled because question 4 is unanswered. There is no score, timer, or "question 2 of 4" counter, and leaving the page uses no attempt.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3/stages/silver</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right">
+        <button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button>
+        <span>Priya Nair</span><a href="#">Sign out</a>
+      </div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-quiz"/></svg></div><h1>Python Basics — Silver</h1></div>
+      <form class="stack narrow" style="max-width:860px">
+        <fieldset class="card">
+          <legend>1. What does <code>len([1, [2, 3], 4])</code> return?</legend>
+          <div class="opts">
+            <label><input type="radio" name="q1"> 2</label>
+            <label><input type="radio" name="q1" checked> 3</label>
+            <label><input type="radio" name="q1"> 4</label>
+          </div>
+        </fieldset>
+        <fieldset class="card">
+          <legend>2. Which statement opens <code>notes.txt</code> so the file is closed automatically after use?</legend>
+          <div class="opts">
+            <label><input type="radio" name="q2"> <code>f = open("notes.txt")</code></label>
+            <label><input type="radio" name="q2" checked> <code>with open("notes.txt") as f:</code></label>
+            <label><input type="radio" name="q2"> <code>open("notes.txt").close()</code></label>
+            <label><input type="radio" name="q2"> <code>import notes.txt</code></label>
+          </div>
+        </fieldset>
+        <fieldset class="card">
+          <legend>3. What is the value of <code>"growmate"[1:4]</code>?</legend>
+          <div class="opts">
+            <label><input type="radio" name="q3"> <code>"grow"</code></label>
+            <label><input type="radio" name="q3" checked> <code>"row"</code></label>
+            <label><input type="radio" name="q3"> <code>"rowm"</code></label>
+          </div>
+        </fieldset>
+        <fieldset class="card">
+          <legend>4. A function has no <code>return</code> statement. What does calling it return?</legend>
+          <div class="opts">
+            <label><input type="radio" name="q4"> <code>0</code></label>
+            <label><input type="radio" name="q4"> <code>None</code></label>
+            <label><input type="radio" name="q4"> An empty string</label>
+            <label><input type="radio" name="q4"> It raises an error</label>
+          </div>
+        </fieldset>
+        <div class="formfoot"><button class="btn btn-primary" disabled>Submit answers</button></div>
+      </form>
+    </main>
+  </div>
+</div>
+
+<!-- ============ 2. Result: Not passed ============ -->
+<p class="caption"><b>2 · Dark — Assessment result, Not passed.</b> Silver's first attempt fails. The result card says only "Not passed." with no score, percentage or attempt count, and links back to the Course, where "Take Silver" is still offered (Retake rule: the second attempt is available at once).</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3/stages/silver/result</div></div>
+  <div class="app dark">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right">
+        <button class="iconbtn" aria-label="Switch to light mode"><svg class="svg"><use href="#i-moon"/></svg></button>
+        <span>Priya Nair</span><a href="#">Sign out</a>
+      </div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-quiz"/></svg></div><h1>Python Basics — Silver</h1></div>
+      <section class="card narrow" style="margin-top:28px">
+        <div class="result" role="status">
+          <p>Not passed.</p>
+          <a href="#" class="btn btn-secondary">Back to Python Basics</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ============ 3. Result: Gold passed ============ -->
+<p class="caption"><b>3 · Light — Assessment result, Gold passed.</b> The same plain card as any Stage: "Passed." and the way back. No trophy, confetti, colour, certificate or "You're a Mentor now". Gold is permission, not a prize (C8). Priya's new Mentor status shows only as her name in the Course's Mentors list.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3/stages/gold/result</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right">
+        <button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button>
+        <span>Priya Nair</span><a href="#">Sign out</a>
+      </div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-quiz"/></svg></div><h1>Python Basics — Gold</h1></div>
+      <section class="card narrow" style="margin-top:28px">
+        <div class="result" role="status">
+          <p>Passed.</p>
+          <a href="#" class="btn btn-secondary">Back to Python Basics</a>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- ============ 4. Course page with Locked Stage ============ -->
+<p class="caption"><b>4 · Dark — Course page with a Locked Stage (Flow 1, Edge: Lock).</b> Priya failed Silver twice. Silver shows "Locked until 10 Dec 2026" with no button, and Gold isn't rendered. Her bar stays half blue ("In progress"). R7 refuses new Requests after Course Completed, so Mentors shows names only.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3</div></div>
+  <div class="app dark">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right">
+        <button class="iconbtn" aria-label="Switch to light mode"><svg class="svg"><use href="#i-moon"/></svg></button>
+        <span>Priya Nair</span><a href="#">Sign out</a>
+      </div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-course"/></svg></div><h1>Python Basics</h1></div>
+      <p class="desc">Variables, control flow, functions and the standard library, up to writing small scripts that read and write files.</p>
+      <div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div>
+      <div class="grid2">
+        <section class="card">
+          <div class="card-header">Stages</div>
+          <div class="row"><span class="label">Bronze</span><span class="meta">Passed</span></div>
+          <div class="row"><span class="label">Silver</span><span class="meta">Locked until 10 Dec 2026</span></div>
+        </section>
+        <section class="card">
+          <div class="card-header">Mentors</div>
+          <div class="row"><span>Imani Okafor</span></div>
+          <div class="row"><span>Rafi Haddad</span></div>
+          <div class="row"><span>Sam Lindqvist</span></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ 5. Course page after Gold ============ -->
+<p class="caption"><b>5 · Light — Course page after Gold (UJ-1 climax).</b> Priya's bar is green ("Completed") and all three Stages read "Passed". There are no badges or certificates. The Mentors list (which excludes the viewer) would now include Priya for every other Employee.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right">
+        <button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button>
+        <span>Priya Nair</span><a href="#">Sign out</a>
+      </div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-course"/></svg></div><h1>Python Basics</h1></div>
+      <p class="desc">Variables, control flow, functions and the standard library, up to writing small scripts that read and write files.</p>
+      <div class="progress" role="img" aria-label="Progress: Completed"><div class="bar completed"></div><span class="state-word">Completed</span></div>
+      <div class="grid2">
+        <section class="card">
+          <div class="card-header">Stages</div>
+          <div class="row"><span class="label">Bronze</span><span class="meta">Passed</span></div>
+          <div class="row"><span class="label">Silver</span><span class="meta">Passed</span></div>
+          <div class="row"><span class="label">Gold</span><span class="meta">Passed</span></div>
+        </section>
+        <section class="card">
+          <div class="card-header">Mentors</div>
+          <div class="row"><span>Imani Okafor</span></div>
+          <div class="row"><span>Rafi Haddad</span></div>
+          <div class="row"><span>Sam Lindqvist</span></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+</html>

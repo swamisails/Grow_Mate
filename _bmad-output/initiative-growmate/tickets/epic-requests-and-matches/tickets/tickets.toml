@@ -1,0 +1,111 @@
+# Epic 2 — Learners get a Mentor and are judged ready. Table order is build order; `id` is permanent.
+
+[[entry]]
+id = 1
+type = "story"
+title = "A Learner requests a Mentor and the Mentor Accepts"
+description = "Tracer bullet: the Matching module's tables (requests, matches, and the group_assignments table with requests.group_assignment_id per the architecture), Send Request from the Request button on entry 1.5's Mentors card, the Requests screen and its top-bar link, the one Accept path creating a Match, and the Progress module's status query driving the bar (Not yet started, In progress) on the Course page. Refusals beyond a duplicate open Request come in entry 3, the clock in entry 2, notices in entry 4, and Home and the Match screen in entry 5. Epic 3 extends the Progress status query with Completed (entry 3.4). Entry 4.1 fills group_assignments and shows grouped Requests as one block on this Requests screen; entry 4.2 extends this Accept path (AD-13)."
+verify = "On the e2e stack, Priya requests Rafi on a Course page and sees a grey \"Not yet started\" bar; Rafi sees \"Priya Nair requested you to guide them with Python Basics\" on Requests, clicks Accept, and Priya's bar turns half blue \"In progress\"; Rafi then Accepts a second Learner too, with no limit."
+covers = ["R1", "R2", "R9"] # R1: send and the duplicate-open refusal; R9: the Course page bar
+after = ["1.5"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Un-Accepted Requests are reminded on day 3 and Cancelled on day 6"
+description = "The least certain story: the test-clock endpoint and middleware in e2e only (AD-6) and the harness's set-clock helper that epic 3 reuses; the one Request-state query (pending, reminded, cancelled, accepted) at exactly 72 and 144 hours; Accept refused from 144 hours; a Cancel clearing the Learner's status (the Stage-progress exception is left to epic 3's status query, because R1 refuses a Request once Course Completed was clicked); the day-3 and day-6 notices worked out from Request state through AD-11's time-notice contract, which this entry defines in Notifications, adds to entry 1.8's inbox and implements in Matching, never stored. A day-3 reminder, once reached, stays on Notices dated sent time + 72h even after a later Accept. Builds on entry 1's Request and Accept; entry 3's eligibility check reads this Request state."
+verify = "With the test clock, a Request at 71h59m shows no reminder, at 72h both parties have the day-3 notice, and at 144h both have the day-6 notice, the Request is gone from Rafi's Requests, the Learner's bar is gone and Accept is refused; Admin has no notice; a Request Accepted at 1h still has a live Match at 144h and at 60 days; the local and production stacks have no clock endpoint."
+covers = ["R3", "R4", "R8", "R11"] # R11: the day-3 and day-6 notices
+after = [1, "1.8"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Request refusals hold"
+description = "The one shared Learner-eligibility check (AD-12) inside Send Request with a row lock: refused when the Learner has a pending Request or live Match on the Course, Course Completed was clicked for them there, or they are a Mentor for it, each with its own Matching code. The Course page's Request buttons appear only when the API reports the viewer eligible. Reads entry 2's Request-state query, so a Cancelled Request doesn't block; entry 7 makes the Course Completed case reachable. Entry 4.3 reuses the check for groups."
+verify = "For a pending Request, a live Match and being a Mentor, the Request button is absent and a direct API call returns 409 with its code; the Course Completed refusal is an API test on a seeded ended Match, proven end to end in entry 7; two simultaneous Requests from one Learner create one."
+covers = ["R1"]
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Request and Accept notices"
+description = "The new-Request notice to the Mentor and the Accept notice to the Learner (\"[Mentor] is your mentor for [Course].\") through entry 1.8's pipeline, sent after the Action commits; neither reveals route or group origin. Entry 4.1 relies on the new-Request notice for group Requests."
+verify = "When Priya requests Rafi, Rafi gets one new-Request notice; when he Accepts, Priya gets \"Rafi Haddad is your mentor for Python Basics.\"; Admin gets neither."
+covers = ["R11"]
+after = [3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Home and the Match screen"
+description = "Home's Learning card (each Course with a status, its bar and a link) and Mentoring card (live Matches as Mentor, hidden when empty), and the Match screen for a live Match: the other person's name, the Course and the bar, with no actions yet (entries 6 and 7 add Quit Course and Course Completed). An ended Match has no screen."
+verify = "After Accept, Priya's Home shows Python Basics with a half-blue bar linking to the Match, Rafi's Mentoring card lists Priya, and both open the same Match screen showing the other's name, the Course and the bar."
+covers = ["R5", "R9", "R12"] # R5: the screen; R9: Home and Match bars
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Either party Quits a Match"
+description = "Quit Course on entry 5's Match screen for both parties, through the Quit dialog with a required 1–500 character reason; the Match ends at once, the Learner's status becomes Quit (red) whoever quit, the other party gets the Quit note with the reason, and the Learner can request the Course again."
+verify = "Rafi quits with \"Moving teams, sorry\"; Priya's notice shows it, her bar is red \"Quit\", the Match is gone from both Homes and she can request Imani; a blank or 501-character reason is refused; Priya quitting gives the same red bar."
+covers = ["R5", "R6", "R9", "R11"] # R5: Quit Course action; R9: Quit (red); R11: the Quit note
+after = [4, 5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "The Mentor clicks Course Completed"
+description = "Course Completed for the Mentor only, after its confirmation: the Match ends, Bronze becomes available, the Learner gets \"Bronze is open for [Course].\" and stays In progress. Epic 3's entry 3.1 builds the Bronze Stage on this, and entry 3's refusal now applies to the Learner on this Course."
+verify = "Rafi confirms Course Completed; the Match disappears for both, Priya gets the Bronze notice, her bar stays half blue, she can't request a Mentor for that Course again, and the Learner can't call the action through the API."
+covers = ["R5", "R7", "R11"] # R5: Course Completed action; R11: Bronze available
+after = [6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "The Upskilling list"
+description = "One read-only list for every signed-in user, Admin included, of each Employee In progress on some Course (name, Course, bar with state word), one row per Employee and Course, sorted by name then Course title, from entry 5's per-Learner status list over the Progress status query; it adds Upskilling to both top bars."
+verify = "With two Learners In progress and one Not yet started, both Priya and Admin see exactly the two In progress rows sorted by name, with no counts, sorting controls or actions."
+covers = ["R10", "R9"]
+after = [5]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Refactor sweep"
+description = "Cleanup only, scoped at its start from the plans and review findings this epic deferred; scope pushed out of another story becomes a new story."
+verify = "The API tests and the Playwright harness pass unchanged after the cleanup, with no behaviour change."
+covers = []
+after = [2, 3, 4, 5, 6, 7, 8]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "UJ-1 to Bronze, UJ-2 and day 6 pass end to end"
+description = "The closing Playwright suite on the seeded e2e stack with the test clock: UJ-1 through Course Completed and the Bronze notice, UJ-2 (Mentor quits, Learner requests again), the Learner-initiated Quit, the day-3 reminder and day-6 Cancel edge, Quit then a new Request then a Cancel leaving no status, and the Upskilling list."
+verify = "The Playwright suite for these journeys runs green against the seeded e2e stack."
+covers = ["R3", "R6", "R7"]
+after = [9]
+hitl = false
+risk = "low"

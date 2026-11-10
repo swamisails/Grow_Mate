@@ -1,0 +1,56 @@
+# Epic 4 — Admin staffs a Course with a group. Table order is build order; `id` is permanent.
+
+[[entry]]
+id = 1
+type = "story"
+title = "Admin assigns a group and the chosen Employee sees it"
+description = "Tracer bullet: Admin's one Matching endpoint (POST /api/v1/admin/group-assignments, write-only) on entry 2.1's group_assignments table and requests.group_assignment_id, and the Group assignment form (published Courses only, the API refusing a draft with a Matching 409 code; chosen Employee; checkbox list of Learners with Admin and the chosen Employee removed and at least one ticked, from a new Admin Employee-list read in Accounts), creating one pending Request per Learner with one shared sent time; it adds Group assignment to the Admin top bar; the form shows the created assignment once; the chosen Employee's Requests screen shows the group as one named block with one Accept button, and gets entry 2.4's new-Request notice per Request; Learners get no assignment notice. Until entry 2 lands, the API refuses Accept on a grouped Request, so no group is half-accepted. Accept comes in entry 2, exclusions in entry 3."
+verify = "Noor assigns five Learners to Imani for SQL Fundamentals and sees the created assignment; Imani sees one block naming the five with one Accept and has five new-Request notices; the Learners have no notice, and each sees the grey \"Not yet started\" bar on Home and the Course page with no Request button there; Admin's response carries no Request or Match state."
+covers = ["R1", "R4", "R6"] # R6: the new-Request notices; entry 2 delivers the rest
+after = ["2.4"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "One Accept starts every Match in the group"
+description = "Extends entry 2.1's one Accept path (AD-13): Accept on a grouped Request accepts every pending sibling, creates one independent Match per Learner, and grants the chosen Employee Mentor status through entry 1.5's operation with the route Group assignment accepted. Each Learner gets entry 2.4's Accept notice and a Match that looks like any one-to-one Match (R6 part). An un-Accepted group is Cancelled together by entry 2.2's day-6 rule and grants nothing; assigned Learners get the day-3 and day-6 notices like any Learner."
+verify = "Imani's one Accept gives five Learners each their own Match and the plain Accept notice, and Imani appears in SQL Fundamentals' Mentors list; with the test clock, every Learner and Imani get the day-3 reminder for a group left un-Accepted, it is Cancelled together at 144 hours, and Imani is not a Mentor."
+covers = ["R5", "R6"] # R6: Accept notices and plain Matches
+after = [1, "2.5"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Group assignment refusals"
+description = "The form and API refuse a chosen Employee who was refused that Course at registration (entry 1.7's stored refusals, read through a new refused-for-Course read in Mentors; not offered, and MATCHING_MENTOR_NOT_ELIGIBLE), and a chosen Employee who is also a Learner; any Learner failing entry 2.3's shared eligibility check blocks the whole assignment, each marked with MATCHING_LEARNER_NOT_ASSIGNABLE's generic message and the summary line; nothing is created. Test setup: Sam signs up after the Course is published, names it in the Mentor check, and Admin refuses it."
+verify = "Sam, refused SQL Fundamentals, isn't offered and a direct API call is refused; assigning a Learner who already has a live Match creates nothing and marks only that Learner with the generic message, with no reason; the API refuses a chosen Employee who is also ticked as a Learner and an assignment with no Learners; a Learner's own Request sent at the same moment as the assignment results in only one Request."
+covers = ["R2", "R3"]
+after = [1, "1.7"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Refactor sweep"
+description = "Cleanup only, scoped at its start from the plans and review findings this epic deferred; scope pushed out of another story becomes a new story."
+verify = "The API tests and the Playwright harness pass unchanged after the cleanup, with no behaviour change."
+covers = []
+after = [1, 2, 3]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 5
+type = "story"
+title = "UJ-4 and the excluded Employee pass end to end"
+description = "The closing Playwright suite on the seeded e2e stack: UJ-4 from publishing through Imani's one Accept and the five Matches (no Learner notice before Accept, the plain Accept line after, and no Accepted state for Noor), an R7-refused Learner getting only the generic message, and the refused Employee excluded from a Group assignment (Sam signs up after the Course is published, names it, and Admin refuses it during setup)."
+verify = "The Playwright suite for these journeys runs green against the seeded e2e stack."
+covers = ["R1", "R2", "R3", "R4", "R5", "R6"]
+after = [4]
+hitl = false
+risk = "low"

@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowMate — Epic 2 key screens (Requests and Matches)</title>
+<style>
+/*
+  Key-screen mocks, epic 2 (Learners get a Mentor and are judged ready).
+  Governed by:
+    DESIGN.md      — Colors, Typography, Layout & Spacing (two-column card grid on Home and Match; list pages one table card),
+                     Elevation & Depth (dialog shadow over scrim), Shapes, Components (App header, Page-title tile, Card +
+                     card header, List row, Table, Button primary/secondary, Progress bar, Dialog, Text input/textarea).
+    EXPERIENCE.md  — Information Architecture (Employee: Home, Requests, Match, Upskilling list), Voice and Tone
+                     (FR-8 Request sentence verbatim), Component Patterns (Progress bar, Request row, Match actions,
+                     Quit dialog, Upskilling table), State Patterns (Mentoring empty hides the card; ended Matches
+                     disappear), Interaction Primitives (confirmations only for final actions), Accessibility Floor
+                     (bar accessible name + state word; dialogs trap focus), Visibility Rules, Key Flows (UJ-1, UJ-2).
+  Theme from key-course-page.html (v2). Spines win on conflict. Static mock: no JS, no network.
+*/
+.light{
+  --brand:#4B2AAD; --brand-fg:#FFFFFF; --nav-indicator:#A8E3EE;
+  --action:#4B2AAD; --action-fg:#FFFFFF; --link:#4B2AAD; --focus-ring:#4B2AAD;
+  --surface-base:#F7F8FC; --surface-raised:#FFFFFF; --surface-band:#EEF2FA;
+  --ink-heading:#14151B; --ink-primary:#1E1F26; --ink-secondary:#5F6370;
+  --border:#DFE2EA; --border-strong:#B8BCC8;
+  --status-track:#E6E8EF; --status-not-started:#80868B; --status-in-progress:#2F6FDB;
+  --status-completed:#1E8E3E; --status-quit:#C5221F;
+  --shadow:0 2px 8px rgba(20,21,40,.06); --scrim:rgba(0,0,0,.4);
+}
+.dark{
+  --brand:#2E1B70; --brand-fg:#FFFFFF; --nav-indicator:#A8E3EE;
+  --action:#9D8CF2; --action-fg:#14121F; --link:#B3A6F6; --focus-ring:#B3A6F6;
+  --surface-base:#121219; --surface-raised:#1C1C26; --surface-band:#252536;
+  --ink-heading:#F5F5FA; --ink-primary:#E9E9F2; --ink-secondary:#A4A7B5;
+  --border:#33343F; --border-strong:#5A5D6B;
+  --status-track:#2C2D38; --status-not-started:#8A9096; --status-in-progress:#6C9EF0;
+  --status-completed:#4CB46A; --status-quit:#E5605C;
+  --shadow:0 2px 8px rgba(0,0,0,.35); --scrim:rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:#8C8FA0;font-family:system-ui,sans-serif}
+.caption{max-width:1280px;margin:0 auto 12px;font-size:14px;line-height:1.45;color:#101116}
+.caption b{font-weight:700}
+.frame{width:1280px;margin:0 auto 40px;border:1px solid #3B3E4A;border-radius:8px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+.chrome{height:34px;background:#D5D8DC;display:flex;align-items:center;gap:8px;padding:0 12px}
+.chrome i{width:11px;height:11px;border-radius:50%;background:#9AA0A6;display:block}
+.chrome .url{margin-left:12px;flex:1;height:22px;border-radius:4px;background:#F3F4F6;font-size:12px;line-height:22px;padding:0 10px;color:#5B6169}
+
+.app{background:var(--surface-base);color:var(--ink-primary);font:400 15px/1.5 "Nunito Sans",system-ui,sans-serif;min-height:520px;position:relative}
+.svg{width:20px;height:20px;fill:currentColor;flex:none}
+
+.header{height:72px;background:var(--brand);color:var(--brand-fg);display:flex;align-items:center;padding:0 28px;gap:36px}
+.brand{font:600 22px/1 Lexend,system-ui,sans-serif;letter-spacing:-.01em}
+.nav{display:flex;gap:8px;height:100%}
+.nav a{display:flex;align-items:center;gap:8px;color:var(--brand-fg);text-decoration:none;font:500 16px/1.2 Lexend,system-ui,sans-serif;padding:0 14px;border-bottom:2px solid transparent;height:100%}
+.nav a.current{border-bottom-color:var(--nav-indicator)}
+.right{margin-left:auto;display:flex;align-items:center;gap:20px;font:500 15px/1 "Nunito Sans",system-ui,sans-serif}
+.right a{color:var(--brand-fg)}
+.iconbtn{background:none;border:0;color:var(--brand-fg);padding:6px;border-radius:8px;display:flex}
+.iconbtn .svg{width:22px;height:22px}
+
+.content{padding:36px 28px 40px}
+.pagehead{display:flex;align-items:center;gap:16px;margin-bottom:28px}
+.tile{width:48px;height:48px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center}
+.dark .tile{background:var(--action);color:var(--action-fg)}
+.tile .svg{width:24px;height:24px}
+h1{font:600 28px/1.2 Lexend,system-ui,sans-serif;color:var(--ink-heading);margin:0}
+
+.progress{display:flex;align-items:center;gap:12px}
+.bar{width:160px;height:10px;border-radius:9999px;background:var(--status-track);border:1px solid var(--border-strong);overflow:hidden;position:relative}
+.bar::after{content:"";position:absolute;inset:0}
+.bar.not-started::after{background:var(--status-not-started)}
+.bar.in-progress::after{background:var(--status-in-progress);right:50%}
+.bar.completed::after{background:var(--status-completed)}
+.bar.quit::after{background:var(--status-quit)}
+.state-word{font-size:14px;color:var(--ink-secondary)}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start}
+.card{background:var(--surface-raised);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.card-header{background:var(--surface-band);border-bottom:1px solid var(--border);padding:16px 20px;font:600 20px/1.3 Lexend,system-ui,sans-serif;color:var(--ink-heading)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:12px 20px;border-bottom:1px solid var(--border);min-height:60px}
+.row:last-child{border-bottom:0}
+.row a{color:var(--link);text-decoration:none;font-weight:600}
+.kv{display:flex;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border);min-height:60px}
+.kv:last-child{border-bottom:0}
+.kv .k{width:50%;font-size:14px;color:var(--ink-secondary)}
+.actions{display:flex;gap:12px;padding:16px 20px;border-top:1px solid var(--border)}
+.btn{font:600 15px/1.4 "Nunito Sans",system-ui,sans-serif;border-radius:8px;padding:9px 20px;cursor:pointer;white-space:nowrap}
+.btn-primary{background:var(--action);color:var(--action-fg);border:1px solid var(--action)}
+.btn-secondary{background:var(--surface-raised);color:var(--link);border:1px solid var(--border-strong)}
+.focused{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+table{width:100%;border-collapse:collapse}
+th{font:600 13px/1.3 Lexend,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-primary);text-align:left;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--surface-raised)}
+td{padding:0 20px;height:60px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:0}
+td a{color:var(--link);text-decoration:none}
+
+/* Dialog */
+.scrim{position:absolute;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center}
+.dialog{width:480px;background:var(--surface-raised);border-radius:16px;box-shadow:0 12px 32px rgba(20,21,40,.18);padding:24px;color:var(--ink-primary)}
+.dialog h2{font:600 20px/1.3 Lexend,system-ui,sans-serif;color:var(--ink-heading);margin:0 0 16px}
+.dialog p{margin:0 0 20px}
+.dialog .btns{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+.field{position:relative}
+.field label{position:absolute;top:-9px;left:12px;padding:0 4px;background:var(--surface-raised);font-size:13px;font-weight:600;color:var(--focus-ring)}
+.field textarea{width:100%;min-height:110px;font:400 15px/1.5 "Nunito Sans",system-ui,sans-serif;color:var(--ink-primary);background:var(--surface-raised);border:2px solid var(--focus-ring);border-radius:8px;padding:14px 16px;resize:none}
+.dim{filter:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></symbol>
+  <symbol id="i-course" viewBox="0 0 24 24"><path d="M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82zM12 3L1 9l11 6 9-4.91V17h2V9L12 3z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99C3.88 3 3.01 3.9 3.01 5L3 19c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></symbol>
+  <symbol id="i-handshake" viewBox="0 0 24 24"><path d="M12 12.75c1.63 0 3.07.39 4.24.9 1.08.48 1.76 1.56 1.76 2.73V18H6v-1.61c0-1.18.68-2.26 1.76-2.73 1.17-.52 2.61-.91 4.24-.91zM12 12c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3 1.34 3 3 3z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></symbol>
+</svg>
+
+<!-- 1. Home -->
+<p class="caption"><b>1 · Home — Priya, light.</b> The Learning card lists each Course where Priya has a Progress status, with its bar and state word. Python Basics opens her live Match, and SQL Fundamentals has a pending Request. The Mentoring card shows her one live Match as Mentor. There's no Mentor check card, because Priya skipped the check. Ended Matches aren't shown.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#" class="current"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button><span>Priya Nair</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-home"/></svg></div><h1>Home</h1></div>
+      <div class="grid2">
+        <section class="card">
+          <div class="card-header">Learning</div>
+          <div class="row"><a href="#">Python Basics</a><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></div>
+          <div class="row"><a href="#">SQL Fundamentals</a><div class="progress" role="img" aria-label="Progress: Not yet started"><div class="bar not-started"></div><span class="state-word">Not yet started</span></div></div>
+        </section>
+        <section class="card">
+          <div class="card-header">Mentoring</div>
+          <div class="row"><a href="#">Omar Said — Data Visualisation</a><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 2. Requests -->
+<p class="caption"><b>2 · Requests — Rafi, dark.</b> Each pending Request is the FR-8 sentence with one Accept. There's no Reject, no reason, no countdown and no count, and a Request that's been reminded looks the same. The second row is a different Learner, because R7 refuses a duplicate Request from the same Learner on the same Course.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/requests</div></div>
+  <div class="app dark">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to light mode"><svg class="svg"><use href="#i-moon"/></svg></button><span>Rafi Haddad</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-inbox"/></svg></div><h1>Requests</h1></div>
+      <section class="card">
+        <div class="card-header">Requests</div>
+        <div class="row"><span>Priya Nair requested you to guide them with Python Basics</span><button class="btn btn-primary focused">Accept</button></div>
+        <div class="row"><span>Leo Martins requested you to guide them with Python Basics</span><button class="btn btn-primary">Accept</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- 3. Match -->
+<p class="caption"><b>3 · Match — Rafi, light.</b> The screen shows the other person's name, the Course (as the page title) and the bar. Rafi is the Mentor, so he has Course Completed (primary) and Quit Course (secondary). There's no chat, call, file, helper text, activity signal, Mentor route or group origin. The bar stays half blue for the whole Match.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/matches/14</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#" class="current"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button><span>Rafi Haddad</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-handshake"/></svg></div><h1>Python Basics</h1></div>
+      <div class="grid2">
+        <section class="card">
+          <div class="card-header">Match</div>
+          <div class="kv"><span class="k">Learner</span><span>Priya Nair</span></div>
+          <div class="kv"><span class="k">Course</span><span>Python Basics</span></div>
+          <div class="kv"><span class="k">Progress</span><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></div>
+          <div class="actions"><button class="btn btn-primary">Course Completed</button><button class="btn btn-secondary">Quit Course</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- 4a. Quit dialog -->
+<p class="caption"><b>4a · Quit dialog over the Match — Rafi, dark.</b> The reason is required, with a 500-character limit that's shown only as an error if exceeded. Cancel is secondary and Quit Course is primary. The dialog traps focus, and Esc closes it. On submit the Match ends, Rafi lands on Home, and Priya gets "Rafi Haddad quit Python Basics." with the reason quoted.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/matches/14</div></div>
+  <div class="app dark">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#" class="current"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to light mode"><svg class="svg"><use href="#i-moon"/></svg></button><span>Rafi Haddad</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-handshake"/></svg></div><h1>Python Basics</h1></div>
+      <div class="grid2">
+        <section class="card">
+          <div class="card-header">Match</div>
+          <div class="kv"><span class="k">Learner</span><span>Priya Nair</span></div>
+          <div class="kv"><span class="k">Course</span><span>Python Basics</span></div>
+          <div class="kv"><span class="k">Progress</span><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></div>
+          <div class="actions"><button class="btn btn-primary">Course Completed</button><button class="btn btn-secondary">Quit Course</button></div>
+        </section>
+      </div>
+    </main>
+    <div class="scrim">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="q-title">
+        <h2 id="q-title">Quit Python Basics?</h2>
+        <div class="field"><label for="reason">Reason</label><textarea id="reason" required>Moving teams, sorry</textarea></div>
+        <div class="btns"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary">Quit Course</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 4b. Course Completed confirmation -->
+<p class="caption"><b>4b · Course Completed confirmation — Rafi, light.</b> The confirmation appears because the click is final: it ends the Match and opens Bronze. There's no comment field. Afterwards the Match disappears from Rafi's Mentoring card, and Priya gets "Bronze is open for Python Basics."</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/matches/14</div></div>
+  <div class="app light" style="min-height:420px">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#" class="current"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button><span>Rafi Haddad</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-handshake"/></svg></div><h1>Python Basics</h1></div>
+    </main>
+    <div class="scrim">
+      <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="c-title">
+        <h2 id="c-title">Course Completed</h2>
+        <p>Mark Priya Nair ready for Bronze? This ends the match.</p>
+        <div class="btns"><button class="btn btn-secondary">Cancel</button><button class="btn btn-primary focused">Course Completed</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 5. Upskilling list -->
+<p class="caption"><b>5 · Upskilling list — light.</b> A read-only table card listing everyone In progress on some Course, sorted by name. It has uppercase column headers on white and a bar with its state word in the Status column. There's no count, no sort arrows, no filters and no actions. Admin sees the same list.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/upskilling</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#"><svg class="svg"><use href="#i-home"/></svg>Home</a>
+        <a href="#"><svg class="svg"><use href="#i-course"/></svg>Courses</a>
+        <a href="#"><svg class="svg"><use href="#i-inbox"/></svg>Requests</a>
+        <a href="#"><svg class="svg"><use href="#i-bell"/></svg>Notices</a>
+        <a href="#" class="current"><svg class="svg"><use href="#i-people"/></svg>Upskilling</a>
+      </nav>
+      <div class="right"><button class="iconbtn" aria-label="Switch to dark mode"><svg class="svg"><use href="#i-sun"/></svg></button><span>Priya Nair</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <div class="pagehead"><div class="tile"><svg class="svg"><use href="#i-people"/></svg></div><h1>Upskilling list</h1></div>
+      <section class="card">
+        <table>
+          <thead><tr><th>Name</th><th>Course</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Imani Okafor</td><td>SQL Fundamentals</td><td><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></td></tr>
+            <tr><td>Leo Martins</td><td>Data Visualisation</td><td><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></td></tr>
+            <tr><td>Omar Said</td><td>Data Visualisation</td><td><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></td></tr>
+            <tr><td>Priya Nair</td><td>Python Basics</td><td><div class="progress" role="img" aria-label="Progress: In progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div></td></tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+# Epic 3 — Learners prove the Course and become Mentors. Table order is build order; `id` is permanent.
+
+[[entry]]
+id = 1
+type = "story"
+title = "A Learner takes Bronze and sees the result"
+description = "Tracer bullet: the Assessments module and its stage_attempts table; the Stage-availability query (Bronze after entry 2.7's Course Completed); AD-14's taking read (no correct option) added to the Courses module's Queries over entry 1.2's Assessment; the Stages card on the Course page; the Assessment form in authored order; scoring at submission (correct × 100 ≥ Pass mark × questions) stored with the Pass mark used; the plain result screen; and the Assessments seeder at its AD-17 slot (after Matching), empty for now. Entries 2 and 3 extend this Stage-availability query; entry 4 adds the Gold pass effects."
+verify = "On the e2e stack, no Stage shows before Course Completed; after it, Priya sees Take Bronze, answers every question and sees \"Passed.\" or \"Not passed.\" with no score; neither the taking nor the result API response contains a correct-option field; the API refuses a submission for an unavailable or already-passed Stage with a 409 Assessments code; Admin's calls to the Assessment endpoints are refused."
+covers = ["R1", "R2"]
+after = ["2.7", "1.4"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Two failures Lock a Stage for a month"
+description = "The least certain story: the Retake rule in the Stage-availability query — the second attempt immediately, a Lock until one calendar month after the second failure (shown as \"Locked until [date]\", no button), two attempts again after it, repeating — with Stage attempts and Locks keyed by Learner and Course with no Match reference, so they survive any Quit or new Match; the attempt count is checked in the submit transaction with a row lock. Tested with the test clock and entry 2.2's harness helper. Entry 3 builds Silver and Gold on these rules."
+verify = "With the test clock, two Bronze failures show \"Locked until [date one month later]\"; a minute before the Lock ends the Stage is still Locked and the API refuses a third attempt; after it two attempts return, and two more failures Lock it again; a second failure on 31 Jan is Locked until 28 or 29 Feb; two simultaneous submissions on the last attempt record one; an API test shows attempts and Locks carry no Match reference."
+covers = ["R3", "R4"]
+after = [1, "2.2"]
+hitl = false
+risk = "high"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Silver and Gold unlock in order"
+description = "Silver becomes available only after Bronze is passed and Gold only after Silver, with later Stages hidden while an earlier one is Locked or unpassed, on top of entry 2's availability rules; In progress continues through the Stages. Entry 4 adds what passing Gold does."
+verify = "Passing Bronze shows Take Silver and still no Gold; a Locked Silver hides Gold; passing Silver shows Take Gold; the bar stays half blue throughout."
+covers = ["R1", "R6"] # R1: Silver and Gold; R6: In progress through the Stages
+after = [2]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Passing Gold makes the Learner a Mentor"
+description = "A Gold pass calls entry 1.5's grant-Mentor operation with the route Gold pass (a no-op if already a Mentor there) and extends entry 2.1's Progress status query so the status becomes Completed (full green bar); no notice, badge or certificate. The new Mentor appears on the Course's Mentors list and can receive Requests."
+verify = "Priya passes Gold: her bar turns green \"Completed\" on Home's Learning card and the Course page, she leaves the Upskilling list, the result reads \"Passed.\" exactly like Bronze, she appears in Python Basics' Mentors list for another Employee, and no notice is sent; an Employee approved as a Mentor while learning still turns Completed, and an API test shows their route stays Registration approval."
+covers = ["R5", "R6", "R7"] # R6: Completed; R7: the Mentors list part, the Accept is entry 6
+after = [3, "1.5"]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Refactor sweep"
+description = "Cleanup only, scoped at its start from the plans and review findings this epic deferred; scope pushed out of another story becomes a new story."
+verify = "The API tests and the Playwright harness pass unchanged after the cleanup, with no behaviour change."
+covers = []
+after = [1, 2, 3, 4]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 6
+type = "story"
+title = "UJ-1 to Gold, the Lock and a Gold Mentor's Accept pass end to end"
+description = "The closing Playwright suite on the seeded e2e stack with the test clock: UJ-1 from Bronze through Gold (including Silver failed once and retaken), a Stage reaching a Lock and reopening, and the new Gold Mentor Accepting a Request (SM-2)."
+verify = "The Playwright suite for these journeys runs green against the seeded e2e stack."
+covers = ["R3", "R7"]
+after = [5]
+hitl = false
+risk = "low"

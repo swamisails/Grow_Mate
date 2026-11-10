@@ -84,3 +84,5 @@ Admin can publish a complete Course on the deployed app, and an Employee who nam
 - Decision (2026-11-10): seeding: the Accounts seeder seeds only Admin; the Courses seeder seeds demo published Courses; the Mentors seeder seeds demo Employees and their Mentor grants, so the order is Admin, then Courses, then Employees (R10, AD-17).
 - Decision (2026-11-10): demo Mentors are granted with the Registration approval route and no Mentor check or Registration decision rows behind them; the route is never shown.
 - Decision (2026-11-10): entries 2 and 3 run in parallel; each feature registers its own routes, which keeps their shared files (router, copy file) apart.
+- Decision (2026-11-10): every date the app shows (notices, "Locked until") is the UTC date, matching epic 2's UTC rule.
+- Decision (2026-11-10): top-bar links are registered by each feature like its routes, so entries in different epics that add links need no ordering between them.

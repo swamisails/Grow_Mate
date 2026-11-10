@@ -27,7 +27,12 @@ There are two roles with separate navigation: **Employee** and **Admin**. The te
 - Every surface has its own URL, so browser Back works.
 - An unknown or forbidden URL shows the Not found state.
 
-→ Composition reference: [`mockups/course-page.html`](mockups/course-page.html) shows the Course page in light and dark (UJ-2 climax, UJ-1 step 7) and the four bar states with their state words. Every other surface is built from this file's tables alone.
+→ Composition reference: [`mockups/course-page.html`](mockups/course-page.html) shows the Course page in light and dark (UJ-2 climax, UJ-1 step 7) and the four bar states with their state words. Further mock-ups:
+- [`mockups/epic2-matching.html`](mockups/epic2-matching.html): Home (Learning and Mentoring cards), Requests, the Match screen, the Quit and Course Completed dialogs, and the Upskilling list.
+- [`mockups/epic3-assessments.html`](mockups/epic3-assessments.html): the Assessment form, both results, the Course page with a Locked Stage, and after Gold.
+- [`mockups/epic4-group-assignment.html`](mockups/epic4-group-assignment.html): the Group assignment form (filled, refused, created), the chosen Employee's group block, and a Learner's Accept notice.
+
+Every other surface (Sign in, Sign up, Mentor check, Courses, Notices, Admin Courses, Course editor, Registration decisions) is built from this file's tables alone.
 
 ### Employee
 
@@ -39,11 +44,11 @@ There are two roles with separate navigation: **Employee** and **Admin**. The te
 | Home | After sign-in; header "GrowMate" | Three cards: **Learning** (each Course where you have a Progress status, with the bar), **Mentoring** (your live Matches as Mentor) and **Mentor check** (approved and refused Courses, only if you named any) | 1 (shell, Mentor check card), 2, 3 |
 | Courses | Header | All published Courses: title and one line of description | 1 |
 | Course page | Courses row, Home Learning row | Description, your Progress bar for this Course (if any), **Mentors** list with Request, and **Stages** (only unlocked ones) | 1 (description, Mentors list R6), 2 (Request, bar), 3 (Stages) |
-| Requests | Header | Pending Requests sent to you, each with Accept. Shown to every Employee, not only Mentors (AD-13) | 2, 4 (group line) |
-| Match | Home Learning or Mentoring row | The other person's name, the Course and the bar. Learner: Quit Course. Mentor: Course Completed and Quit Course | 2 |
+| Requests | Header | Pending Requests sent to you, each with Accept. Shown to every Employee, not only Mentors (AD-13) | 2, 4 (group block) |
+| Match | Home Learning or Mentoring row | The other person's name, the Course and the bar. Learner: Quit Course. Mentor: Course Completed and Quit Course. Only a live Match has this screen; once it ends it disappears from Home | 2 |
 | Assessment | Course page Stage block | All questions of one Stage on one page, then Submit answers | 3 |
 | Assessment result | After Submit answers | Pass or fail and the way back to the Course | 3 |
-| Notices | Header | Your in-app notices, newest first | 1 (mechanism, Registration decisions), 2, 3, 4 |
+| Notices | Header | Your in-app notices, newest first | 1 (mechanism, Registration decisions), 2, 4 |
 | Upskilling list | Header | Everyone In progress: name, Course, status | 2 |
 
 Employee header: **GrowMate · Home · Courses · Requests · Notices · Upskilling** … theme toggle · *[name]* · Sign out.
@@ -55,7 +60,7 @@ Employee header: **GrowMate · Home · Courses · Requests · Notices · Upskill
 | Admin Courses | After sign-in; header | Every Course that Admin created, marked Draft or Published; New Course | 1 |
 | Course editor | Admin Courses row, New Course | Title and description, then three Stage sections (Bronze, Silver, Gold), each with questions, options, the correct option and the Pass mark. Publish. Read-only once published (AD-14) | 1 |
 | Registration decisions | Header | Each undecided Course from each Employee's Mentor check, with Approve and Refuse. Decided rows show the decision and nothing else | 1 |
-| Group assignment | Header | Pick a Course, one chosen Employee and several Learners, then Assign | 4 |
+| Group assignment | Header | Pick a Course, one chosen Employee and one or more Learners, then Assign; the created assignment is shown once, with no history list | 4 |
 | Upskilling list | Header | The same read-only list Employees see | 2 |
 
 Admin header: **GrowMate · Courses · Registration decisions · Group assignment · Upskilling** … theme toggle · *Admin* · Sign out.
@@ -98,15 +103,15 @@ Behavioural. The visual specs are in `DESIGN.md`, Components.
 |---|---|---|
 | Progress bar | Home Learning rows, Course page, Match, Upskilling list | Renders the `progress_status` the API returns: one of the four states, or nothing. It never animates and never changes during a Match. It is never clickable. |
 | Mentor list row | Course page, Mentors card | Name and a Request button. The list excludes the viewer (R6), and how each Mentor qualified (the Mentor route) is never shown. The Request button appears only when the API marks the viewer eligible. Otherwise the row shows the name alone, with no explanation. A refused Request (409) shows the API `message` under the row. |
-| Request row | Requests | The FR-8 sentence and Accept. There is no Reject button, no reason field and no countdown. One Accept per group is handled in epic 4, which decides the group layout (architecture Deferred). |
+| Request row | Requests | The FR-8 sentence and Accept. There is no Reject button, no reason field and no countdown. A pending Group assignment shows as one group block instead: "[Learner A], [Learner B] and [Learner C] requested you to guide them with [Course]" with one Accept for the whole group. Names only: no count and no "group" or "assigned" wording. |
 | Match actions | Match | Learner: Quit Course. Mentor: Course Completed (primary) and Quit Course (secondary). Course Completed asks for confirmation: "Mark [Learner] ready for Bronze? This ends the match." Quit opens the Quit dialog. |
-| Quit dialog | Match | A required reason textarea (it can't be blank) with Cancel and Quit Course. Submitting ends the Match, and the screen returns to Home. |
+| Quit dialog | Match | A required reason textarea of 1 to 500 characters, with Cancel and Quit Course. Submitting ends the Match, and the screen returns to Home, where the ended Match no longer appears. The reason is shown only in the other party's notice. |
 | Mentor check step | Sign up, step 2 | A checkbox per Course published before the account was created, then Submit or Skip. Either choice is final, and the step never appears again (AD-15). With no published Courses, only Skip is shown. |
 | Registration decision row | Registration decisions | Employee name, Course, and Approve and Refuse buttons, both secondary. Clicking either asks for confirmation ("This decision is final."), then the row shows an "Approved" or "Refused" tag in place of the buttons. There is no comment field. |
 | Course editor | Admin | Questions are added and removed per Stage. Each question needs at least 2 options with exactly one marked correct (a radio). The Pass mark is a whole number from 1 to 100. Publish is enabled only when all three Stages are complete. It asks for confirmation ("Published courses can't be edited."), then the editor turns read-only. Drafts are saved with a Save button; there is no autosave. |
-| Assessment form | Assessment | All questions on one page, one radio group per question. Submit answers is enabled only when every question is answered. A single submission is one attempt. Leaving the page before submitting uses no attempt. Questions are numbered in DOM order. No score is shown. |
+| Assessment form | Assessment | All questions on one page, one radio group per question. Submit answers is enabled only when every question is answered. A single submission is one attempt. Leaving the page before submitting uses no attempt. Questions and options appear in the order Admin authored them, with no shuffling, and are numbered in DOM order. No score, timer or question counter is shown. |
 | Mentor check card | Home | Shown only to an Employee who named Courses in the Mentor check. Two separate lists, Approved and Refused. A Course that Admin hasn't decided yet appears in neither list. No route, date or comment is shown. |
-| Group assignment form | Group assignment (epic 4) | Course, chosen Employee and Learners. An Employee who was refused that Course at registration isn't offered as the chosen Employee. An ineligible Learner gets only the API's generic message (AD-12). Assign has no confirmation, and Learners get no notice. |
+| Group assignment form | Group assignment (epic 4) | A Course select, a chosen Employee select and a checkbox list of Employees as Learners (Admin and the chosen Employee removed; at least one ticked). An Employee who was refused that Course at registration isn't offered as the chosen Employee. If any ticked Learner can't be assigned, nothing is created: each such Learner is marked with the API's generic message (AD-12), with no reason, and a summary line reads "Nothing was assigned. Some learners can't be assigned to this course." On success the form shows the assignment just created (Course, chosen Employee, Learners, date) and nothing after that: no history list and no Accepted state. Assign has no confirmation, and Learners get no notice. |
 | Stage block | Course page | Shows only Stages the API reports as available, Locked or passed; a Stage the Learner hasn't reached yet isn't rendered. Available: a "Take [Stage]" button. Locked: "Locked until [date]" and no button. Passed: "Passed" in plain text. |
 | Notice list | Notices | One list, newest first, every notice the same weight. Each is a sentence and a date. A Quit note shows its reason below. Notices have no actions and no links. |
 | Upskilling table | Upskilling list | Columns are Name, Course and Status (a bar with its state name). Sorted by name, with no sorting controls, filters or actions. |
@@ -233,7 +238,8 @@ Variant (Learner quits): Priya clicks Quit Course on the same screen and writes 
 1. Noor clicks New Course and enters "SQL Fundamentals" and its description.
 2. She fills Bronze, Silver and Gold: questions, options, the correct option and the Pass mark for each. Publish stays disabled until all three are complete.
 3. She clicks Publish and confirms. The editor turns read-only, and Employees see the Course.
-4. On Group assignment she picks the Course, Imani as the chosen Employee, and five Learners. Assign creates five pending Requests. Learners get no notice (epic 4).
-5. **Climax:** Imani accepts the group once. Five Matches start, and each Learner sees only "Imani is your mentor for SQL Fundamentals." Imani now appears in the Course's Mentors list. Noor's screens show only the assignment she created, not whether it was Accepted.
+4. On Group assignment she picks the Course, Imani as the chosen Employee, and five Learners. Assign creates five pending Requests and the form shows the assignment. Learners get no notice (epic 4).
+5. Imani's Requests screen shows one group block naming the five Learners, with one Accept.
+6. **Climax:** Imani accepts the group once. Five Matches start, and each Learner sees only "Imani is your mentor for SQL Fundamentals." Imani now appears in the Course's Mentors list. Noor's screens show only the assignment she created, not whether it was Accepted.
 
 Failure (excluded Employee): Sam was refused "SQL Fundamentals" at registration, so the Group assignment form (Component Patterns) doesn't offer Sam as the chosen Employee. A Learner whom R7 would refuse gets only the API's generic message.
