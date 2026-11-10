@@ -1,27 +1,27 @@
 installation:
   version: 6.12.4
   installDate: 2026-10-16T05:53:17.029Z
-  lastUpdated: 2026-10-16T05:53:17.029Z
+  lastUpdated: 2026-11-02T05:53:14.262Z
   installShims: false
 modules:
   - name: core
     version: 6.12.4
     installDate: 2026-10-16T05:53:10.586Z
-    lastUpdated: 2026-10-16T05:53:16.991Z
+    lastUpdated: 2026-11-02T05:53:14.210Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: bmm
     version: 6.12.4
     installDate: 2026-10-16T05:53:11.558Z
-    lastUpdated: 2026-10-16T05:53:16.994Z
+    lastUpdated: 2026-11-02T05:53:14.214Z
     source: built-in
     npmPackage: null
     repoUrl: null
   - name: bmb
     version: v2.2.2
     installDate: 2026-10-16T05:53:12.238Z
-    lastUpdated: 2026-10-16T05:53:17.000Z
+    lastUpdated: 2026-11-02T05:53:14.224Z
     source: external
     npmPackage: bmad-builder
     repoUrl: https://github.com/bmad-code-org/bmad-builder
@@ -30,7 +30,7 @@ modules:
   - name: cis
     version: v0.3.2
     installDate: 2026-10-16T05:53:12.497Z
-    lastUpdated: 2026-10-16T05:53:17.005Z
+    lastUpdated: 2026-11-02T05:53:14.234Z
     source: external
     npmPackage: bmad-creative-intelligence-suite
     repoUrl: https://github.com/bmad-code-org/bmad-module-creative-intelligence-suite
@@ -39,7 +39,7 @@ modules:
   - name: tea
     version: v1.27.2
     installDate: 2026-10-16T05:53:15.424Z
-    lastUpdated: 2026-10-16T05:53:17.012Z
+    lastUpdated: 2026-11-02T05:53:14.244Z
     source: external
     npmPackage: bmad-method-test-architecture-enterprise
     repoUrl: https://github.com/bmad-code-org/bmad-method-test-architecture-enterprise
@@ -48,7 +48,7 @@ modules:
   - name: bmad-loop
     version: v0.13.2
     installDate: 2026-10-16T05:53:15.548Z
-    lastUpdated: 2026-10-16T05:53:17.024Z
+    lastUpdated: 2026-11-02T05:53:14.257Z
     source: external
     npmPackage: null
     repoUrl: https://github.com/bmad-code-org/bmad-loop
@@ -57,7 +57,7 @@ modules:
   - name: gds
     version: v0.7.2
     installDate: 2026-10-16T05:53:16.496Z
-    lastUpdated: 2026-10-16T05:53:17.029Z
+    lastUpdated: 2026-11-02T05:53:14.262Z
     source: external
     npmPackage: bmad-game-dev-studio
     repoUrl: https://github.com/bmad-code-org/bmad-module-game-dev-studio.git

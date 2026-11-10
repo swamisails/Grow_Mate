@@ -1,0 +1,35 @@
+# Editorial Review: prd-growmate.md (structure + prose)
+
+**Purpose read:** This document exists to help the designer, builder and tester of GrowMate build and verify its match-and-proof loop exactly as decided. That means all 22 FRs, with the principles and non-goals treated as hard limits.
+
+**Structure model:** Strategic/Context (Pyramid). The document mostly fits it. The headline (Vision and principles) comes first, the FRs are grouped by feature below it, and open questions and assumptions are collected at the end. The findings below cover places where a rule is stated in two locations, where an exclusion list is not mutually exclusive, and where a capitalised glossary term slips into lowercase.
+
+**Reader type:** humans. Word counts come from `word_metrics.py` (total 3,676 words).
+
+| # | Pass | Original Text | Revised Text | Changes |
+|---|------|---------------|--------------|---------|
+| 1 | structure | §3 Glossary, **Progress status** entry, last sentence: "If there is no pending Request, Match or Stage progress, the Learner has **no Progress status** on that Course." (19 words) | MOVE into FR-20 as a closing line under the four states, and leave the glossary entry as the definition only. | FR-20 is where the tester checks the bar states, but it lists only four. The "no status" case, which FR-9 relies on, appears only in the Glossary. Net 0 words. |
+| 2 | structure | §3 Glossary, **Retake rule** entry (~24 words) and **Progress status** entry (~48 words) | CONDENSE each to a definition plus a pointer. Retake rule: "the cycle of attempts and Locks on a failed Stage, set out in FR-18." Progress status: "a Learner's state on a Course: Not yet started, In progress, Completed or Quit, as defined in FR-20." | Both rules are written out in full in the Glossary and again in an FR. Open Question 1 may change the Lock, so the rule should live in one place to avoid drift. Saves ~30 words. |
+| 3 | structure | §5 Non-Goals (113 words) vs §6.2 Out of Scope for MVP (39 words) | QUESTION: is the split "never, by principle" (§5) vs "not in this build" (§6.2)? If so, add a one-line lead-in to each list and MOVE "No mentor training content (v2 idea…)" to §6.2. | The two exclusion lists overlap in kind (a "v2 idea" sits in Non-Goals). The builder can't tell which exclusions are permanent. Net 0 words. |
+| 4 | structure | §7 SM-1: "A seeded test run completes UJ-1 to UJ-4 … This validates FR-1 to FR-22." | QUESTION: UJ-1 to UJ-4 never reach a Lock (FR-18), a refused Employee being excluded from a Group assignment (FR-10), or a Learner-initiated Quit (FR-13). Should SM-1 name the extra seeded scenarios, or narrow its "validates" claim? | The tester will take the coverage claim as the acceptance boundary. Wording only; no rule changes. |
+| 5 | structure | Title line: "*Working title — confirm.*" | MOVE into §9 Open Questions as item 3, for example "**Product name.** 'GrowMate' is a working title. Confirm." | §0 says unresolved points are collected in one place, but this one sits outside §9. Net ~0 words. |
+| 6 | structure | The Admin-exclusion and privacy rules are restated in §1.1, FR-9, FR-21, FR-22, §5 and §8. | PRESERVE | This looks like redundancy, but each restatement is a testable acceptance point at the FR the tester reads, and §8 is the one consolidated privacy checklist. Cutting them would cost scanability. |
+| 7 | prose | "An unanswered request gets one reminder and is then cleared." (§1.1) / "Unanswered Requests get one reminder and are then cleared." (§4.3) / "On day 6 the request clears and Priya is told to request someone else." (UJ-1) | "An unanswered Request gets one reminder and is then Cancelled." / "Unanswered Requests get one reminder and are then Cancelled." / "On day 6 the Request is Cancelled and Priya is told to request someone else." | The glossary term is **Cancel (day 6)**. "Cleared" reads like a second, undefined outcome. |
+| 8 | prose | "Either person can quit at any time without approval." / "A one-to-one request and a group assignment produce the same kind of match." / "or whether a match came from a group." (all §1.1) | "Either person can Quit at any time without approval." / "A one-to-one Request and a Group assignment produce the same kind of Match." / "or whether a Match came from a Group assignment." | Glossary terms appear in lowercase inside the principles that downstream design must treat as requirements. Neighbouring bullets in the same section capitalise them. |
+| 9 | prose | "Admin can choose a Course, any eligible Employee as the mentor, and one or more Employees as Learners." / "can't be chosen as its mentor." (FR-10) | "Admin can choose a Course, any eligible Employee to mentor the group, and one or more Employees as Learners." / "can't be the chosen Employee for it." | Lowercase "mentor" collides with the defined **Mentor**. FR-10 says this person need not be a Mentor, and the rest of FR-10 and FR-11 call them "the chosen Employee". |
+| 10 | prose | "Rafi quits Priya's match" (UJ-2) / "Five separate matches start, and Imani is now a mentor for that course." (UJ-4) / "she now appears in the course's mentor list" (UJ-1) | "Rafi Quits Priya's Match" / "Five separate Matches start, and Imani is now a Mentor for that Course." / "she now appears in the Course's Mentor list" | The journeys are the tester's scenarios, and in these lines the lowercase word stands for a defined state change (Quit, Match, Mentor status per Course). The rest of the UJ narrative can stay lowercase. |
+| 11 | prose | "That opens the bronze, silver and gold assessments in turn." (§1 Vision) | "That opens the Bronze, Silver and Gold Assessments in turn." | Stage names are capitalised everywhere else, including the UJs. The rest of the Vision's plain-language lowercase is kept as an intentional style choice. |
+| 12 | prose | "decide each course on someone's registration list myself" (§2.1 Admin JTBD) | Consider: "decide each course named in someone's Mentor check myself"? | "Registration list" is not a glossary term. The defined concepts are the **Mentor check** and the **Registration decision**. |
+
+4 further minor fixes; ask to expand:
+- FR-7: "clicked for them on it" → "on that Course".
+- §0: "buy" path is unexplained.
+- FR-12: "Progress bar" is not a defined term.
+- §1.1: "These are intended behaviour" has no antecedent.
+
+## Summary
+
+- **Recommendations:** 12, of which 6 are structure rows (2 MOVE, 1 CONDENSE, 2 QUESTION, 1 PRESERVE) and 6 are prose rows.
+- **Estimated reduction if all are accepted:** about 30 words, roughly 0.8% of 3,676. No length target was given. The document is already dense, and the structure findings are about having one source for each rule and being MECE, not about length.
+- **Comprehension trade-offs:** Row 2 means a reader has to jump from the Glossary to FR-18 and FR-20 for the full rule. Keeping the state names in the condensed Progress status entry limits that cost.
+- **Glossary consistency:** the FRs, §5 and §8 use terms consistently. The lowercase slips are in §1 Vision, §1.1, the UJs and FR-10 (rows 7 to 11).

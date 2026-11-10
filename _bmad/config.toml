@@ -51,7 +51,7 @@ game_dev_experience = "intermediate"
 planning_artifacts = "{project-root}/skills/planning-artifacts"
 implementation_artifacts = "{project-root}/skills/implementation-artifacts"
 project_knowledge = "{project-root}/docs"
-primary_platform = ["unity", "unreal", "godot", "other"]
+primary_platform = "[\"unity\", \"unreal\", \"godot\", \"other\"]"
 
 [agents.bmad-agent-analyst]
 module = "bmm"

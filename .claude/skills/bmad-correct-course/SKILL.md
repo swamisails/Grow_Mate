@@ -13,7 +13,7 @@ description: 'Assess the impact of a significant change during sprint execution 
 
 - Bare paths (e.g. `checklist.md`) resolve from the skill root.
 - `{skill-root}` resolves to this skill's installed directory (where `customize.toml` lives).
-- `{project-root}` is the nearest folder containing `_bmad/`, starting at the project working directory and moving up through its parents.
+- `{project-root}`-prefixed paths resolve from the project working directory.
 - `{skill-name}` resolves to the skill directory's basename.
 
 ## On Activation
@@ -22,9 +22,7 @@ description: 'Assess the impact of a significant change during sprint execution 
 
 Run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --project-root {project-root} --key workflow`
 
-**If the script is not found**, BMad is not set up here. Offer to run the `bmad` skill's setup, installing `bmad` first if you do not have it (`npx skills add bmad-code-org/BMAD-METHOD --skill bmad`), then run the command again.
-
-**If it fails for any other reason**, resolve the `workflow` block yourself by reading these three files in base → team → user order and applying the same structural merge rules as the resolver:
+**If the script fails**, resolve the `workflow` block yourself by reading these three files in base → team → user order and applying the same structural merge rules as the resolver:
 
 1. `{skill-root}/customize.toml` — defaults
 2. `{project-root}/_bmad/custom/{skill-name}.toml` — team overrides
@@ -42,18 +40,23 @@ Treat every entry in `{workflow.persistent_facts}` as foundational context you c
 
 ### Step 4: Load Config
 
-Run: `uv run {project-root}/_bmad/scripts/resolve_config.py --project-root {project-root} --key core.output_folder --key core.active_initiative`
+Run `uv run {project-root}/_bmad/scripts/resolve_config.py --project-root {project-root}` and resolve:
 
-- Script not found, or no `output_folder`: BMad is not set up here. Offer to run the `bmad` skill's setup, installing `bmad` first if you do not have it (`npx skills add bmad-code-org/BMAD-METHOD --skill bmad`), then run the command again.
-- No `active_initiative`: hand off to the `bmad` skill to set or create one, then run the command again and continue.
-
+- `project_name`, `user_name`
+- `communication_language`, `document_output_language`
+- `user_skill_level`
+- `implementation_artifacts`
+- `planning_artifacts`
+- `project_knowledge`
 - `date` as system-generated current datetime
-- YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style
-- DOCUMENT OUTPUT: A Sprint Change Proposal with clear, actionable changes.
+- YOU MUST ALWAYS SPEAK OUTPUT in your Agent communication style with the config `{communication_language}`
+- Language MUST be tailored to `{user_skill_level}`
+- Generate all documents in `{document_output_language}`
+- DOCUMENT OUTPUT: Updated epics, stories, or PRD sections. Clear, actionable changes. User skill level (`{user_skill_level}`) affects conversation style ONLY, not document updates.
 
 ### Step 5: Greet the User
 
-Greet the user.
+Greet `{user_name}`, speaking in `{communication_language}`.
 
 ### Step 6: Execute Append Steps
 
@@ -63,18 +66,17 @@ Activation is complete. If `activation_steps_prepend` or `activation_steps_appen
 
 ## Paths
 
-- `default_output_file` = `{output_folder}/{active_initiative}/change-{slug}/change-{slug}.md`, `{slug}` the change's title in kebab-case
+- `default_output_file` = `{planning_artifacts}/sprint-change-proposal-{date}.md`
 
 ## Input Files
 
-Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
-
 | Input | Path | Load Strategy |
 |-------|------|---------------|
-| PRD | `prd-*/prd-*.md` | FULL_LOAD |
-| Architecture | `architecture-*/architecture-*.md` | FULL_LOAD |
-| UX Design | `ux-*/`: `DESIGN.md` and `EXPERIENCE.md` | FULL_LOAD |
-| Spec | `spec-*/spec-*.md` and the companions it lists | FULL_LOAD |
+| PRD | `{planning_artifacts}/*prd*.md` (whole) or `{planning_artifacts}/*prd*/*.md` (sharded) | FULL_LOAD |
+| Epics | `{planning_artifacts}/*epic*.md` (whole) or `{planning_artifacts}/*epic*/*.md` (sharded) | FULL_LOAD |
+| Architecture | `{planning_artifacts}/*architecture*.md` (whole) or `{planning_artifacts}/*architecture*/*.md` (sharded) | FULL_LOAD |
+| UX Design | `{planning_artifacts}/*ux*.md` (whole) or `{planning_artifacts}/*ux*/*.md` (sharded) | FULL_LOAD |
+| Spec | `{planning_artifacts}/*spec-*.md` (whole) | FULL_LOAD |
 | Project Context | `AGENTS.md` in the affected repo (the `bmad:context` block) | FULL_LOAD |
 
 ## Execution
@@ -83,12 +85,15 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
 
 **Strategy**: Course correction needs broad project context to assess change impact accurately. Load all available planning artifacts.
 
-**Discovery Process for FULL_LOAD documents (PRD, Architecture, UX Design, Spec):**
+**Discovery Process for FULL_LOAD documents (PRD, Epics, Architecture, UX Design, Spec):**
 
-1. **Find each document by type** - the folder and main file patterns in Input Files
-2. **If the main file is an index of section files beside it**:
+1. **Search for whole document first** - Look for files matching the whole-document pattern (e.g., `*prd*.md`, `*epic*.md`, `*architecture*.md`, `*ux*.md`, `*spec-*.md`)
+2. **Check for sharded version** - If whole document not found, look for a directory with `index.md` (e.g., `prd/index.md`, `epics/index.md`)
+3. **If sharded version found**:
+   - Read `index.md` to understand the document structure
    - Read ALL section files listed in the index
    - Process the combined content as a single document
+4. **Priority**: If both whole and sharded versions exist, use the whole document
 
 **Discovery Process for Project Context:**
 
@@ -98,7 +103,7 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
 
 **Fuzzy matching**: Be flexible with document names — users may use variations like `prd.md`, `bmm-prd.md`, `product-requirements.md`, etc.
 
-**Missing documents**: Not all documents may exist. A PRD or a spec is essential; Architecture, UX Design, and Project Context are loaded if available. HALT if neither a PRD nor a spec can be found.
+**Missing documents**: Not all documents may exist. PRD and Epics are essential; Architecture, UX Design, Spec, and Document Project are loaded if available. HALT if PRD or Epics cannot be found.
 
 <workflow>
 
@@ -106,10 +111,10 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
   <action>Confirm change trigger and gather user description of the issue</action>
   <action>Ask: "What specific issue or change has been identified that requires navigation?"</action>
   <action>Verify access to project documents:</action>
-    - PRD (Product Requirements Document) or spec — required
+    - PRD (Product Requirements Document) — required
+    - Current Epics and Stories — required
     - Architecture documentation — optional, load if available
     - UI/UX specifications — optional, load if available
-  <action>Ask the user to describe the epics and stories the change affects: what each covers and where it stands</action>
   <action>Ask user for mode preference:</action>
     - **Incremental** (recommended): Refine each edit collaboratively
     - **Batch**: Present all changes at once for review
@@ -117,7 +122,7 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
 
 <action if="change trigger is unclear">HALT: "Cannot navigate change without clear understanding of the triggering issue. Please provide specific details about what needs to change and why."</action>
 
-<action if="neither a PRD nor a spec is available">HALT: "Need access to a PRD or a spec to assess change impact. Please ensure one is accessible. Architecture and UI/UX will be used if available."</action>
+<action if="PRD or Epics are unavailable">HALT: "Need access to PRD and Epics to assess change impact. Please ensure these documents are accessible. Architecture and UI/UX will be used if available."</action>
 </step>
 
 <step n="2" goal="Execute Change Analysis Checklist">
@@ -226,7 +231,6 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
   - Minor: Direct implementation by Developer agent
   - Moderate: Backlog reorganization needed (PO/DEV)
   - Major: Fundamental replan required (PM/Architect)
-- List the epic and story changes (added, removed, resequenced, or rescoped) for the user to apply with `bmad-ticket`
 - Specify handoff recipients and their responsibilities
 - Define success criteria for implementation
 
@@ -296,7 +300,7 @@ Look in `{output_folder}/{active_initiative}/` first, then `{output_folder}/`.
 - Specific edit proposals with before/after
 - Implementation handoff plan
 
-<action>Report workflow completion to user: "Correct Course workflow complete!"</action>
+<action>Report workflow completion to user with personalized message: "Correct Course workflow complete, {user_name}!"</action>
 <action>Remind user of success criteria and next steps for Developer agent</action>
 <action>Run: `uv run {project-root}/_bmad/scripts/resolve_customization.py --skill {skill-root} --project-root {project-root} --key workflow.on_complete` — if the resolved value is non-empty, follow it as the final terminal instruction before exiting.</action>
 </step>

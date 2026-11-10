@@ -73,3 +73,4 @@ Admin staffs a Course on the deployed app. One Accept turns a group into separat
 - Decision (2026-11-10): the form's reads are an Admin Employee-list read in Accounts (entry 1) and a refused-for-Course read in Mentors (entry 3); the architecture's Module creation table needs epic 4 to extend Accounts and Mentors.
 - Decision (2026-11-10): epics 3 and 4 may run in parallel; their shared files only take additions.
 - Decision (2026-11-10): the tracer bullet is entry 1, "Admin assigns a group and the chosen Employee sees it". Sequencing: 2 (group Accept) and 3 (refusals) in parallel after 1, then the Refactor sweep (4) and the closing end-to-end suite (5).
+- Decision (2026-11-10): the architecture spine's Module creation table and Capability map now carry this correction (bmad-architecture update).

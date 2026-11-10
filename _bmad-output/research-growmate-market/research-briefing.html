@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowMate Build vs Buy</title>
+<style>
+:root{--bg:#fbfaf8;--fg:#1d1d1f;--muted:#5d5d63;--card:#ffffff;--line:#e4e2dd;--accent:#2f5d8a;
+--ok:#2e7d4f;--ok-bg:#e6f3eb;--med:#8a6a12;--med-bg:#fbf2d9;--low:#a4441c;--low-bg:#fde8dd;--bad:#b3261e;--bad-bg:#fbe1df}
+@media (prefers-color-scheme: dark){:root{--bg:#16171a;--fg:#e8e6e3;--muted:#a3a1a8;--card:#1f2024;--line:#33343a;--accent:#8fb6dd;
+--ok:#7fd1a0;--ok-bg:#1b3326;--med:#e8c66a;--med-bg:#3a3118;--low:#f0a07c;--low-bg:#3d2318;--bad:#ff8f86;--bad-bg:#401c1a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{padding:32px 16px 20px;border-bottom:1px solid var(--line);background:var(--card)}
+header .inner,main{max-width:1000px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:1.7rem;line-height:1.25}
+header .decision{font-size:1.05rem;margin:0 0 12px}
+.meta{display:flex;flex-wrap:wrap;gap:8px;font-size:.82rem;color:var(--muted)}
+.meta span{border:1px solid var(--line);border-radius:999px;padding:2px 10px}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:32px;max-width:1240px;margin:0 auto;padding:24px 16px 64px}
+nav{position:sticky;top:16px;align-self:start;font-size:.88rem}
+nav ol{padding-left:18px;margin:0} nav li{margin:4px 0}
+nav a{color:var(--muted);text-decoration:none} nav a:hover{color:var(--accent)}
+main{min-width:0}
+h2{margin:40px 0 12px;font-size:1.3rem;padding-top:8px;border-top:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:4px 24px 16px}
+.card h2{border-top:none;margin-top:16px}
+a{color:var(--accent)} a.cite{text-decoration:none;font-size:.82em;vertical-align:super;line-height:0}
+.tablewrap{overflow-x:auto;margin:12px 0;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;background:var(--card)}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--bg);font-weight:600;white-space:nowrap}
+details summary{cursor:pointer;color:var(--accent);margin:8px 0}
+.badge{display:inline-block;font-size:.74em;font-weight:600;letter-spacing:.02em;border-radius:4px;padding:0 6px;line-height:1.6;white-space:nowrap}
+.b-verified{color:var(--ok);background:var(--ok-bg)}
+.b-medium{color:var(--med);background:var(--med-bg)}
+.b-low{color:var(--low);background:var(--low-bg);border:1px solid var(--low)}
+.b-unverified{color:var(--low);background:var(--low-bg);border:1px solid var(--low)}
+.b-disputed,.b-overturned{color:var(--bad);background:var(--bad-bg);border:1px solid var(--bad)}
+.legend{font-size:.82rem;color:var(--muted);margin-top:10px}
+:target{scroll-margin-top:16px} tr:target{background:var(--med-bg)}
+@media (max-width:820px){.layout{grid-template-columns:1fr} nav{position:static;border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--card)}}
+</style></head><body>
+<header><div class="inner">
+<h1>Market research: GrowMate — build in-house vs buy</h1>
+<p class="decision"><strong>Decision:</strong> Build GrowMate in-house vs buy/adopt an existing platform</p>
+<div class="meta"><span>Type: market</span><span>Date: 2026-10-30</span>
+<span>Preset: standard (3 dimensions × 2 rounds)</span><span>Validation: normal</span>
+<span>Claims: 15 verified · 10 unverified · 2 disputed · 1 overturned</span></div>
+<p class="legend">Badges: <span class="badge b-verified">verified</span> <span class="badge b-medium">medium confidence</span> <span class="badge b-low">low confidence</span> <span class="badge b-unverified">unverified</span> <span class="badge b-disputed">disputed</span>. Inline [n] links jump to the source appendix.</p>
+</div></header>
+<div class="layout"><nav aria-label="Contents"><ol><li><a href="#executive-summary">Executive summary</a></li><li><a href="#1-what-can-be-bought-and-how-well-it-fits">1. What can be bought, and how well it fits</a></li><li><a href="#2-pricing-and-total-cost-of-ownership">2. Pricing and total cost of ownership</a></li><li><a href="#3-pain-points-and-unmet-needs">3. Pain points and unmet needs</a></li><li><a href="#cross-dimension-insights">Cross-dimension insights</a></li><li><a href="#recommendations">Recommendations</a></li><li><a href="#open-questions">Open questions</a></li><li><a href="#sources">Source appendix</a></li><li><a href="#staleness-map">Staleness map</a></li></ol></nav>
+<main><section class="card summary"><h2 id="executive-summary">Executive summary</h2>
+<p><strong>Recommendation:</strong> build GrowMate in-house only if the assessment-gated mentor rule is a firm requirement. That rule says passing the three-level assessment (Gold) qualifies an employee to mentor that skill, with a wait before retakes. If you build, make it a thin custom core on top of existing components rather than writing everything from scratch.</p>
+<p>If that rule can bend, buying is cheaper and lower-risk. Buy from the HR suite you already license if it has a mentoring module (SAP SuccessFactors, Workday, ServiceNow). Otherwise buy a dedicated mentoring platform that supports admin-approved mentor applications.</p>
+<p>Confidence: <strong>medium</strong>. The fit findings are well evidenced. The cost comparison rests partly on <span class="badge b-low">low-confidence</span> build-cost estimates.</p>
+<p>Three findings drive this answer:</p>
+<ol>
+<li><strong>No product implements GrowMate's defining rule.</strong>
+   - <strong>What we checked:</strong> two research rounds, one of them specifically trying to prove this wrong, covered nine mentoring products and HR-suite modules.
+   - <strong>What we found:</strong> none let passing an assessment automatically qualify someone as a mentor, and none impose a retake wait.
+   - <strong>What exists instead:</strong> admin approval of mentor applications (Chronus, PushFar, SAP SuccessFactors) <a class="cite" href="#src-1">[1]</a><a class="cite" href="#src-2">[2]</a><a class="cite" href="#src-3">[3]</a>, eligibility rules based on profile answers (Chronus) <a class="cite" href="#src-1">[1]</a>, and skills-weighted mentor <em>ranking</em> (ServiceNow) <a class="cite" href="#src-6">[6]</a>.
+   - <strong>Consequence:</strong> every "buy" option either changes the design or needs custom integration work. The components GrowMate needs do exist off the shelf: quiz engines with pass marks and enforced retake delays (Moodle, iMocha) <a class="cite" href="#src-13">[13]</a><a class="cite" href="#src-14">[14]</a>, and quiz-to-badge pipelines into Credly <a class="cite" href="#src-15">[15]</a>.</li>
+<li><strong>The rule we would build for has no evidence behind it, and some evidence against it.</strong>
+   - <strong>No precedent:</strong> we found no organisation that qualifies mentors by skill test. Practice is self-assessment, experience plus professional certification, or selection on personal traits <a class="cite" href="#src-57">[57]</a><a class="cite" href="#src-58">[58]</a>.
+   - <strong>Mentors are already scarce:</strong> 45% of US workers in a 2025 survey said they lacked a mentor early in their careers, and 47% of Canadian workers lack a workplace peer mentor <a class="cite" href="#src-53">[53]</a><a class="cite" href="#src-54">[54]</a>. Gating mentors behind Gold narrows an already short supply.
+   - <strong>What predicts better outcomes:</strong> the peer-reviewed predictors are training quality and participants' say in the mentoring process <a class="cite" href="#src-55">[55]</a>. That study did not test screening mentors, so it neither supports nor rules out a Gold gate.
+   - <strong>The one-month retake wait is unusually long:</strong> it exceeds Microsoft's and AWS's 14-day certification waits <a class="cite" href="#src-59">[59]</a><a class="cite" href="#src-60">[60]</a>.</li>
+<li><strong>Cost alone does not settle this. The 3-year ranges overlap and the build side is <span class="badge b-disputed">disputed</span>.</strong>
+   - <strong>Buy:</strong> a mentoring platform plus a credential issuer runs about <strong>$31k–$213k over 3 years</strong> at list price or buyer-reported prices <a class="cite" href="#src-28">[28]</a><a class="cite" href="#src-29">[29]</a><a class="cite" href="#src-36">[36]</a><a class="cite" href="#src-37">[37]</a>, before setup fees. 79% of IT leaders reported price increases at renewal <a class="cite" href="#src-40">[40]</a>.
+   - <strong>Build:</strong> about <strong>$265k–$408k over 3 years</strong> if costed from US developer wages <a class="cite" href="#src-41">[41]</a>, or about <strong>$52k–$120k</strong> if you believe agency estimates <a class="cite" href="#src-42">[42]</a><a class="cite" href="#src-43">[43]</a>. The two bases disagree by roughly 3–5×.</li>
+</ol>
+<p><strong>Biggest caveat:</strong> the build-cost figures are the weakest evidence in the report. No primary or analyst benchmark for building an internal HR tool was found, and the wage-based figure is our own arithmetic.</p>
+<p><strong>Before committing:</strong>
+- Check whether the company already pays for a suite mentoring module. If it does, that is the cheapest route.
+- Decide with stakeholders whether Gold-gating is the main way people become mentors or one route among several.</p>
+</section>
+<h2 id="1-what-can-be-bought-and-how-well-it-fits">1. What can be bought, and how well it fits</h2>
+<p><strong>Where the gap is.</strong> We checked GrowMate's nine requirements (R1–R9) against each candidate product. The product categories split cleanly:</p>
+<ul>
+<li><strong>Mentoring platforms</strong> (MentorcliQ, Chronus, Together, Qooper, Mentorloop, PushFar) cover the basic mentoring flows: matching, requests, capacity limits and admin dashboards.</li>
+<li><strong>HR suites</strong> (SAP SuccessFactors, Workday, ServiceNow) have mentoring modules.</li>
+<li><strong>Assessment tools and credential issuers</strong> (Moodle, iMocha, Credly, Accredible) cover the testing and badge parts.</li>
+</ul>
+<p>No product joins assessments to mentor eligibility. That join is exactly what makes GrowMate distinctive.</p>
+<p><strong>Fit matrix.</strong> Key: ✓ documented · ~ partial or workaround · ✗ documented absent · ? not evidenced this run.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Product</th>
+<th>R1 skill-based mentor search &amp; request</th>
+<th>R2 availability &amp; accept/reject</th>
+<th>R3 3-level assessments</th>
+<th>R4 Gold qualifies mentor</th>
+<th>R5 retake wait</th>
+<th>R6 badges &amp; verified skills</th>
+<th>R7 progress</th>
+<th>R8 notifications</th>
+<th>R9 admin approval &amp; assignment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SAP SuccessFactors Mentoring <a class="cite" href="#src-3">[3]</a><a class="cite" href="#src-4">[4]</a></td>
+<td>~</td>
+<td>✓</td>
+<td>✗</td>
+<td>~ manual approval</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Chronus <a class="cite" href="#src-1">[1]</a></td>
+<td>~</td>
+<td>?</td>
+<td>✗</td>
+<td>~ admin approval / profile-answer rules</td>
+<td>✗</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>PushFar <a class="cite" href="#src-2">[2]</a></td>
+<td>?</td>
+<td>?</td>
+<td>✗</td>
+<td>~ admin approval</td>
+<td>✗</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+</tr>
+<tr>
+<td>Workday Mentorship <a class="cite" href="#src-5">[5]</a></td>
+<td>~</td>
+<td>~</td>
+<td>?</td>
+<td>✗</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+<td>~</td>
+</tr>
+<tr>
+<td>ServiceNow Mentoring <a class="cite" href="#src-6">[6]</a><a class="cite" href="#src-7">[7]</a></td>
+<td>✓</td>
+<td>?</td>
+<td>✗</td>
+<td>✗ (verified skills rank, not gate)</td>
+<td>✗</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+</tr>
+<tr>
+<td>MentorcliQ <a class="cite" href="#src-8">[8]</a></td>
+<td>~</td>
+<td>~</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+<td>?</td>
+<td>~</td>
+</tr>
+<tr>
+<td>Together (Absorb) <a class="cite" href="#src-9">[9]</a></td>
+<td>~</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>✓ LinkedIn-shareable</td>
+<td>~</td>
+<td>?</td>
+<td>~</td>
+</tr>
+<tr>
+<td>Mentorloop <a class="cite" href="#src-10">[10]</a></td>
+<td>~</td>
+<td>~ capacity cap + toggle</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+</tr>
+<tr>
+<td>Qooper <a class="cite" href="#src-11">[11]</a><a class="cite" href="#src-12">[12]</a></td>
+<td>~</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>~</td>
+<td>✓</td>
+<td>~</td>
+<td>~</td>
+</tr>
+<tr>
+<td>Moodle quiz (component) <a class="cite" href="#src-13">[13]</a></td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+<td>?</td>
+<td>~</td>
+<td>?</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>iMocha (component) <a class="cite" href="#src-14">[14]</a></td>
+<td>✗</td>
+<td>✗</td>
+<td>?</td>
+<td>✗</td>
+<td>✓</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr>
+<td>Credly via quiz tools (component) <a class="cite" href="#src-15">[15]</a><a class="cite" href="#src-16">[16]</a></td>
+<td>—</td>
+<td>—</td>
+<td>~</td>
+<td>—</td>
+<td>?</td>
+<td>✓</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Approval workflows that come closest to the Gold rule.</strong>
+- <strong>SAP SuccessFactors:</strong> has a "Require Mentor Approval" option. The approver is an admin or the mentor's manager. Under admin approval the mentor uploads supporting documents for review; under manager approval the manager is simply notified. It also offers caps on mentees per mentor, an "Unavailable" status, and accept/decline with a note that notifies the mentee <a class="cite" href="#src-3">[3]</a><a class="cite" href="#src-4">[4]</a>. The approval is a manual step with no link to any assessment, and no retake-style waiting rule was found. <em>(<span class="badge b-medium">Medium confidence</span>: read from search extracts of SAP's help pages.)</em>
+- <strong>Chronus:</strong> supports both admin-approved applications and automatic eligibility rules based on profile answers <a class="cite" href="#src-1">[1]</a>. If an integration filled in an "assessment level 3 passed" profile field, that could act as an indirect Gold gate. This is untested.
+- <strong>PushFar:</strong> blocks relationships until an admin approves the user <a class="cite" href="#src-2">[2]</a>.</p>
+<p><strong>Assessment components that could be reused.</strong>
+- <strong>Moodle (open source):</strong> has "Grade to pass", conditional unlocking (so level 2 stays locked until level 1 is passed), and an "Enforced delay between attempts" configurable up to weeks <a class="cite" href="#src-13">[13]</a>. That covers R3 and R5 out of the box.
+- <strong>iMocha:</strong> has a configurable "cooling period" between retakes <a class="cite" href="#src-14">[14]</a>.
+- <strong>Credly:</strong> quiz tools already issue Credly badges through its API (CredSpark, Skilljar, Workato) <a class="cite" href="#src-15">[15]</a>, and Degreed auto-issues them <a class="cite" href="#src-16">[16]</a>.</p>
+<p><strong>Nearest to a skills-aware mentoring product.</strong>
+- <strong>ServiceNow:</strong> scores mentors higher when their skills are verified, but does not exclude <span class="badge b-unverified">unverified</span> mentors <a class="cite" href="#src-6">[6]</a>.
+- <strong>SkillsTX:</strong> uses a formal skills assessment to drive matching, but not to decide who can mentor <a class="cite" href="#src-26">[26]</a>.</p>
+<p><strong>Vendor stability: consolidation is the 2024–2026 pattern.</strong>
+- Absorb (an LMS vendor) acquired Together in December 2024 <a class="cite" href="#src-17">[17]</a><a class="cite" href="#src-18">[18]</a>. Together is still sold on its own site and also as "Mentoring in Absorb LMS" <a class="cite" href="#src-24">[24]</a><a class="cite" href="#src-25">[25]</a>.
+- Thrive (a learning platform) bought Guider in July 2025 <a class="cite" href="#src-19">[19]</a>.
+- Chronus bought MentorStrat and Imperative in 2024 <a class="cite" href="#src-20">[20]</a>.
+- MentorcliQ's last disclosed capital was more than $80M from PSG in 2023 <a class="cite" href="#src-22">[22]</a>.
+- Gloat, a talent-marketplace vendor, cut 20% of staff in March 2026 after some customers did not renew, and is pivoting to AI agents <a class="cite" href="#src-21">[21]</a>. <em>(<span class="badge b-medium">Medium confidence</span>: single news source, read via search extract.)</em></p>
+<p>Buying means betting on a vendor that may be absorbed or repositioned within the contract term.</p>
+<p><strong>Market size: thin.</strong> 2025 estimates for "mentoring software" range from $0.4B to $1.8B, with one outlier at $18.6B. All come from resellers of paid reports with no visible method <a class="cite" href="#src-23">[23]</a>. This doesn't affect the decision.</p>
+<h2 id="2-pricing-and-total-cost-of-ownership">2. Pricing and total cost of ownership</h2>
+<p><strong>Prices are mostly hidden.</strong>
+- Mentorloop publishes <strong>Pro from $299/month</strong> <a class="cite" href="#src-27">[27]</a>.
+- MentorcliQ publishes <strong>CliQ Start from $9,900/year for 100 employees</strong> <a class="cite" href="#src-28">[28]</a>.
+- Together, Qooper, Chronus, iMocha, Degreed and Gloat are contact-sales. Together bills only actively matched participants and charges no setup fee <a class="cite" href="#src-30">[30]</a>.</p>
+<p><strong>What buyers actually pay (Vendr transaction data, mostly undated):</strong>
+- <strong>MentorcliQ:</strong> median <strong>$29.5k/yr</strong>, range $25.7k–$41.9k <a class="cite" href="#src-29">[29]</a> <em>(<span class="badge b-unverified">unverified</span>, single source)</em>.
+- <strong>Degreed (learning platform):</strong> median <strong>$170.9k/yr</strong> <a class="cite" href="#src-34">[34]</a> <em>(<span class="badge b-unverified">unverified</span>)</em>.
+- <strong>Credly:</strong> median <strong>$8k/yr</strong>, from 43 purchases as of February 2026 <a class="cite" href="#src-36">[36]</a>.</p>
+<p><strong>Chronus pricing is <span class="badge b-disputed">disputed</span>.</strong> We report all three figures and do not average them:
+- Vendr's transaction median is <strong>$11.6k/yr</strong> <a class="cite" href="#src-31">[31]</a>;
+- G2 lists a "Core" plan at <strong>$14,995/yr</strong> <a class="cite" href="#src-32">[32]</a>;
+- an unsourced spend aggregator estimates <strong>$72k–$144k/yr</strong> <a class="cite" href="#src-33">[33]</a>.</p>
+<p><strong>Lower-cost components.</strong>
+- <strong>Accredible (badges):</strong> Launch plan from <strong>$45/month</strong> for 50 recipients, with no setup fee <a class="cite" href="#src-37">[37]</a>.
+- <strong>360Learning (learning platform):</strong> <strong>$8/user/month</strong> for up to 100 users <a class="cite" href="#src-35">[35]</a>.</p>
+<p><strong>HR-suite add-ons are paid, and their prices aren't public.</strong>
+- <strong>SAP SuccessFactors:</strong> mentoring needs the Career &amp; Talent Development bundle or an Opportunity Marketplace licence <a class="cite" href="#src-38">[38]</a>.
+- <strong>Workday:</strong> publishes no mentoring or Talent Marketplace price. One unsourced negotiation advisor puts Workday Learning at $24–$58 per employee per year, with $120k–$420k or more to implement <a class="cite" href="#src-39">[39]</a> <em>(<span class="badge b-low">low confidence</span>)</em>.
+- If the company <strong>already</strong> pays for one of these modules, the extra cost is close to zero. That makes it the cheapest buy option.</p>
+<p><strong>Hidden costs of buying.</strong> Zylo's 2026 SaaS Management Index <a class="cite" href="#src-40">[40]</a> found that:
+- 79% of IT leaders faced price increases at renewal in the past 12 months;
+- 77% reported unexpected costs after signing (no time window stated);
+- measured licence utilisation was only 54% in 2025.</p>
+<p><strong>Cost to build: <span class="badge b-disputed">disputed</span>, and the weakest evidence in the report.</strong>
+- <strong>Agency estimates:</strong> software agencies quote <strong>$40k–$80k</strong> for a custom learning-platform MVP and $120k–$300k+ for a full platform <a class="cite" href="#src-42">[42]</a>. They are <span class="badge b-low">low-confidence</span> marketing material.
+- <strong>Wage-based estimate:</strong> costing a team from the US BLS median developer wage of <strong>$135,980</strong> (May 2025) <a class="cite" href="#src-41">[41]</a>, 3–4 developers for 6 months comes to <strong>≈$204k–$272k in base wages alone</strong>. That excludes benefits, design, product and QA. This is our own arithmetic, and it is roughly 2.5–7× the agency figures.
+- <strong>Maintenance:</strong> a rule of thumb and one small 24-product benchmark put it at <strong>15–25% of build cost per year</strong> <a class="cite" href="#src-43">[43]</a> <em>(low–<span class="badge b-medium">medium confidence</span>)</em>.
+- <strong>Proof it's been done:</strong> LinkedIn built its own internal mentoring platform, but published no cost <a class="cite" href="#src-45">[45]</a>.
+- <strong>Analyst view:</strong> Josh Bersin (May 2026) cautions that building HR software is "not as easy as it looks". He frames the choice as deciding <em>which parts</em> to build versus buy, using vendor APIs and plugins <a class="cite" href="#src-44">[44]</a>.</p>
+<p><strong>3-year cost, derived from the figures above and not a sourced total:</strong></p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Year 1</th>
+<th>Years 2–3</th>
+<th>3-year total</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Buy: mentoring platform + credential issuer</td>
+<td>$10.4k–$70.9k</td>
+<td>same per year, before renewal increases</td>
+<td><strong>$31k–$213k</strong> + setup</td>
+<td><a class="cite" href="#src-28">[28]</a><a class="cite" href="#src-29">[29]</a><a class="cite" href="#src-36">[36]</a><a class="cite" href="#src-37">[37]</a></td>
+</tr>
+<tr>
+<td>Build (wage basis)</td>
+<td>$204k–$272k</td>
+<td>15–25%/yr maintenance</td>
+<td><strong>$265k–$408k</strong></td>
+<td><a class="cite" href="#src-41">[41]</a><a class="cite" href="#src-43">[43]</a></td>
+</tr>
+<tr>
+<td>Build (agency basis)</td>
+<td>$40k–$80k</td>
+<td>15–25%/yr maintenance</td>
+<td><strong>$52k–$120k</strong></td>
+<td><a class="cite" href="#src-42">[42]</a><a class="cite" href="#src-43">[43]</a></td>
+</tr>
+<tr>
+<td>Suite module already licensed</td>
+<td>~configuration effort</td>
+<td>—</td>
+<td><strong>lowest; not quantified</strong></td>
+<td><a class="cite" href="#src-38">[38]</a></td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="3-pain-points-and-unmet-needs">3. Pain points and unmet needs</h2>
+<p><strong>Reviews of the tools you would buy.</strong>
+- Mentoring tools score <strong>4.4–4.9★</strong> on G2 and Capterra, and critical reviews are rare.
+- <strong>The most persistent complaint</strong> is friction with integrations and calendars: Outlook, Zoom, and "another system" to use. It appears for five vendors from 2018 to 2026 <a class="cite" href="#src-46">[46]</a><a class="cite" href="#src-47">[47]</a><a class="cite" href="#src-48">[48]</a><a class="cite" href="#src-49">[49]</a><a class="cite" href="#src-50">[50]</a>.
+- <strong>Next come</strong> dated UI and learning-curve complaints (four vendors), then limits on customisation. One Chronus admin wrote: "I often feel as if I have to run everything past Chronus" <a class="cite" href="#src-47">[47]</a>. A Together reviewer wanted competencies tailored to their industry <a class="cite" href="#src-48">[48]</a>.
+- <strong>Qooper's</strong> users prefer scheduling in their own calendar <a class="cite" href="#src-49">[49]</a>. That fits GrowMate's choice to keep conversations outside the app.</p>
+<p><em>(<span class="badge b-medium">Medium confidence</span>: G2 and Capterra blocked direct reading, so these quotes come from search extracts.)</em></p>
+<p><strong>Mentor supply is the core pain, and it exists before any gating.</strong>
+- Robert Half (March 2025, about 1,000 US workers): finding a mentor is new workers' top challenge, and <strong>45% said they lacked one</strong> early in their careers <a class="cite" href="#src-53">[53]</a>. <em>(<span class="badge b-medium">Medium confidence</span>: the source page blocked direct reading, so this comes from search extracts.)</em>
+- Future Skills Centre (2025): <strong>47% of Canadian workers</strong> lack a peer mentor <a class="cite" href="#src-54">[54]</a>.
+- UK HR directors cite lack of time (47%) and difficulty matching (39%) as the top barriers <a class="cite" href="#src-52">[52]</a>.
+- HBR (December 2024) reports that 98% of Fortune 500 companies run mentoring programmes, yet only 37% of professionals benefit. The 98% figure is vendor-sourced <a class="cite" href="#src-51">[51]</a>.</p>
+<p><strong>What predicts good mentoring.</strong> Allen, Eby &amp; Lentz (2006, Journal of Applied Psychology) found that participants' <strong>perceived input into the mentoring process</strong> and <strong>training perceived as high quality</strong> were consistently linked to better mentoring outcomes <a class="cite" href="#src-55">[55]</a>.
+- <strong>Correction:</strong> round 1 had overstated this as "input into matching", and that wording has been <span class="badge b-overturned">overturned</span>.
+- <strong>Weak statistic:</strong> the widely repeated Clutterbuck figure on how many relationships succeed without training traces back to a 2005 practitioner article with no stated method <a class="cite" href="#src-56">[56]</a>. It is <span class="badge b-low">low confidence</span>.</p>
+<p><strong>How mentors are qualified in practice: not by skill test.</strong>
+- Chronus uses a self-assessment checklist <a class="cite" href="#src-57">[57]</a>.
+- Peer-reviewed work recommends building desired mentor traits into both selection <em>and</em> development <a class="cite" href="#src-58">[58]</a>.
+- <strong>No organisation was found gating mentors with a multi-level skill test.</strong> This absence was confirmed independently by the pain-points research and the products research.</p>
+<p><strong>Retake norms.</strong>
+- <strong>Microsoft:</strong> 24 hours after the first failure, then 14 days between attempts, with a cap of 5 attempts a year. Its Applied Skills labs need only 72 hours <a class="cite" href="#src-59">[59]</a>.
+- <strong>AWS:</strong> 14 days <a class="cite" href="#src-60">[60]</a>.</p>
+<p>A one-month first wait is stricter than both. <strong>No evidence was found</strong> on how waiting periods affect learners' motivation.</p>
+<p><strong>Verified skills and badges.</strong>
+- <strong>The trust problem is documented:</strong> the Open Badges standard does not prescribe criteria, which feeds worries about credibility and badge inflation <a class="cite" href="#src-61">[61]</a>.
+- <strong>Positive figures come from interested parties.</strong> Deloitte's skills-based-organisation figures are correlational and were read only in summary <a class="cite" href="#src-64">[64]</a>. The IBM and Credly retention claims are vendor-reported <a class="cite" href="#src-65">[65]</a>.
+- <strong>Nothing independent</strong> shows that <em>internally</em> issued badges increase internal mobility.</p>
+<p><strong>Skills platforms struggle in practice.</strong>
+- Mercer's 2024 survey of 47 organisations found only 43% use a talent marketplace, and nearly three-fifths are unsure it is working <a class="cite" href="#src-62">[62]</a>.
+- Aspen Institute advises reusing existing skills taxonomies rather than building a proprietary one <a class="cite" href="#src-63">[63]</a>.</p>
+<h2 id="cross-dimension-insights">Cross-dimension insights</h2>
+<ol>
+<li><strong>The features that rule out buying are the ones with the least evidence behind them.</strong> R3–R5 (multi-level assessment, Gold-qualifies-mentor, one-month retake wait) are both the only requirements no vendor meets (Section 1) and the requirements the research gives no support for (Section 3). The build-vs-buy decision is therefore mostly a product decision about how firm the Gold gate is.</li>
+<li><strong>GrowMate's other mentor routes map onto what vendors already sell.</strong> GrowMate's design already has two routes besides Gold: admin approval at registration and admin assignment to groups. Those map directly onto Chronus, PushFar and SAP admin approval <a class="cite" href="#src-1">[1]</a><a class="cite" href="#src-2">[2]</a><a class="cite" href="#src-3">[3]</a> and Workday's admin-assign report <a class="cite" href="#src-5">[5]</a>. A bought platform could run those two routes on day one. Only the Gold route needs custom work, as either a manual admin check or an integration.</li>
+<li><strong>Keeping conversations outside the app works in GrowMate's favour.</strong> The most persistent complaint about bought tools is calendar and integration friction <a class="cite" href="#src-46">[46]</a><a class="cite" href="#src-49">[49]</a>. A product that never tries to host the conversation avoids that, whether built or bought.</li>
+<li><strong>Buy prices are low, but the vendor may change under you.</strong> Mentoring platforms cost tens of thousands a year (Section 2), but the category is consolidating into LMS vendors (Section 1). Lock-in and roadmap risk cost more than the licence fees suggest.</li>
+</ol>
+<h2 id="recommendations">Recommendations</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>#</th>
+<th>Recommendation</th>
+<th>Confidence and basis</th>
+<th>Feeds</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Decide the Gold gate first.</strong> If Gold is the main route to becoming a mentor, build. If it is one route among several, buy.</td>
+<td>Medium: the fit finding is <span class="badge b-verified">verified</span> <a class="cite" href="#src-1">[1]</a><a class="cite" href="#src-3">[3]</a><a class="cite" href="#src-6">[6]</a>; the supply-risk finding is <span class="badge b-verified">verified</span> <a class="cite" href="#src-53">[53]</a><a class="cite" href="#src-54">[54]</a>.</td>
+<td>Product brief: problem and opportunity</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>If you build, build thin.</strong> Write custom code only for mentor eligibility, matching/requests and the admin dashboard. Reuse a quiz engine with pass marks and enforced delays (Moodle, open source) <a class="cite" href="#src-13">[13]</a> and an Open Badges / Credly-compatible issuer <a class="cite" href="#src-15">[15]</a><a class="cite" href="#src-37">[37]</a> rather than writing your own.</td>
+<td>Medium: the components are primary-documented; cost savings are not quantified.</td>
+<td>Architecture: component boundaries</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>Before building, check existing licences.</strong> Find out whether the company already has SAP SuccessFactors Career &amp; Talent Development, Workday Talent, or ServiceNow HR. If so, pilot that mentoring module first, using admin approval as the interim Gold check <a class="cite" href="#src-3">[3]</a><a class="cite" href="#src-5">[5]</a><a class="cite" href="#src-6">[6]</a><a class="cite" href="#src-38">[38]</a>.</td>
+<td>Medium: packaging is from official SAP docs; Workday and ServiceNow details are <span class="badge b-medium">medium confidence</span>.</td>
+<td>Product brief: constraints</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Reconsider the one-month retake wait.</strong> Microsoft and AWS use 14 days or less <a class="cite" href="#src-59">[59]</a><a class="cite" href="#src-60">[60]</a>, and GrowMate's wait would further delay mentor supply. Make it an admin-configurable setting rather than hard-coded.</td>
+<td>Medium on the norms; low on effects on motivation (no evidence found).</td>
+<td>PRD: assessment rules</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Invest in mentor training quality and participant input, not only mentor testing.</strong> This is the peer-reviewed predictor of good outcomes <a class="cite" href="#src-55">[55]</a>.</td>
+<td>High for the finding; the step to GrowMate is an inference.</td>
+<td>PRD: mentor onboarding; design-thinking Ideate phase</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Don't make "verified skills on your résumé" the headline value.</strong> Value for internal mobility is unproven <a class="cite" href="#src-61">[61]</a><a class="cite" href="#src-64">[64]</a><a class="cite" href="#src-65">[65]</a>. Do issue Open Badges-standard credentials so they can be carried outside the company, which is cheap if built on the components in recommendation 2.</td>
+<td>Low–medium.</td>
+<td>PRD: differentiation</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>If you buy, negotiate protections.</strong> Ask for multi-year price caps and data export, given renewal-increase prevalence <a class="cite" href="#src-40">[40]</a> and vendor consolidation <a class="cite" href="#src-17">[17]</a><a class="cite" href="#src-19">[19]</a><a class="cite" href="#src-21">[21]</a>.</td>
+<td>Medium.</td>
+<td>Purchasing / GTM</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Strongest counter-arguments.</strong> These are not from a red-team pass; red teaming was off for this run.
+- <strong>Bersin warns that building HR software is harder than it looks</strong> <a class="cite" href="#src-44">[44]</a>. The wage-based 3-year build cost ($265k–$408k) is higher than even the top of the 3-year buy range ($213k) <a class="cite" href="#src-41">[41]</a>.
+- <strong>The overlap with buy prices rests only on agency estimates.</strong> If those estimates are wrong, as the wage basis suggests, building costs more than buying on every scenario we priced.</p>
+<h2 id="open-questions">Open questions</h2>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Question</th>
+<th>How to answer it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Does the company already license an HR-suite mentoring module?</td>
+<td>Internal check with HRIS/IT. This is the cheapest lever.</td>
+</tr>
+<tr>
+<td>What would a GrowMate MVP actually cost here?</td>
+<td>Internal estimate from your own engineering team, using fully loaded rates. No primary public benchmark exists.</td>
+</tr>
+<tr>
+<td>Can SAP mentor approval or Chronus eligibility rules be triggered automatically by an assessment result?</td>
+<td>Vendor demos, or a deeper research run on SAP's test scripts and Chronus's profile-field sync.</td>
+</tr>
+<tr>
+<td>How do retake waits affect motivation and completion?</td>
+<td>No evidence found. Pilot a configurable wait and measure it.</td>
+</tr>
+<tr>
+<td>How many mentors should there be per mentee, and how many applicants become mentors?</td>
+<td>No corporate benchmark found. Use your internal pilot data.</td>
+</tr>
+<tr>
+<td>Chronus price ($11.6k vs $15k vs $72k–$144k/yr)</td>
+<td>Request a quote.</td>
+</tr>
+<tr>
+<td>Is Together still sold standalone long-term, or folded into Absorb?</td>
+<td>Mixed evidence <a class="cite" href="#src-24">[24]</a><a class="cite" href="#src-25">[25]</a>. Ask the vendor.</td>
+</tr>
+<tr>
+<td>Are internal verified badges worth anything for internal mobility?</td>
+<td>No independent evidence. A deeper research run (OneTen 2024, LinkedIn Workplace Learning Report).</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="sources">Source appendix</h2><details><summary>Show all sources (64)</summary><div class="tablewrap"><table class="sources"><tbody><tr id="src-1"><td>[1]</td><td>Chronus enrollment: admin-approved applications; eligibility rules on profile answers</td><td><a href="https://chronusmentor.chronus.com/en/articles/9183844-enrollment-methods-all-the-options" target="_blank" rel="noopener">Chronus help centre</a></td><td>2026-09</td><td>2026-10-30</td><td>high</td></tr><tr id="src-2"><td>[2]</td><td>PushFar admin approval at organisation and programme level</td><td><a href="https://support.pushfar.com/knowledge-base/approval-process-users" target="_blank" rel="noopener">PushFar support</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-3"><td>[3]</td><td>SAP SuccessFactors Mentoring: admin or manager mentor approval (documents under admin approval), mentee caps, Unavailable status</td><td><a href="https://help.sap.com/docs/successfactors-succession-and-development/using-mentoring/managing-mentoring-programs" target="_blank" rel="noopener">SAP Help Portal</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-4"><td>[4]</td><td>SAP mentee requests, mentor accept/decline with note, mentee notified</td><td><a href="https://help.sap.com/doc/f1ee8a4804ca486683a41cb9f03b4e8a/2411/en-US/Mentoring_in_SAP_SuccessFactors_Test_Script_3VF.pdf" target="_blank" rel="noopener">SAP test script 2411</a></td><td>2024-11</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-5"><td>[5]</td><td>Workday Manage Mentorship process, availability opt-out, admin/HR assign via Find Mentor</td><td><a href="https://doc.workday.com/admin-guide/en-us/human-capital-management/talent/mentors-and-connections/rgv1469574188930.html" target="_blank" rel="noopener">Workday admin guide</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-6"><td>[6]</td><td>ServiceNow Mentoring: verified skills weight the match score, do not gate eligibility</td><td><a href="https://www.servicenow.com/docs/r/employee-service-management/mentoring/exploring-mentoring-egd.html" target="_blank" rel="noopener">ServiceNow docs</a></td><td>2026-09</td><td>2026-10-30</td><td>high</td></tr><tr id="src-7"><td>[7]</td><td>ServiceNow Zurich: access criteria, connection requests; no capacity or approval documented</td><td><a href="https://www.servicenow.com/docs/r/zurich/release-notes/mentoring-rn.html" target="_blank" rel="noopener">ServiceNow release notes</a></td><td>2025-07</td><td>2026-10-30</td><td>high</td></tr><tr id="src-8"><td>[8]</td><td>MentorcliQ admin/suggested/self matching, configurable limits, HRIS integration</td><td><a href="https://mentorcliq.com/mentoring-software/matching-participants" target="_blank" rel="noopener">MentorcliQ</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-9"><td>[9]</td><td>Together (Absorb): goals/skills matching, LinkedIn-shareable badges, reporting</td><td><a href="https://www.absorbai.com/products/mentoring-software" target="_blank" rel="noopener">Absorb Software</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-10"><td>[10]</td><td>Mentorloop max-matches cap and availability toggle</td><td><a href="https://helphub.mentorloop.com/hc/en-us/articles/8356482367503" target="_blank" rel="noopener">Mentorloop help hub</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-11"><td>[11]</td><td>Qooper feature list: self/admin matching, dashboards, milestones</td><td><a href="https://www.qooper.io/hubfs/llms-full.txt" target="_blank" rel="noopener">Qooper</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-12"><td>[12]</td><td>Qooper badges and certificate of completion</td><td><a href="https://qooper.io/knowledge/how-badges-work-in-qooper" target="_blank" rel="noopener">Qooper knowledge base</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-13"><td>[13]</td><td>Moodle quiz: grade to pass, conditional unlock, enforced delay between attempts</td><td><a href="https://docs.moodle.org/en/Quiz_settings" target="_blank" rel="noopener">Moodle docs</a></td><td>2026-09</td><td>2026-10-30</td><td>high</td></tr><tr id="src-14"><td>[14]</td><td>iMocha configurable cooling period between retakes</td><td><a href="https://help.imocha.io/how-to-set-up-cooling-period-between-the-retakes-of-a-test" target="_blank" rel="noopener">iMocha help</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-15"><td>[15]</td><td>Quiz result → Credly badge via API (CredSpark; also Skilljar, Workato)</td><td><a href="https://support.credspark.com/support/solutions/articles/73000525998-credly-integration" target="_blank" rel="noopener">CredSpark support</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-16"><td>[16]</td><td>Degreed auto-issues Credly badges; needs a Credly subscription</td><td><a href="https://integrations.degreed.com/listings/credly" target="_blank" rel="noopener">Degreed integrations</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-17"><td>[17]</td><td>Absorb acquired Together (closed Dec 2024)</td><td><a href="https://www.fasken.com/en/experience/2024/12/absorb-software-inc-acquires-together-inc" target="_blank" rel="noopener">Fasken</a></td><td>2024-12</td><td>2026-10-30</td><td>high</td></tr><tr id="src-18"><td>[18]</td><td>Absorb to fold mentoring into its LMS</td><td><a href="https://betakit.com/absorb-to-acquire-together-in-bid-to-bring-mentorship-to-its-learning-software/" target="_blank" rel="noopener">BetaKit</a></td><td>2024-12</td><td>2026-10-30</td><td>high</td></tr><tr id="src-19"><td>[19]</td><td>Thrive acquired Guider (Jul 2025)</td><td><a href="https://www.thrivelearning.com/blog-news/thrive-announces-strategic-acquisition-of-guider-the-uks-leading-mentoring-and-coaching-platform" target="_blank" rel="noopener">Thrive</a></td><td>2025-07</td><td>2026-10-30</td><td>high</td></tr><tr id="src-20"><td>[20]</td><td>Chronus acquired MentorStrat (2024)</td><td><a href="https://chronus.com/chronus-acquires-mentorstrat" target="_blank" rel="noopener">Chronus</a></td><td>2024-07</td><td>2026-10-30</td><td>high</td></tr><tr id="src-21"><td>[21]</td><td>Gloat 20% layoff, customer non-renewals, AI-agent pivot</td><td><a href="https://en.globes.co.il/en/article-1001536470" target="_blank" rel="noopener">Globes</a></td><td>2026-03</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-22"><td>[22]</td><td>MentorcliQ &gt;$80M growth investment from PSG</td><td><a href="https://www.mentorcliq.com/news/leading-employee-mentorship-software-mentorcliq-secures-over-80-million-growth-investment-from-psg-to-help-enterprises-globally-build-more-inclusive-cultures-and-reduce-employee-turnover" target="_blank" rel="noopener">MentorcliQ press release</a></td><td>2023-03</td><td>2026-10-30</td><td>high</td></tr><tr id="src-23"><td>[23]</td><td>Mentoring-software market estimates $0.4B–$1.8B (reseller figures, no method)</td><td><a href="https://www.marketresearch.com/VPA-Research-v4245/Mentoring-Software-Size-Share-Outlook-40859235" target="_blank" rel="noopener">MarketResearch.com / VPA</a></td><td>2025</td><td>2026-10-30</td><td>low</td></tr><tr id="src-24"><td>[24]</td><td>Together still sold standalone on its own site</td><td><a href="https://www.togetherplatform.com/" target="_blank" rel="noopener">Together</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-25"><td>[25]</td><td>&quot;Mentoring in Absorb LMS&quot; uses Together&#x27;s matching engine</td><td><a href="https://trainingindustry.com/press-release/performance-management/absorb-software-launches-mentoring-in-absorb-lms-redefining-human-connection-in-adult-learning/" target="_blank" rel="noopener">Training Industry</a></td><td>2025</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-26"><td>[26]</td><td>SkillsTX matches via skills assessment and gap (no eligibility gate)</td><td><a href="https://skillstx.atlassian.net/wiki/spaces/STXWN/pages/2373156866/2024+March+28+-+Tailored+Mentorship+release" target="_blank" rel="noopener">SkillsTX release notes</a></td><td>2024-03</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-27"><td>[27]</td><td>Mentorloop Pro from $299/month</td><td><a href="https://www.mentorloop.com/pricing" target="_blank" rel="noopener">Mentorloop pricing</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-28"><td>[28]</td><td>MentorcliQ CliQ Start from $9,900/yr for 100 employees</td><td><a href="https://www.mentorcliq.com/pricing" target="_blank" rel="noopener">MentorcliQ pricing</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-29"><td>[29]</td><td>MentorcliQ buyer median $29.5k/yr (range $25.7k–$41.9k)</td><td><a href="https://www.vendr.com/marketplace/mentorcliq" target="_blank" rel="noopener">Vendr</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-30"><td>[30]</td><td>Together bills active matched users only; no setup fee</td><td><a href="https://www.togetherplatform.com/pricing" target="_blank" rel="noopener">Together pricing</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-31"><td>[31]</td><td>Chronus buyer median $11.6k/yr (disputed)</td><td><a href="https://www.vendr.com/marketplace/chronus" target="_blank" rel="noopener">Vendr</a></td><td>undated</td><td>2026-10-30</td><td>low</td></tr><tr id="src-32"><td>[32]</td><td>Chronus &quot;Core&quot; listed at $14,995/yr (disputed)</td><td><a href="https://www.g2.com/compare/chronus-vs-mentorloop-mentoring-software" target="_blank" rel="noopener">G2</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-33"><td>[33]</td><td>Chronus estimate $6k–$12k+/month (disputed; unsourced)</td><td><a href="https://www.spendbase.co/it/?p=37052" target="_blank" rel="noopener">Spendbase</a></td><td>undated</td><td>2026-10-30</td><td>low</td></tr><tr id="src-34"><td>[34]</td><td>Degreed buyer median $170.9k/yr</td><td><a href="https://www.vendr.com/marketplace/degreed" target="_blank" rel="noopener">Vendr</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-35"><td>[35]</td><td>360Learning Team $8/user/month, up to 100 users</td><td><a href="https://360learning.com/pricing/" target="_blank" rel="noopener">360Learning pricing</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-36"><td>[36]</td><td>Credly buyer median $8k/yr (range $4k–$28.95k, n=43)</td><td><a href="https://www.vendr.com/marketplace/credly" target="_blank" rel="noopener">Vendr</a></td><td>2026-02</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-37"><td>[37]</td><td>Accredible Launch from $45/month, 50 recipients, no setup fees</td><td><a href="https://www.accredible.com/pricing" target="_blank" rel="noopener">Accredible pricing</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-38"><td>[38]</td><td>SAP mentoring needs Career &amp; Talent Development bundle or Opportunity Marketplace licence</td><td><a href="https://learning.sap.com/courses/sap-successfactors-career-development-planning-and-mentoring-administration/explaining-the-prerequisites-dependencies-and-permissions-3" target="_blank" rel="noopener">SAP Learning</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-39"><td>[39]</td><td>Workday Learning $24–$58/employee/yr; implementation $120k–$420k+ (unsourced)</td><td><a href="https://workdaynegotiations.pages.dev/blog/workday-learning-pricing-breakdown/" target="_blank" rel="noopener">WorkdayNegotiations</a></td><td>2026-04</td><td>2026-10-30</td><td>low</td></tr><tr id="src-40"><td>[40]</td><td>79% faced renewal price increases; 77% unexpected costs; 54% licence utilisation</td><td><a href="https://zylo.com/blog/saas-statistics" target="_blank" rel="noopener">Zylo</a></td><td>2026-02</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-41"><td>[41]</td><td>US software developer median wage $135,980 (May 2025)</td><td><a href="https://www.bls.gov/ooh/computer-and-information-technology/software-developers.htm" target="_blank" rel="noopener">US BLS</a></td><td>2025-05</td><td>2026-10-30</td><td>high</td></tr><tr id="src-42"><td>[42]</td><td>Custom LMS build: MVP $40k–$80k; full $120k–$300k+ (agency)</td><td><a href="https://www.cleveroad.com/blog/how-much-does-it-cost-to-build-an-lms/" target="_blank" rel="noopener">Cleveroad</a></td><td>2025</td><td>2026-10-30</td><td>low</td></tr><tr id="src-43"><td>[43]</td><td>Maintenance ≈15–25% of build cost per year</td><td><a href="https://wavect.io/blog/software-maintenance-cost-benchmark-dach-saas.md" target="_blank" rel="noopener">Wavect</a></td><td>undated</td><td>2026-10-30</td><td>low</td></tr><tr id="src-44"><td>[44]</td><td>Bersin: building HR software &quot;not as easy as it looks&quot;; build-what vs buy-what</td><td><a href="https://joshbersin.com/podcast/build-vs-buy-its-so-easy-to-build-hr-software-now-or-is-it/" target="_blank" rel="noopener">Josh Bersin Company</a></td><td>2026-05</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-45"><td>[45]</td><td>LinkedIn built an internal mentoring platform (no cost given)</td><td><a href="https://engineering.linkedin.com/blog/2022/career-stories--taking-linkedin-to-bellevue--and-mentorship-glob" target="_blank" rel="noopener">LinkedIn Engineering</a></td><td>2022</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-46"><td>[46]</td><td>MentorcliQ: UI &quot;outdated&quot;, &quot;adds another system&quot;</td><td><a href="https://capterra.com/p/146511/MentorcliQ-Employee-Mentoring/reviews/" target="_blank" rel="noopener">Capterra</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-47"><td>[47]</td><td>Chronus: &quot;run everything past Chronus&quot;, Outlook link issue</td><td><a href="https://capterra.com/p/140234/Chronus-Mentoring-Software/reviews/" target="_blank" rel="noopener">Capterra</a></td><td>2019–2026</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-48"><td>[48]</td><td>Together: no Outlook/Zoom integration, limited competency customisation</td><td><a href="https://www.capterra.com/p/177744/Together/reviews" target="_blank" rel="noopener">Capterra</a></td><td>2018–2026</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-49"><td>[49]</td><td>Qooper: integration and calendar issues; users prefer own calendar</td><td><a href="https://www.g2.com/compare/mentorloop-mentoring-software-vs-qooper" target="_blank" rel="noopener">G2</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-50"><td>[50]</td><td>360Learning cons: limited customisation, integration issues, learning curve</td><td><a href="https://www.g2.com/products/360learning/details" target="_blank" rel="noopener">G2</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-51"><td>[51]</td><td>98% of Fortune 500 run mentoring; only 37% of professionals benefit</td><td><a href="https://hbr.org/2024/12/why-mentoring-programs-fail-and-how-to-make-them-worthwhile" target="_blank" rel="noopener">Harvard Business Review</a></td><td>2024-12</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-52"><td>[52]</td><td>Barriers: lack of time 47%, matching 39%, budget 38%</td><td><a href="https://associationofbusinessmentors.org/why-underfunded-mentoring-programmes-fail-to-deliver-business-impact/" target="_blank" rel="noopener">Association of Business Mentors</a></td><td>undated</td><td>2026-10-30</td><td>low</td></tr><tr id="src-53"><td>[53]</td><td>Finding a mentor is new workers&#x27; top challenge; 45% lacked one early in their careers</td><td><a href="https://www.staffingindustry.com/news/global-daily-news/finding-mentors-is-top-challenge-for-new-workers-robert-half" target="_blank" rel="noopener">Staffing Industry Analysts (Robert Half)</a></td><td>2025-04</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-54"><td>[54]</td><td>47% of Canadian workers lack a workplace peer mentor</td><td><a href="https://fsc-ccf.ca/wp-content/uploads/2025/04/mentorship-in-the-workplace-employee-participation-and-perspectives-1.pdf" target="_blank" rel="noopener">Future Skills Centre</a></td><td>2025-04</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-55"><td>[55]</td><td>Perceived input into the mentoring process and high-quality training predict outcomes</td><td><a href="https://pubmed.ncbi.nlm.nih.gov/16737355/" target="_blank" rel="noopener">J. Applied Psychology via PubMed</a></td><td>2006-05</td><td>2026-10-30</td><td>high</td></tr><tr id="src-56"><td>[56]</td><td>Clutterbuck: &lt;1/3 succeed with minimal training, &gt;9/10 with both trained (no method)</td><td><a href="https://media.scottishmentoringnetwork.co.uk/Whatmakesagoodmentor_6ea9dc8804.pdf" target="_blank" rel="noopener">Clutterbuck Associates (Scottish Mentoring Network)</a></td><td>2005-10</td><td>2026-10-30</td><td>low</td></tr><tr id="src-57"><td>[57]</td><td>Chronus mentor readiness uses a self-assessment checklist, not a skill test</td><td><a href="https://chronusmentor.chronus.com/en/articles/9183713-guide-to-assessing-recruiting-and-preparing-mentors-for-your-program" target="_blank" rel="noopener">Chronus help centre</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-58"><td>[58]</td><td>Build mentor characteristics into selection and development</td><td><a href="https://www.emerald.com/insight/content/doi/10.1108/PR-08-2022-0535" target="_blank" rel="noopener">Personnel Review (Emerald)</a></td><td>2024</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-59"><td>[59]</td><td>Microsoft retake: 24h, then 14 days; 5/yr cap; Applied Skills 72h</td><td><a href="https://learn.microsoft.com/en-us/credentials/support/retake-policy" target="_blank" rel="noopener">Microsoft Learn</a></td><td>2026-07</td><td>2026-10-30</td><td>high</td></tr><tr id="src-60"><td>[60]</td><td>AWS retake: 14 days</td><td><a href="https://aws.amazon.com/certification/faqs/" target="_blank" rel="noopener">AWS Certification FAQ</a></td><td>undated</td><td>2026-10-30</td><td>high</td></tr><tr id="src-61"><td>[61]</td><td>Open Badges sets no criteria; credibility and inflation concerns</td><td><a href="https://www.ibe.edu.pl/en/news/3106-how-to-build-trust-in-digital-microcredentials" target="_blank" rel="noopener">IBE</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-62"><td>[62]</td><td>Only 43% use a talent marketplace; ~3/5 unsure it is working</td><td><a href="https://www.mercer.com/en-us/insights/talent-and-transformation/skill-based-talent-management/survey-report-insights-global-skills-technology-and-adoption/" target="_blank" rel="noopener">Mercer</a></td><td>2024-10</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-63"><td>[63]</td><td>Harmonise existing skills taxonomies rather than build proprietary ones</td><td><a href="https://www.aspeninstitute.org/blog-posts/missing-demand-may-miss-the-opportunity-research-insights-for-states-building-talent-marketplaces-that-work/" target="_blank" rel="noopener">Aspen Institute</a></td><td>undated</td><td>2026-10-30</td><td>medium</td></tr><tr id="src-64"><td>[64]</td><td>Skills-based orgs &quot;107% more likely to place talent effectively&quot; (correlational, summary only)</td><td><a href="https://d1lzrgdbvkolkd.cloudfront.net/Skills_Based_Organization_24fdd44eb4.pdf" target="_blank" rel="noopener">Deloitte</a></td><td>2022</td><td>2026-10-30</td><td>low</td></tr><tr id="src-65"><td>[65]</td><td>IBM/Credly badge retention claims (vendor-reported)</td><td><a href="https://resources.credly.com/hubfs/how-employers-use-digital-credentials-to-make-workforce-decisions.pdf" target="_blank" rel="noopener">Credly</a></td><td>2015</td><td>2026-10-30</td><td>low</td></tr></tbody></table></div></div></details><h2 id="staleness-map">Staleness map</h2>
+<p>These dates were computed by <code>recon_kit.py staleness</code> from the claims ledger, using the market pack's freshness windows:</p>
+<ul>
+<li>features, integrations and pricing: 3 months;</li>
+<li>vendor stability and build or total-cost benchmarks: 12 months;</li>
+<li>market size: 18 months;</li>
+<li>behaviour, outcomes, pain points and credentials: 24 months.</li>
+</ul>
+<p>Undated vendor pages are dated by when we read them (2026-10).</p>
+<p><strong>Already past their window: 10 of 28 ledger claims.</strong> For most of these, the age doesn't change the decision.</p>
+<div class="tablewrap"><table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Window ended</th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Vendor acquisitions: Absorb–Together <a class="cite" href="#src-17">[17]</a>, Thrive–Guider <a class="cite" href="#src-19">[19]</a>, Chronus–MentorStrat <a class="cite" href="#src-20">[20]</a></td>
+<td>2025-07 to 2026-07</td>
+<td>These are historical events, so they remain true. Re-check where each vendor is heading now.</td>
+</tr>
+<tr>
+<td>Allen, Eby &amp; Lentz 2006 <a class="cite" href="#src-55">[55]</a>; the <span class="badge b-overturned">overturned</span> paraphrase of it</td>
+<td>2008-05</td>
+<td>A foundational peer-reviewed finding. Newer replication evidence would strengthen it.</td>
+</tr>
+<tr>
+<td>Clutterbuck training statistic <a class="cite" href="#src-56">[56]</a></td>
+<td>2007-10</td>
+<td>Already <span class="badge b-low">low confidence</span>. Do not rely on it.</td>
+</tr>
+<tr>
+<td>US BLS developer wage <a class="cite" href="#src-41">[41]</a></td>
+<td>2026-05</td>
+<td>Update when BLS publishes its May 2026 wage data.</td>
+</tr>
+<tr>
+<td>Build-cost dispute <a class="cite" href="#src-42">[42]</a></td>
+<td>2026-06</td>
+<td>Replace with an internal engineering estimate.</td>
+</tr>
+<tr>
+<td>Credly buyer median <a class="cite" href="#src-36">[36]</a></td>
+<td>2026-05</td>
+<td>Re-check against Vendr or a real quote.</td>
+</tr>
+<tr>
+<td>Mercer talent-marketplace survey <a class="cite" href="#src-62">[62]</a></td>
+<td>2026-10</td>
+<td>Look for Mercer's 2026 edition.</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>Next re-checks:</strong>
+- <strong>2026-12-01:</strong> all feature-fit claims <a class="cite" href="#src-1">[1]</a><a class="cite" href="#src-3">[3]</a><a class="cite" href="#src-6">[6]</a><a class="cite" href="#src-13">[13]</a>. This is the earliest date a live claim expires, and the fit finding is what the recommendation rests on.
+- <strong>2026-12-01:</strong> market size <a class="cite" href="#src-23">[23]</a>.
+- <strong>2027-01-01:</strong> pricing claims <a class="cite" href="#src-28">[28]</a><a class="cite" href="#src-29">[29]</a><a class="cite" href="#src-31">[31]</a><a class="cite" href="#src-34">[34]</a><a class="cite" href="#src-38">[38]</a>.</p>
+<p>Use a Refresh run when those dates arrive.</p></main></div>
+</body></html>

@@ -70,3 +70,4 @@ A Learner who was judged ready passes Gold on the deployed app and appears in th
 - Decision (2026-11-10): epic 3 sends no notices, so it doesn't extend Notifications; it extends Courses with AD-14's taking read. The architecture's Module creation table needs that correction.
 - Decision (2026-11-10): epics 3 and 4 may run in parallel; their shared files (the copy file, routes/api.php, the seeder order) only take additions.
 - Decision (2026-11-10): the tracer bullet is entry 1, "A Learner takes Bronze and sees the result". Sequencing: a single chain 1, 2 (the Retake rule and Lock, least certain), 3, 4, then the Refactor sweep (5) and the closing end-to-end suite (6).
+- Decision (2026-11-10): the architecture spine's Module creation table and Capability map now carry this correction (bmad-architecture update).

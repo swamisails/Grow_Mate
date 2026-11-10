@@ -7,7 +7,7 @@ paradigm: 'modular monolith API + thin client SPA (server owns all state and rul
 scope: 'The GrowMate initiative: epics 1–4 (accounts and courses, requests and matches, stages and Gold, group assignment)'
 status: final
 created: '2026-11-02'
-updated: '2026-11-02'
+updated: '2026-11-10'
 binds: [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, R16, R17, R18, R19, R20, R21, R22, C1, C2, C3, C4, C5, C6, C7, C8, C9, C10]
 sources:
   - _bmad-output/initiative-growmate/initiative-growmate.md
@@ -37,9 +37,9 @@ sources:
 | Epic | Creates | Extends |
 | --- | --- | --- |
 | 1 Accounts, Courses, first Mentors | Accounts, Courses, Mentors, Notifications, SPA shell, `e2e/` harness | — |
-| 2 Requests and Matches | Matching (including `group_assignments` table and `requests.group_assignment_id`), Progress | Notifications (notice types) |
-| 3 Stages and Gold | Assessments | Progress (Completed, Stage progress), Notifications |
-| 4 Group assignment | — | Matching (group Actions, admin route), Notifications |
+| 2 Requests and Matches | Matching (including `group_assignments` table and `requests.group_assignment_id`), Progress | Notifications (notice types, `TimeNoticeSource` contract) |
+| 3 Stages and Gold | Assessments | Courses (AD-14 taking read), Progress (Completed, Stage progress) |
+| 4 Group assignment | — | Matching (group Actions, admin route), Accounts (admin Employee-list read), Mentors (admin refused-for-Course read) |
 
 ## Invariants & Rules
 
@@ -84,7 +84,6 @@ graph LR
   Assessments --> Matching
   Assessments --> Courses
   Assessments --> Mentors
-  Assessments --> Notifications
   Progress --> Matching
   Progress --> Assessments
   Notifications --> Accounts
@@ -114,7 +113,7 @@ graph LR
 - **Rule:**
   - All time comes from Laravel `now()`, which is Carbon.
   - Never call `time()`, `date()`, `new DateTime()`, `Date.now()` or SQL `NOW()`/`CURRENT_TIMESTAMP` for a rule. Queries take `now()` as a bound parameter.
-  - Timestamps are stored and returned in UTC.
+  - Timestamps are stored and returned in UTC. Every date the SPA shows is the UTC calendar date of that timestamp.
   - Day 3, day 6 and the Lock are derived from stored timestamps against `now()`, never by scheduled jobs.
   - A derived event is dated with its rule date. For example, the day-3 reminder is dated `sent_at + 3 days`.
   - The Lock ends at `second_failure_at->addMonthNoOverflow()`, and nothing can configure it.
@@ -144,7 +143,7 @@ graph LR
 - **Binds:** R3, R6, R8, R10–R13, R22, C4, C6, C10
 - **Prevents:** one endpoint or notice revealing what another hides.
 - **Rule:** No response or notice ever includes a Mentor `route`. `group_assignment_id`, or anything that reveals a group, is excluded from every response and notice, with these exceptions:
-  1. The chosen Employee's own incoming-Requests view shows their pending group as one group.
+  1. The chosen Employee's own incoming-Requests view shows their pending group as one block naming each Learner, with one Accept and no count.
   2. An Employee sees their own Registration decisions as approved and refused lists.
   3. Admin sees only the Registration decisions and Group assignments Admin created. Admin never sees routes, Request or Match state, or whether a group was Accepted.
 
@@ -271,6 +270,8 @@ graph LR
 | TypeScript | per create-vite `react-ts` template |
 | Node.js (build only) | 26 LTS |
 | Docker Compose | current stable |
+| Playwright (`@playwright/test`, end-to-end) | 1.64 |
+| SPA styling | plain CSS, no component library; tokens from `ux-growmate/DESIGN.md` |
 
 ## Structural Seed
 
@@ -333,7 +334,7 @@ growmate/
 | R6 Course Mentor list | Mentors (query) | AD-7, AD-8 |
 | R7 Request refusals | Matching (`LearnerEligibility`) | AD-12 |
 | R8–R9, R12–R15 Requests, Accept, clock, Match, Quit, Course Completed | Matching | AD-4, AD-5, AD-13, AD-16 |
-| R10–R11 Group assignment | Matching (group Actions, admin route), Mentors (`GrantMentor`) | AD-8, AD-9, AD-12, AD-13 |
+| R10–R11 Group assignment | Matching (group Actions, admin route), Mentors (`GrantMentor`, refused-for-Course read), Accounts (Employee-list read) | AD-8, AD-9, AD-12, AD-13 |
 | R16–R19 Stages, scoring, Retake rule, Gold pass | Assessments, Mentors (`GrantMentor`) | AD-4, AD-5, AD-7, AD-14 |
 | R20–R21 Progress status, Upskilling list | Progress | AD-4, AD-16 |
 | R22 notifications | Notifications | AD-5, AD-8, AD-11 |
@@ -352,8 +353,6 @@ growmate/
 - **Hosting provider.** AWS was suggested "maybe later". AD-17 makes any Docker host valid, so the choice changes no code.
 - **CI pipeline.** It runs the same compose stack and tests. It can be added after epic 1.
 - **OpenAPI or generated SPA types.** These can be layered on AD-10 without changing response shapes.
-- **End-to-end test tool, and the SPA's UI component and styling library.** These are chosen in epic 1's first stories. AD-6 and AD-16 fix the parts that cross epics.
-- **How the chosen Employee's incoming screen lays out a group** (one line per Request or one group line). This is settled when epic 4 is refined. AD-13 fixes the behaviour.
 - **Read and unread state for derived notices.** This is internal to `Notifications`.
 - **Caching, observability, backups, rate limiting and session-store tuning.** No requirement drives them at practice scale.
 - **Email delivery.** It is out of scope (C3).
