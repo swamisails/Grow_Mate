@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GrowMate — Course page mock</title>
+<style>
+/*
+  Key-screen mock: Course page (Employee).
+  Governed by:
+    DESIGN.md      — Colors, Typography, Layout & Spacing, Shapes, Components (App header, Panel, List row,
+                     Button primary/secondary, Progress bar, Stage block), Do's and Don'ts.
+    EXPERIENCE.md  — Information Architecture (Course page row), Component Patterns (Progress bar, Mentor list row,
+                     Stage block), State Patterns (No Progress status, No Mentors), Key Flows (UJ-1 step 7, UJ-2 climax),
+                     Accessibility Floor (bar accessible name + visible state word [ASSUMPTION, open]).
+  Spines win on conflict. Static mock: no JS, no network, system fonts.
+*/
+:root{
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.light{
+  --surface-base:#F3F4F6; --surface-raised:#FFFFFF; --surface-sunken:#E8EAED;
+  --ink-primary:#1F2328; --ink-secondary:#5B6169; --ink-disabled:#9AA0A6;
+  --border:#D0D4D9; --border-strong:#80868B;
+  --action:#2F343A; --action-foreground:#FFFFFF; --focus-ring:#1F2328; --error:#B3261E;
+  --status-track:#E3E5E8; --status-not-started:#80868B; --status-in-progress:#2F6FDB;
+  --status-completed:#1E8E3E; --status-quit:#C5221F;
+}
+.dark{
+  --surface-base:#16181B; --surface-raised:#1F2226; --surface-sunken:#121417;
+  --ink-primary:#E8EAED; --ink-secondary:#A0A6AD; --ink-disabled:#5F656C;
+  --border:#33373C; --border-strong:#7A8087;
+  --action:#D5D8DC; --action-foreground:#16181B; --focus-ring:#E8EAED; --error:#F28B82;
+  --status-track:#2A2D31; --status-not-started:#8A9096; --status-in-progress:#6C9EF0;
+  --status-completed:#4CB46A; --status-quit:#E5605C;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:#9AA0A6;font-family:var(--font);color:#1F2328}
+.caption{max-width:1024px;margin:0 auto 12px;font-size:14px;line-height:1.4;color:#1F2328}
+.caption b{font-weight:600}
+.frame{width:1024px;margin:0 auto 40px;border:1px solid #5B6169;border-radius:8px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.chrome{height:36px;background:#D5D8DC;display:flex;align-items:center;gap:8px;padding:0 12px}
+.chrome i{width:11px;height:11px;border-radius:50%;background:#9AA0A6;display:block}
+.chrome .url{margin-left:12px;flex:1;height:22px;border-radius:4px;background:#F3F4F6;font-size:12px;line-height:22px;padding:0 10px;color:#5B6169}
+
+/* App */
+.app{background:var(--surface-base);color:var(--ink-primary);font-size:16px;line-height:1.5;min-height:640px}
+.header{height:56px;background:var(--surface-raised);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 32px;gap:24px}
+.brand{font-size:18px;font-weight:600;line-height:1.3}
+.nav{display:flex;gap:20px;font-size:14px;font-weight:500}
+.nav a{color:var(--ink-primary);text-decoration:none;padding:4px 0}
+.nav a.current{border-bottom:2px solid var(--ink-primary)}
+.who{margin-left:auto;display:flex;gap:16px;font-size:14px;font-weight:500;align-items:center}
+.who span{color:var(--ink-secondary);font-weight:400}
+.who a{color:var(--ink-primary)}
+.content{max-width:960px;margin:0 auto;padding:32px}
+h1{font-size:24px;font-weight:600;line-height:1.25;margin:0 0 8px}
+h2{font-size:18px;font-weight:600;line-height:1.3;margin:0 0 12px}
+.desc{margin:0 0 16px;max-width:680px}
+.panel{background:var(--surface-raised);border:1px solid var(--border);border-radius:6px;padding:24px;margin-bottom:24px}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.row:last-child{border-bottom:0}
+.meta{font-size:14px;line-height:1.4;color:var(--ink-secondary)}
+.btn{font:500 14px/1.4 var(--font);border-radius:6px;padding:8px 16px;cursor:pointer}
+.btn-primary{background:var(--action);color:var(--action-foreground);border:1px solid var(--action)}
+.btn-secondary{background:var(--surface-raised);color:var(--ink-primary);border:1px solid var(--border-strong)}
+.btn:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.btn.focused{outline:2px solid var(--focus-ring);outline-offset:2px}
+
+/* Progress bar */
+.progress{display:flex;align-items:center;gap:12px}
+.bar{width:160px;height:10px;border-radius:9999px;background:var(--status-track);border:1px solid var(--border-strong);overflow:hidden;position:relative}
+.bar::after{content:"";position:absolute;inset:0;border-radius:9999px}
+.bar.not-started::after{background:var(--status-not-started)}
+.bar.in-progress::after{background:var(--status-in-progress);right:50%;border-radius:9999px 0 0 9999px}
+.bar.completed::after{background:var(--status-completed)}
+.bar.quit::after{background:var(--status-quit)}
+.state-word{font-size:14px;line-height:1.4;color:var(--ink-secondary)}
+
+/* Stage block */
+.stage{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.stage:last-child{border-bottom:0}
+.stage .name{font-size:18px;font-weight:600}
+
+/* Bar comparison */
+.compare{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
+.compare .app{min-height:0;padding:24px 32px}
+.grid{display:grid;grid-template-columns:180px 1fr 1fr;row-gap:16px;column-gap:24px;align-items:center;font-size:14px}
+.grid .hd{font-weight:500;color:var(--ink-secondary)}
+</style>
+</head>
+<body>
+
+<p class="caption"><b>1 · Light — UJ-2 climax.</b> Priya after Rafi quit Python Basics. Her bar is red (Quit), the Request buttons are back, and no Stage is unlocked, so the Stages panel isn't rendered. Rafi is still a Mentor. The list excludes Priya and shows no Mentor route.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3</div></div>
+  <div class="app light">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#">Home</a><a href="#" class="current">Courses</a><a href="#">Requests</a><a href="#">Notices</a><a href="#">Upskilling</a>
+      </nav>
+      <div class="who"><span>Priya Nair</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <h1>Python Basics</h1>
+      <p class="desc">Variables, control flow, functions and the standard library, up to writing small scripts that read and write files.</p>
+      <div class="progress" role="img" aria-label="Progress: Quit">
+        <div class="bar quit"></div><span class="state-word">Quit</span>
+      </div>
+      <div style="height:24px"></div>
+      <section class="panel">
+        <h2>Mentors</h2>
+        <div class="row"><span>Imani Okafor</span><button class="btn btn-primary">Request</button></div>
+        <div class="row"><span>Rafi Haddad</span><button class="btn btn-primary">Request</button></div>
+        <div class="row"><span>Sam Lindqvist</span><button class="btn btn-primary focused">Request</button></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<p class="caption"><b>2 · Dark — UJ-1 step 7.</b> Priya after Rafi clicked Course Completed. She has passed Bronze, and Silver is available. Gold isn't unlocked, so it isn't shown. Her bar stays half blue. Course Completed has been clicked for her on this Course, so R7 refuses any new Request, and the Mentors list shows names only, with no explanation.</p>
+<div class="frame">
+  <div class="chrome"><i></i><i></i><i></i><div class="url">growmate.local/courses/3</div></div>
+  <div class="app dark">
+    <div class="header">
+      <div class="brand">GrowMate</div>
+      <nav class="nav">
+        <a href="#">Home</a><a href="#" class="current">Courses</a><a href="#">Requests</a><a href="#">Notices</a><a href="#">Upskilling</a>
+      </nav>
+      <div class="who"><span>Priya Nair</span><a href="#">Sign out</a></div>
+    </div>
+    <main class="content">
+      <h1>Python Basics</h1>
+      <p class="desc">Variables, control flow, functions and the standard library, up to writing small scripts that read and write files.</p>
+      <div class="progress" role="img" aria-label="Progress: In progress">
+        <div class="bar in-progress"></div><span class="state-word">In progress</span>
+      </div>
+      <div style="height:24px"></div>
+      <section class="panel">
+        <h2>Stages</h2>
+        <div class="stage"><span class="name">Bronze</span><span class="meta">Passed</span></div>
+        <div class="stage"><span class="name">Silver</span><button class="btn btn-primary">Take Silver</button></div>
+      </section>
+      <section class="panel">
+        <h2>Mentors</h2>
+        <div class="row"><span>Imani Okafor</span></div>
+        <div class="row"><span>Rafi Haddad</span></div>
+        <div class="row"><span>Sam Lindqvist</span></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<p class="caption"><b>3 · The open question: state word beside the bar, or the bar alone.</b> Left column: the bar with its state name in plain text (my pick). Right column: the bar alone, with the name only for screen readers. Grey, green and red are full bars that differ by colour alone.</p>
+<div class="frame">
+  <div class="compare">
+    <div class="app light">
+      <div class="grid">
+        <span class="hd">State</span><span class="hd">With word</span><span class="hd">Bar alone</span>
+        <span>Not yet started</span>
+        <div class="progress"><div class="bar not-started"></div><span class="state-word">Not yet started</span></div>
+        <div class="progress"><div class="bar not-started"></div></div>
+        <span>In progress</span>
+        <div class="progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div>
+        <div class="progress"><div class="bar in-progress"></div></div>
+        <span>Completed</span>
+        <div class="progress"><div class="bar completed"></div><span class="state-word">Completed</span></div>
+        <div class="progress"><div class="bar completed"></div></div>
+        <span>Quit</span>
+        <div class="progress"><div class="bar quit"></div><span class="state-word">Quit</span></div>
+        <div class="progress"><div class="bar quit"></div></div>
+      </div>
+    </div>
+    <div class="app dark">
+      <div class="grid">
+        <span class="hd">State</span><span class="hd">With word</span><span class="hd">Bar alone</span>
+        <span>Not yet started</span>
+        <div class="progress"><div class="bar not-started"></div><span class="state-word">Not yet started</span></div>
+        <div class="progress"><div class="bar not-started"></div></div>
+        <span>In progress</span>
+        <div class="progress"><div class="bar in-progress"></div><span class="state-word">In progress</span></div>
+        <div class="progress"><div class="bar in-progress"></div></div>
+        <span>Completed</span>
+        <div class="progress"><div class="bar completed"></div><span class="state-word">Completed</span></div>
+        <div class="progress"><div class="bar completed"></div></div>
+        <span>Quit</span>
+        <div class="progress"><div class="bar quit"></div><span class="state-word">Quit</span></div>
+        <div class="progress"><div class="bar quit"></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
