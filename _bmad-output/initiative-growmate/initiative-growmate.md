@@ -9,6 +9,8 @@ companions:
   - _bmad-output/initiative-growmate/architecture-growmate/architecture-growmate.md
   - _bmad-output/initiative-growmate/glossary.md
   - _bmad-output/initiative-growmate/prd-growmate/addendum.md
+  - _bmad-output/initiative-growmate/ux-growmate/DESIGN.md
+  - _bmad-output/initiative-growmate/ux-growmate/EXPERIENCE.md
 after: []
 risk: medium
 ---
@@ -133,6 +135,8 @@ Employees and Admin can run the whole loop in the web app, from a published Cour
 - addendum — `_bmad-output/initiative-growmate/prd-growmate/addendum.md`: §A rejected alternatives, §B research context.
 - breakdown — `_bmad-output/initiative-growmate/tickets/tickets.toml`: epics 1–4 in build order.
 - architecture — `_bmad-output/initiative-growmate/architecture-growmate/architecture-growmate.md`: AD-1 to AD-17, epic-to-module table, Capability map.
+- design — `_bmad-output/initiative-growmate/ux-growmate/DESIGN.md`: visual identity tokens and components, light and dark.
+- design — `_bmad-output/initiative-growmate/ux-growmate/EXPERIENCE.md`: surfaces per role and epic, copy, component and state patterns, visibility rules, Key Flows UJ-1 to UJ-4.
 
 ## Notes
 

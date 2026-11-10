@@ -1,0 +1,122 @@
+# Epic 1 — Accounts, Courses and the first Mentors. Table order is build order; `id` is permanent.
+
+[[entry]]
+id = 1
+type = "story"
+title = "Admin signs in on the deployed stack"
+description = "Tracer bullet through every layer: the Docker stack (api, web, mysql) with local, e2e and production environments; the Laravel API with Sanctum cookie sessions; a bare React SPA with the copy file, the Admin top bar and an empty Admin Courses page; Admin seeded from environment variables, with the module seeders run in AD-17 order (the Accounts seeder seeds only Admin); and the Playwright harness, which resets and reseeds the e2e database before each run, with its first test. Each top bar shows links only to pages already built; later entries add theirs, and New Course comes with entry 2. Theme, page header and page states come in entry 11. The user runs the Laravel and create-vite starters and writes the `.env` secrets (hitl)."
+verify = "On the e2e stack, Admin signs in from a desktop browser, sees the empty Admin Courses page and signs out; the production stack starts from built images with Admin and no demo data; the Playwright test passes."
+covers = ["R1", "R10", "R11"] # R11: the bare Admin top bar only
+after = []
+hitl = true # the user runs the Laravel and create-vite starters and writes the .env secrets
+risk = "high"
+
+[[entry]]
+id = 11
+type = "story"
+title = "The app shell: theme, page header and page states"
+description = "Completes entry 1's SPA shell from EXPERIENCE.md: the light and dark toggle (first visit follows the OS setting, then the choice is remembered in this browser), the page header with its page-title tile, Loading text, 401 to Sign in and back to the open page, 403/404 as Page not found, 422 field errors with focus on the first invalid field, and a 409 message with a re-fetch. Every later page builds on these."
+verify = "The theme toggle switches light and dark and keeps the choice after a reload; a first visit follows the OS setting; an unknown URL shows Page not found; a wrong password on Sign in shows its error with focus on the field; an expired session returns to Sign in and then to the page that was open."
+covers = ["R11"]
+after = [1]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 2
+type = "story"
+title = "Admin drafts a Course with three Stage Assessments"
+description = "The Course editor: title, description, and for Bronze, Silver and Gold the questions, options, one correct option and a Pass mark, saved explicitly as a draft and editable until published. The authoring rules are enforced by the API (R5). Adds the New Course button to entry 1's Admin Courses page; entry 4 makes the editor read-only once published."
+verify = "Admin creates a draft Course, fills all three Stages, saves, reloads and sees it unchanged; a Stage with no question, a question with one option or two correct options, and a Pass mark of 0 or 101 are each refused field by field."
+covers = ["R5"]
+after = [11]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 3
+type = "story"
+title = "Employees sign up, sign in and sign out"
+description = "Sign up with name, email and password, sign in, sign out, and land on an empty Home under the Employee top bar. The Employee top bar shows links only to built pages (Home here; Courses with entry 4, Notices with entry 8). A 401 returns the Employee to Sign in and then to the page they had open. The Mentor check step comes in entry 6 and only extends this signup."
+verify = "A visitor signs up and lands on an empty Home with the Employee top bar, signs out and back in; a duplicate email is refused; signup can never create an Admin."
+covers = ["R1", "R11"] # R11: the Employee top bar
+after = [11]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 4
+type = "story"
+title = "Admin publishes a Course and Employees see it"
+description = "Publish, enabled only for a complete draft and confirmed first, freezes the Course; Employees get the Courses list and the Course page with its description. Publishes the drafts from entry 2's Course editor and adds Courses to the Employee top bar. Demo published Courses, each with three complete Stages, are seeded in local and e2e. Entry 5 adds the Mentors card to that page."
+verify = "Publish stays disabled until all three Stages are complete; after publishing, an Employee sees the Course on Courses and opens its page, Admin's editor is read-only, and the API refuses any edit to the published Course; the API also refuses publishing an incomplete Course, and a draft never appears on the Employee Courses page."
+covers = ["R6"]
+after = [2, 3]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 5
+type = "story"
+title = "Each Course lists its Mentors"
+description = "The Mentor-route record and the one grant-Mentor operation (three route values, first route kept), and the Course page's Mentors card listing every Mentor except the viewer, without the route. Adds the Mentors card to entry 4's Course page. The Mentors seeder seeds demo Employees after Courses (R10), together with their Mentor grants through the grant operation, using the Registration approval route with no Mentor check or decision rows behind them. Entry 7 calls this grant for Registration approval; epics 3 and 4 call it later."
+verify = "With seeded Mentors, an Employee opens a Course page and sees every Mentor for it except themselves, with no route shown and no route field in the Course Mentors API response; an API test shows that granting the same Employee and Course twice keeps the first route."
+covers = ["R7", "R8"]
+after = [4]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 6
+type = "story"
+title = "Employees name Courses in the Mentor check"
+description = "The Mentor check as step 2 of signup: tick Courses published before the account was created and Submit, or Skip. The server accepts exactly one submission per Employee (AD-15). An Employee who leaves before submitting or skipping sees the step again at their next sign-in. Extends entry 3's signup and the Mentors module from entry 5; entry 7 decides what it records."
+verify = "Straight after signup an Employee ticks published Courses and submits, or skips, and the step never appears again; an Employee who signs out at the step sees it again at the next sign-in; the API refuses a second submission and a Course published after the account was created."
+covers = ["R2"]
+after = [3, 4, 5]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 7
+type = "story"
+title = "Admin decides each Mentor-check Course"
+description = "The Registration decisions page, deciding the Courses recorded by entry 6's Mentor check: one row per undecided Mentor-check Course, Approve or Refuse after a confirmation, no comment. Approval calls the grant-Mentor operation from entry 5 (Registration approval); a refusal is stored for epic 4. Decided rows show an Approved or Refused tag and can't change. The Employee's notice and Home lists come in entry 8. Adds Registration decisions to the Admin top bar."
+verify = "Admin approves one of an Employee's Courses and refuses another; the approved Course's page lists the Employee as a Mentor and the refused one doesn't; both rows show their tag, and the API refuses a second decision on either."
+covers = ["R3"]
+after = [5, 6]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 8
+type = "story"
+title = "Employees see their Registration-decision notices and lists"
+description = "The notice pipeline and Notices page (Employees only, newest first, no unread count, one shape later epics extend), the Registration-decision notice sent after entry 7's decision commits, and Home's Mentor check card with separate Approved and Refused lists. Sends after entry 7's decisions commit, and adds Notices to the Employee top bar."
+verify = "After Admin's decisions, the Employee sees one notice per decision on Notices, newest first and with no count, and Home lists the approved and refused Courses separately, a still-undecided Course in neither; an Employee who skipped sees no Mentor check card; Admin has no Notices link and receives no notice."
+covers = ["R4", "R9"]
+after = [7]
+hitl = false
+risk = "medium"
+
+[[entry]]
+id = 9
+type = "story"
+title = "Refactor sweep"
+description = "Cleanup only, scoped at its start from the plans and review findings this epic deferred; scope pushed out of another story becomes a new story."
+verify = "The API tests and the Playwright harness pass unchanged after the cleanup, with no behaviour change."
+covers = []
+after = [2, 3, 4, 5, 6, 7, 8, 11]
+hitl = false
+risk = "low"
+
+[[entry]]
+id = 10
+type = "story"
+title = "UJ-3 and Course publishing pass end to end"
+description = "The closing Playwright suite on the seeded e2e stack: Noor publishes a Course (Flow 4 steps 1-3), and Sam signs up, names Courses, gets two approved and one refused, sees the notices and lists, and appears as a Mentor (Flow 3, UJ-3)."
+verify = "The Playwright suite for UJ-3 and Course publishing runs green against the seeded e2e stack."
+covers = ["R10"]
+after = [9]
+hitl = false
+risk = "low"
