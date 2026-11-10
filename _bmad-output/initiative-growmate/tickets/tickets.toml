@@ -4,7 +4,7 @@
 id = 1
 slug = "epic-accounts-courses-first-mentors"
 title = "Accounts, Courses and the first Mentors"
-description = """On the deployed web app, Employees sign up and sign in, and Admin publishes Courses with three Stage Assessments. Admin's Registration decisions create the first Mentors.
+description = """On the deployed web app, Employees sign up and sign in, and Admin publishes Courses with three Stage Assessments. Admin's Registration decisions create the first Mentors, and each Course lists its Mentors.
 
 Owns the shared foundations later epics build on:
 - the platform baseline, plus the seed data and end-to-end test harness;
@@ -13,13 +13,13 @@ Owns the shared foundations later epics build on:
 - the stored refused Registration decisions that epic 4 reads.
 
 Seed order: Admin, then Courses, then Employees (R2 needs published Courses)."""
-covers = ["R1", "R2", "R3", "R4", "R5", "R22"]
+covers = ["R1", "R2", "R3", "R4", "R5", "R6", "R22"]
 
 [[epic]]
 id = 2
 slug = "epic-requests-and-matches"
 title = "Learners get a Mentor and are judged ready"
-description = """A Learner requests a listed Mentor, and the Mentor Accepts. The day-3 reminder and the day-6 Cancel run on a controllable clock. Either party can Quit. The Mentor clicks Course Completed, which unlocks Bronze.
+description = """A Learner requests a Mentor from the Course's Mentor list, and the Mentor Accepts. The day-3 reminder and the day-6 Cancel run on a controllable clock. Either party can Quit. The Mentor clicks Course Completed, which unlocks Bronze.
 
 Delivers:
 - the plain bar with Not yet started, In progress and Quit (R20 part);
@@ -28,8 +28,8 @@ Delivers:
 
 Hands to epic 3: Course Completed opening Bronze, the Progress status model, and the clock.
 Hands to epic 4: Requests under the clock, Accept, and Matches."""
-covers = ["R6", "R7", "R8", "R9", "R12", "R13", "R14", "R15", "R20", "R21", "R22"]
-after = [{ epic = 1, needs = "accounts, published Courses, Mentors with a Mentor-route record, and the in-app notification mechanism" }]
+covers = ["R7", "R8", "R9", "R12", "R13", "R14", "R15", "R20", "R21", "R22"]
+after = [{ epic = 1, needs = "accounts, published Courses, the Course Mentor list, Mentors with a Mentor-route record, and the in-app notification mechanism" }]
 
 [[epic]]
 id = 3

@@ -154,3 +154,6 @@ Decisions, all 2026-11-02:
 - Decision: R7's refusals apply to Group assignment (R10 updated).
 - Decision: An Employee holds one Mentor status per Course. When a second route would also qualify them, the first route is kept.
 - Decision: The full SM-1 seeded run belongs to the initiative's closure check, because it spans epics 3 and 4.
+
+Decisions, 2026-11-10:
+- Decision: R6, the Course Mentor list, moves from epic 2 to epic 1, so epic 1's Done when is visible on screen.
