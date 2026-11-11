@@ -1,0 +1,21 @@
+# Secrets: every .env file stays local; only examples are committed (AD-17).
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Dependencies
+node_modules/
+vendor/
+
+# Playwright output
+e2e/test-results/
+e2e/playwright-report/
+e2e/blob-report/
+e2e/playwright/.cache/
+
+# Build output and OS noise
+web/dist/
+*.log
+.DS_Store
+*:Zone.Identifier
