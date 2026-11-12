@@ -43,7 +43,7 @@ test('Admin signs in, sees the empty Admin Courses page and signs out', async ({
   })
   expect(me.status()).toBe(401)
   await page.goto('/admin/courses')
-  await expect(page).toHaveURL(/\/sign-in$/)
+  await expect(page).toHaveURL(/\/sign-in\?return=%2Fadmin%2Fcourses$/)
 })
 
 test('a wrong password keeps Admin on Sign in with a generic message', async ({ page }) => {
@@ -53,6 +53,6 @@ test('a wrong password keeps Admin on Sign in with a generic message', async ({ 
   await page.getByLabel('Password').fill(`${admin.password}-wrong`)
   await page.getByRole('button', { name: 'Sign in' }).click()
 
-  await expect(page.getByRole('alert')).toHaveText('These credentials do not match our records.')
+  await expect(page.getByLabel('Email')).toHaveAccessibleDescription('These credentials do not match our records.')
   await expect(page).toHaveURL(/\/sign-in$/)
 })

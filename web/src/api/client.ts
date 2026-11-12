@@ -26,6 +26,24 @@ export class ApiError extends Error {
 
 type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
+/** The boot-time session check: its 401 only means "signed out", not "session lost". */
+const SESSION_CHECK = '/api/v1/me'
+
+let unauthorizedListener: (() => void) | null = null
+
+/**
+ * Called whenever an API call answers 401 (the session expired or was never there), except the
+ * boot-time `GET /api/v1/me`. Returns a function that removes the listener.
+ */
+export function onUnauthorized(listener: () => void): () => void {
+  unauthorizedListener = listener
+  return () => {
+    if (unauthorizedListener === listener) {
+      unauthorizedListener = null
+    }
+  }
+}
+
 function readCookie(name: string): string | null {
   const prefix = `${name}=`
   const entry = document.cookie.split('; ').find((part) => part.startsWith(prefix))
@@ -59,6 +77,9 @@ async function request<T>(method: Method, path: string, body?: unknown): Promise
   const payload: unknown = await response.json().catch(() => null)
 
   if (!response.ok) {
+    if (response.status === 401 && !(method === 'GET' && path === SESSION_CHECK)) {
+      unauthorizedListener?.()
+    }
     const errorBody =
       payload && typeof payload === 'object' && 'message' in payload
         ? (payload as ApiErrorBody)

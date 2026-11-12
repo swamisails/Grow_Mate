@@ -1,5 +1,5 @@
 /* Design tokens from ux-growmate/DESIGN.md. Light is the default; dark applies with
-   data-theme="dark" on <html> (the toggle arrives with a later story). */
+   data-theme="dark" on <html>, set before first paint by index.html and by the theme toggle. */
 
 :root {
   color-scheme: light;

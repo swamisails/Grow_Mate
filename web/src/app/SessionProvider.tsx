@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import * as accounts from '../api/accounts'
+import { onUnauthorized } from '../api/client'
 import type { User } from '../api/types/accounts'
 import { SessionContext } from './session'
 
 export function SessionProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<User | null>(null)
+
+  // Any 401 after boot means the session is gone: clear the user, and the router sends them to Sign in.
+  useEffect(() => onUnauthorized(() => setUser(null)), [])
 
   useEffect(() => {
     let cancelled = false

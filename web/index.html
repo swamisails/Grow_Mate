@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GrowMate</title>
+    <script>
+      // Theme before first paint, so the page never flashes (src/app/theme.ts owns the key).
+      ;(function () {
+        var theme = null
+        try {
+          theme = window.localStorage.getItem('growmate-theme')
+        } catch (error) {
+          // Storage blocked: fall back to the operating system's setting.
+        }
+        if (theme !== 'light' && theme !== 'dark') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        }
+        document.documentElement.dataset.theme = theme
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

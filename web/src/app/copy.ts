@@ -2,10 +2,23 @@
 
 export const copy = {
   appName: 'GrowMate',
+  /** `<title>` on every page: "{page} · GrowMate". */
+  documentTitle: (page: string) => `${page} · GrowMate`,
   nav: {
     courses: 'Courses',
     signOut: 'Sign out',
     primary: 'Main',
+  },
+  theme: {
+    toDark: 'Switch to dark mode',
+    toLight: 'Switch to light mode',
+  },
+  states: {
+    loading: 'Loading…',
+    notFound: 'Page not found.',
+    /** The `<title>` page name of the Not found state. */
+    notFoundTitle: 'Page not found',
+    home: 'Home',
   },
   signIn: {
     title: 'Sign in',

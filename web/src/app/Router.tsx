@@ -74,7 +74,13 @@ export function NavLink({ to, className, children }: LinkProps) {
 
 /** Redirects on render (replacing the history entry). */
 export function Navigate({ to }: { to: string }) {
-  const { navigate } = useRouter()
-  useEffect(() => navigate(to, { replace: true }), [navigate, to])
+  const { path, navigate } = useRouter()
+  useEffect(() => {
+    // Skip a redirect worked out for a page the browser has already left (e.g. Sign out navigating
+    // to Sign in while the cleared session re-renders the old page).
+    if (window.location.pathname === path) {
+      navigate(to, { replace: true })
+    }
+  }, [navigate, path, to])
   return null
 }
