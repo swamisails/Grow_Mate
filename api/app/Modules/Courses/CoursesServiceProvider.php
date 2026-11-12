@@ -2,6 +2,9 @@
 
 namespace App\Modules\Courses;
 
+use App\Modules\Courses\Models\Course;
+use App\Modules\Courses\Policies\CoursePolicy;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -12,6 +15,6 @@ class CoursesServiceProvider extends ServiceProvider
 {
     public function boot(): void
     {
-        //
+        Gate::policy(Course::class, CoursePolicy::class);
     }
 }

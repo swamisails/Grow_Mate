@@ -2,6 +2,8 @@
 
 namespace App\Modules\Courses\Actions;
 
+use App\Modules\Courses\ErrorCode;
+use App\Modules\Courses\Exceptions\CourseRuleViolation;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Courses\Models\Option;
 use App\Modules\Courses\Models\Question;
@@ -36,6 +38,10 @@ class SaveCourseDraft
         DB::transaction(function () use ($courseId, $document): void {
             // Serialise concurrent saves of the same Course.
             $locked = Course::query()->whereKey($courseId)->lockForUpdate()->firstOrFail();
+
+            if ($locked->published_at !== null) {
+                throw new CourseRuleViolation(ErrorCode::Published);
+            }
 
             $locked->update([
                 'title' => $document['title'],

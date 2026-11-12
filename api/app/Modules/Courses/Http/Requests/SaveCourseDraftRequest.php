@@ -2,6 +2,9 @@
 
 namespace App\Modules\Courses\Http\Requests;
 
+use App\Modules\Courses\ErrorCode;
+use App\Modules\Courses\Exceptions\CourseRuleViolation;
+use App\Modules\Courses\Models\Course;
 use App\Modules\Courses\Models\StageLevel;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
@@ -9,8 +12,9 @@ use Illuminate\Validation\Rule;
 
 /**
  * The authoring rules for a draft, applied only to what is present: a Stage may have no questions
- * and no Pass mark yet (Publish, entry 4, refuses those). Every question that is present needs at
- * least 2 options with exactly 1 marked correct; every Pass mark entered is a whole number 1–100.
+ * and no Pass mark yet (PublishEligibility keeps such a draft from being published). Every question
+ * that is present needs at least 2 options with exactly 1 marked correct; every Pass mark entered is
+ * a whole number 1–100.
  * Errors use Laravel's dot keys, e.g. `stages.0.questions.1.options` (AD-10).
  */
 class SaveCourseDraftRequest extends FormRequest
@@ -21,6 +25,19 @@ class SaveCourseDraftRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * A published Course refuses every write (AD-14), so its 409 comes before any 422 for the body.
+     * SaveCourseDraft checks again under the row lock; a missing Course stays its 404.
+     *
+     * @throws CourseRuleViolation
+     */
+    protected function prepareForValidation(): void
+    {
+        if (Course::query()->whereKey((int) $this->route('course'))->whereNotNull('published_at')->exists()) {
+            throw new CourseRuleViolation(ErrorCode::Published);
+        }
     }
 
     /**

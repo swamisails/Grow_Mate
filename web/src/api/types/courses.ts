@@ -40,6 +40,8 @@ export type Course = {
   title: string
   description: string | null
   status: CourseStatus
+  /** The API's completeness check of the saved Course; always false once published. */
+  can_publish: boolean
   /** Bronze, Silver, Gold. */
   stages: Stage[]
 }
@@ -66,4 +68,14 @@ export type SaveCourseDraftRequest = {
       options: { text: string; is_correct: boolean }[]
     }[]
   }[]
+}
+
+/**
+ * App\Modules\Courses\Http\Resources\PublishedCourseResource: GET /api/v1/courses and
+ * /api/v1/courses/{id}. Employees get no Stage, question or answer data.
+ */
+export type PublishedCourse = {
+  id: number
+  title: string
+  description: string | null
 }

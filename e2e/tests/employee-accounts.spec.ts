@@ -51,7 +51,7 @@ test('an Employee signs up from Sign in and lands on Home under the Employee bar
 
   // The bar: GrowMate, Home, the theme toggle, the name and Sign out, and nothing else.
   const banner = page.getByRole('banner')
-  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home'])
+  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home', 'Courses'])
   await expect(banner.getByRole('button')).toHaveCount(2)
   await expect(banner.getByRole('button', { name: /^Switch to (dark|light) mode$/ })).toBeVisible()
   await expect(banner.getByRole('button', { name: 'Sign out' })).toBeVisible()

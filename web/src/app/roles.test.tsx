@@ -56,6 +56,7 @@ describe('Employee routing', () => {
     expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['GrowMate', '/home'],
       ['Home', '/home'],
+      ['Courses', '/courses'],
     ])
     expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBe(
       'page',
@@ -68,7 +69,7 @@ describe('Employee routing', () => {
 
     const learning = screen.getByRole('region', { name: 'Learning' })
     expect(within(learning).getByText("You aren't learning a course yet.")).toBeTruthy()
-    expect(within(learning).queryByRole('link')).toBeNull()
+    expect(within(learning).getByRole('link', { name: 'Courses' }).getAttribute('href')).toBe('/courses')
   })
 
   it('shows Not found in the Employee layout on an Admin page, with a link Home', async () => {

@@ -55,6 +55,12 @@ export const copy = {
     draft: 'Draft',
     published: 'Published',
   },
+  employeeCourses: {
+    title: 'Courses',
+    pageName: 'Course',
+    empty: 'No courses yet.',
+    description: 'Description',
+  },
   courseEditor: {
     /** The page name while the Course loads. */
     pageName: 'Course editor',
@@ -73,6 +79,8 @@ export const copy = {
     options: 'Options',
     option: (n: number) => `Option ${n}`,
     correct: 'Correct',
+    /** Beside the correct option in a published Course's read-only view. */
+    correctTag: '(Correct)',
     correctFor: (n: number) => `Correct, option ${n}`,
     addQuestion: 'Add question',
     removeQuestion: 'Remove question',
@@ -82,6 +90,9 @@ export const copy = {
     removeOption: 'Remove option',
     removeOptionFor: (n: number) => `Remove option ${n}`,
     save: 'Save',
+    publish: 'Publish',
+    confirmation: "Published courses can't be edited.",
+    cancel: 'Cancel',
   },
   errors: {
     generic: 'Something went wrong. Try again.',
