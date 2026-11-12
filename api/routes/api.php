@@ -4,6 +4,7 @@ use App\Modules\Accounts\Http\Controllers\AdminPingController;
 use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SignInController;
 use App\Modules\Accounts\Http\Controllers\SignOutController;
+use App\Modules\Accounts\Http\Controllers\SignUpController;
 use App\Modules\Courses\Http\Controllers\AdminCoursesController;
 use App\Modules\Courses\Http\Controllers\CreateCourseController;
 use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
@@ -13,6 +14,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('v1')->group(function () {
     // AD-9: Sanctum SPA cookie session; the SPA calls GET /sanctum/csrf-cookie first.
     Route::post('login', SignInController::class);
+    // Sign up creates an Employee only, never an Admin (C2).
+    Route::post('register', SignUpController::class);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', SignOutController::class);

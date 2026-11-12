@@ -31,6 +31,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setUser(await accounts.signIn({ email, password }))
   }, [])
 
+  const signUp = useCallback(async (name: string, email: string, password: string) => {
+    setUser(await accounts.signUp({ name, email, password }))
+  }, [])
+
   const signOut = useCallback(async () => {
     try {
       await accounts.signOut()
@@ -40,7 +44,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const value = useMemo(() => ({ loading, user, signIn, signOut }), [loading, user, signIn, signOut])
+  const value = useMemo(
+    () => ({ loading, user, signIn, signUp, signOut }),
+    [loading, user, signIn, signUp, signOut],
+  )
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>
 }

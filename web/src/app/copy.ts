@@ -5,6 +5,7 @@ export const copy = {
   /** `<title>` on every page: "{page} · GrowMate". */
   documentTitle: (page: string) => `${page} · GrowMate`,
   nav: {
+    home: 'Home',
     courses: 'Courses',
     signOut: 'Sign out',
     primary: 'Main',
@@ -25,6 +26,22 @@ export const copy = {
     email: 'Email',
     password: 'Password',
     submit: 'Sign in',
+    noAccount: 'No account?',
+    signUpLink: 'Sign up',
+  },
+  signUp: {
+    title: 'Sign up',
+    name: 'Name',
+    email: 'Email',
+    password: 'Password',
+    submit: 'Sign up',
+    haveAccount: 'Have an account?',
+    signInLink: 'Sign in',
+  },
+  home: {
+    title: 'Home',
+    learning: 'Learning',
+    learningEmpty: "You aren't learning a course yet.",
   },
   adminCourses: {
     title: 'Courses',

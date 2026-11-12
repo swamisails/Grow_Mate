@@ -1,9 +1,11 @@
-import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ApiError } from '../../api/client'
 import { copy } from '../../app/copy'
 import { fieldErrors, focusFirstInvalid, type FieldErrors } from '../../app/forms'
 import { PageHeader } from '../../app/PageHeader'
+import { Link } from '../../app/Router'
 import { useSession } from '../../app/session'
+import { TextField } from './TextField'
 
 export function SignIn() {
   const { signIn } = useSession()
@@ -13,7 +15,6 @@ export function SignIn() {
   const [formError, setFormError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
-  const ids = { email: useId(), password: useId(), emailError: useId(), passwordError: useId() }
 
   // Focus moves to the first invalid field once its message and aria links are rendered.
   useEffect(() => {
@@ -28,7 +29,7 @@ export function SignIn() {
     setErrors({})
     setFormError(null)
     try {
-      // Once the session holds an Admin, the router leaves Sign in for the return path or the Admin home.
+      // Once the session holds a user, the router leaves Sign in for the return path or the user's home.
       await signIn(email, password)
     } catch (caught) {
       const invalid = fieldErrors(caught)
@@ -48,52 +49,24 @@ export function SignIn() {
       <section className="card" aria-label={copy.signIn.title}>
         <div className="card__body">
           <form className="form" ref={formRef} onSubmit={handleSubmit} noValidate>
-            <div className="field">
-              <input
-                className="field__input"
-                id={ids.email}
-                type="email"
-                name="email"
-                autoComplete="username"
-                placeholder=" "
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                aria-describedby={errors.email ? ids.emailError : undefined}
-                aria-invalid={errors.email ? true : undefined}
-                required
-              />
-              <label className="field__label" htmlFor={ids.email}>
-                {copy.signIn.email}
-              </label>
-              {errors.email && (
-                <p className="field-error" id={ids.emailError}>
-                  {errors.email}
-                </p>
-              )}
-            </div>
-            <div className="field">
-              <input
-                className="field__input"
-                id={ids.password}
-                type="password"
-                name="password"
-                autoComplete="current-password"
-                placeholder=" "
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                aria-describedby={errors.password ? ids.passwordError : undefined}
-                aria-invalid={errors.password ? true : undefined}
-                required
-              />
-              <label className="field__label" htmlFor={ids.password}>
-                {copy.signIn.password}
-              </label>
-              {errors.password && (
-                <p className="field-error" id={ids.passwordError}>
-                  {errors.password}
-                </p>
-              )}
-            </div>
+            <TextField
+              label={copy.signIn.email}
+              name="email"
+              type="email"
+              autoComplete="username"
+              value={email}
+              onChange={setEmail}
+              error={errors.email}
+            />
+            <TextField
+              label={copy.signIn.password}
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={setPassword}
+              error={errors.password}
+            />
             {formError && (
               <p className="field-error" role="alert">
                 {formError}
@@ -105,6 +78,11 @@ export function SignIn() {
           </form>
         </div>
       </section>
+      <p>
+        {copy.signIn.noAccount}{' '}
+        {/* Keeps `?return=`, so signing up still comes back to the page that sent the user here. */}
+        <Link to={`/sign-up${window.location.search}`}>{copy.signIn.signUpLink}</Link>
+      </p>
     </>
   )
 }

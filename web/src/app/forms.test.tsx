@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { ApiError } from '../api/client'
 import { SignIn } from '../features/accounts/SignIn'
 import { ConflictMessage, fieldErrors, focusFirstInvalid, useConflict } from './forms'
+import { RouterProvider } from './Router'
 import { SessionContext, type SessionValue } from './session'
 
 afterEach(cleanup)
@@ -94,11 +95,14 @@ describe('Sign in with a 422', () => {
       loading: false,
       user: null,
       signIn: vi.fn().mockRejectedValue(credentialsError),
+      signUp: vi.fn(),
       signOut: vi.fn(),
     }
     render(
       <SessionContext.Provider value={session}>
-        <SignIn />
+        <RouterProvider>
+          <SignIn />
+        </RouterProvider>
       </SessionContext.Provider>,
     )
 

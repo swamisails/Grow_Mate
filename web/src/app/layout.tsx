@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { copy } from './copy'
 import { Icon } from './icons'
-import { NavLink } from './Router'
+import { Link, NavLink } from './Router'
 import { useRouter } from './router'
 import { useSession } from './session'
 import { ThemeToggle } from './ThemeToggle'
@@ -21,8 +21,11 @@ export function BareLayout({ children }: { children: ReactNode }) {
   )
 }
 
-/** Admin pages: top bar with links to built Admin pages only, then the theme toggle, the name and Sign out (R11). */
-export function AdminLayout({ children }: { children: ReactNode }) {
+/**
+ * A signed-in top bar (R11): the product name, links to built pages only, then the theme toggle,
+ * the user's name and Sign out.
+ */
+function SignedInLayout({ name, nav, children }: { name: ReactNode; nav: ReactNode; children: ReactNode }) {
   const { user, signOut } = useSession()
   const { navigate } = useRouter()
 
@@ -39,12 +42,9 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="app-header">
-        <p className="app-header__name">{copy.appName}</p>
+        <p className="app-header__name">{name}</p>
         <nav className="app-header__nav" aria-label={copy.nav.primary}>
-          <NavLink to="/admin/courses" className="app-header__link">
-            <Icon name="menu_book" className="app-header__icon" />
-            {copy.nav.courses}
-          </NavLink>
+          {nav}
         </nav>
         <div className="app-header__account">
           <ThemeToggle />
@@ -56,5 +56,43 @@ export function AdminLayout({ children }: { children: ReactNode }) {
       </header>
       <main className="page">{children}</main>
     </>
+  )
+}
+
+/** Admin pages: only Courses is built so far. */
+export function AdminLayout({ children }: { children: ReactNode }) {
+  return (
+    <SignedInLayout
+      name={copy.appName}
+      nav={
+        <NavLink to="/admin/courses" className="app-header__link">
+          <Icon name="menu_book" className="app-header__icon" />
+          {copy.nav.courses}
+        </NavLink>
+      }
+    >
+      {children}
+    </SignedInLayout>
+  )
+}
+
+/** Employee pages: "GrowMate" links to Home, and Home is the only built page so far. */
+export function EmployeeLayout({ children }: { children: ReactNode }) {
+  return (
+    <SignedInLayout
+      name={
+        <Link to="/home" className="app-header__home">
+          {copy.appName}
+        </Link>
+      }
+      nav={
+        <NavLink to="/home" className="app-header__link">
+          <Icon name="home" className="app-header__icon" />
+          {copy.nav.home}
+        </NavLink>
+      }
+    >
+      {children}
+    </SignedInLayout>
   )
 }
