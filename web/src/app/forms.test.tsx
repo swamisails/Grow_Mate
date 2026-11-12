@@ -49,6 +49,26 @@ describe('focusFirstInvalid', () => {
     expect(focusFirstInvalid(form, { other: 'Required.' })).toBeNull()
   })
 
+  it('focuses the first control of a fieldset named with a group-level key', () => {
+    render(
+      <form data-testid="form">
+        <input name="title" aria-label="Title" />
+        <fieldset name="stages.0.questions.0.options">
+          <legend>Options</legend>
+          <fieldset>
+            <legend>Nested</legend>
+            <input name="stages.0.questions.0.options.0.text" aria-label="Option 1" />
+          </fieldset>
+          <input type="radio" name="correct" aria-label="Correct" />
+        </fieldset>
+      </form>,
+    )
+    const form = screen.getByTestId('form') as HTMLFormElement
+
+    expect(focusFirstInvalid(form, { 'stages.0.questions.0.options': 'Too few.' })).toBe(screen.getByLabelText('Option 1'))
+    expect(document.activeElement).toBe(screen.getByLabelText('Option 1'))
+  })
+
   it('fires focus again when the invalid field already has focus', () => {
     render(
       <form data-testid="form">
