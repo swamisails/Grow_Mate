@@ -8,6 +8,8 @@ export type SessionValue = {
   loading: boolean
   user: User | null
   signIn: (email: string, password: string) => Promise<void>
+  /** Creates an Employee account and signs it in. */
+  signUp: (name: string, email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -23,7 +25,10 @@ export function useSession(): SessionValue {
 
 /** Where a user lands when no specific page was asked for. */
 export function homePath(user: User | null): string {
-  return user?.is_admin ? '/admin/courses' : '/sign-in'
+  if (!user) {
+    return '/sign-in'
+  }
+  return user.is_admin ? '/admin/courses' : '/home'
 }
 
 /**

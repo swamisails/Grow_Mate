@@ -2,14 +2,14 @@
 
 import { createContext, useContext, type ComponentType } from 'react'
 
-/** Who may open a route: `guest` (signed out) or `admin`. */
-export type Access = 'guest' | 'admin'
+/** Who may open a route: `guest` (signed out), `admin` or `employee` (signed in, with that role). */
+export type Access = 'guest' | 'admin' | 'employee'
 
 export type RouteDef = {
   /** An exact path (`/admin/courses`) or a pattern with `:name` segments (`/admin/courses/:id`). */
   path: string
   access: Access
-  layout: 'bare' | 'admin'
+  layout: 'bare' | 'admin' | 'employee'
   Component: ComponentType
 }
 

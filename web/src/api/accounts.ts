@@ -1,5 +1,5 @@
 import { api, ApiError, fetchCsrfCookie, type Resource } from './client'
-import type { SignInRequest, User } from './types/accounts'
+import type { SignInRequest, SignUpRequest, User } from './types/accounts'
 
 /** The signed-in user, or null when there is no session (401). */
 export async function getMe(): Promise<User | null> {
@@ -17,6 +17,13 @@ export async function getMe(): Promise<User | null> {
 export async function signIn(credentials: SignInRequest): Promise<User> {
   await fetchCsrfCookie()
   const { data } = await api.post<Resource<User>>('/api/v1/login', credentials)
+  return data
+}
+
+/** Creates an Employee (never an Admin) and starts its session; answers 201 with the new user. */
+export async function signUp(details: SignUpRequest): Promise<User> {
+  await fetchCsrfCookie()
+  const { data } = await api.post<Resource<User>>('/api/v1/register', details)
   return data
 }
 
