@@ -22,19 +22,38 @@ export function fieldErrors(error: unknown): FieldErrors | null {
   return first
 }
 
-/** Focuses the first field (in form order) that has an error; returns it, or null when none matched. */
+/** The first enabled control inside a group, skipping nested fieldsets themselves. */
+function firstControl(group: HTMLFieldSetElement): HTMLElement | null {
+  for (const element of Array.from(group.elements)) {
+    if (element instanceof HTMLElement && !(element instanceof HTMLFieldSetElement) && !(element as HTMLInputElement).disabled) {
+      return element
+    }
+  }
+  return null
+}
+
+/**
+ * Focuses the first field (in form order) that has an error; returns it, or null when none matched.
+ * A group-level key (e.g. `stages.0.questions.1.options`) has no input of its own: name the group's
+ * `<fieldset>` with it, and the group's first control gets focus.
+ */
 export function focusFirstInvalid(form: HTMLFormElement, errors: FieldErrors): HTMLElement | null {
   for (const element of Array.from(form.elements)) {
     const name = (element as HTMLInputElement).name
-    if (name && name in errors && element instanceof HTMLElement) {
-      // Already focused (e.g. submitted with Enter from this field): blur first so focus fires again
-      // and screen readers announce the newly linked error description.
-      if (document.activeElement === element) {
-        element.blur()
-      }
-      element.focus()
-      return element
+    if (!name || !(name in errors) || !(element instanceof HTMLElement)) {
+      continue
     }
+    const target = element instanceof HTMLFieldSetElement ? firstControl(element) : element
+    if (!target) {
+      continue
+    }
+    // Already focused (e.g. submitted with Enter from this field): blur first so focus fires again
+    // and screen readers announce the newly linked error description.
+    if (document.activeElement === target) {
+      target.blur()
+    }
+    target.focus()
+    return target
   }
   return null
 }

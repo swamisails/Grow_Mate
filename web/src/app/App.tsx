@@ -1,13 +1,14 @@
 import { AdminLayout, BareLayout } from './layout'
 import { Loading, NotFound } from './PageStates'
 import { Navigate, RouterProvider } from './Router'
-import { useRouter } from './router'
+import { matchRoute, RouterContext, useRouter } from './router'
 import { routes } from './routes'
 import { homePath, returnPath, signInPath, useSession } from './session'
 import { SessionProvider } from './SessionProvider'
 
 function CurrentPage() {
-  const { path } = useRouter()
+  const router = useRouter()
+  const { path } = router
   const { loading, user } = useSession()
 
   if (loading) {
@@ -25,16 +26,18 @@ function CurrentPage() {
     return <Navigate to={homePath(user)} />
   }
 
-  const route = routes.find((candidate) => candidate.path === path)
+  const match = matchRoute(routes, path)
 
   // Unknown for everyone, and forbidden (signed in without the role), look the same.
-  if (!route || (route.access === 'admin' && user && !user.is_admin)) {
+  if (!match || (match.route.access === 'admin' && user && !user.is_admin)) {
     return (
       <UserLayout>
         <NotFound />
       </UserLayout>
     )
   }
+  const { route, params } = match
+
   // Signed out (or the session expired, 401): Sign in, then back to this page.
   if (route.access === 'admin' && !user) {
     return <Navigate to={signInPath(path + window.location.search)} />
@@ -49,7 +52,10 @@ function CurrentPage() {
   const Layout = route.layout === 'admin' ? AdminLayout : BareLayout
   return (
     <Layout>
-      <route.Component />
+      <RouterContext.Provider value={{ ...router, params }}>
+        {/* A new key per path, so moving between two pages of one route starts the page afresh. */}
+        <route.Component key={path} />
+      </RouterContext.Provider>
     </Layout>
   )
 }

@@ -19,7 +19,8 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     setPath(window.location.pathname)
   }, [])
 
-  const value = useMemo(() => ({ path, navigate }), [path, navigate])
+  // Params belong to the matched route, so App fills them in around the page it renders.
+  const value = useMemo(() => ({ path, params: {}, navigate }), [path, navigate])
 
   return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>
 }

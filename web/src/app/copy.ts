@@ -29,6 +29,42 @@ export const copy = {
   adminCourses: {
     title: 'Courses',
     empty: 'No courses yet.',
+    newCourse: 'New Course',
+    columnTitle: 'Title',
+    columnStatus: 'Status',
+  },
+  /** The tag for each `status` the API returns. */
+  courseStatus: {
+    draft: 'Draft',
+    published: 'Published',
+  },
+  courseEditor: {
+    /** The page name while the Course loads. */
+    pageName: 'Course editor',
+    newTitle: 'New Course',
+    details: 'Course details',
+    title: 'Title',
+    description: 'Description',
+    stages: {
+      bronze: 'Bronze',
+      silver: 'Silver',
+      gold: 'Gold',
+    },
+    passMark: 'Pass mark (%)',
+    question: (n: number) => `Question ${n}`,
+    questionText: 'Question',
+    options: 'Options',
+    option: (n: number) => `Option ${n}`,
+    correct: 'Correct',
+    correctFor: (n: number) => `Correct, option ${n}`,
+    addQuestion: 'Add question',
+    removeQuestion: 'Remove question',
+    removeQuestionFor: (n: number) => `Remove question ${n}`,
+    addOption: 'Add option',
+    addOptionFor: (n: number) => `Add option to question ${n}`,
+    removeOption: 'Remove option',
+    removeOptionFor: (n: number) => `Remove option ${n}`,
+    save: 'Save',
   },
   errors: {
     generic: 'Something went wrong. Try again.',
