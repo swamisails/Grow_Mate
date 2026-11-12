@@ -6,6 +6,7 @@ use App\Modules\Courses\Models\Course;
 use App\Modules\Courses\Models\Option;
 use App\Modules\Courses\Models\Question;
 use App\Modules\Courses\Models\Stage;
+use App\Modules\Courses\Queries\PublishEligibility;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,6 +28,7 @@ class CourseResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'status' => $this->status(),
+            'can_publish' => app(PublishEligibility::class)->handle($this->resource),
             'stages' => $this->stages->map(fn (Stage $stage) => [
                 'id' => $stage->id,
                 'level' => $stage->level->value,

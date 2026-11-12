@@ -14,7 +14,7 @@ const admin = {
   password: requiredEnv('ADMIN_PASSWORD'),
 }
 
-test('Admin signs in, sees the empty Admin Courses page and signs out', async ({ page }) => {
+test('Admin signs in, sees the seeded Admin Courses page and signs out', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveURL(/\/sign-in$/)
 
@@ -23,7 +23,7 @@ test('Admin signs in, sees the empty Admin Courses page and signs out', async ({
   await page.getByRole('button', { name: 'Sign in' }).click()
 
   await expect(page).toHaveURL(/\/admin\/courses$/)
-  await expect(page.getByText('No courses yet.')).toBeVisible()
+  await expect(page.getByRole('row', { name: 'Python Basics Published' })).toBeVisible()
   await expect(page.getByRole('navigation').getByRole('link', { name: 'Courses' })).toHaveAttribute(
     'aria-current',
     'page',
@@ -55,4 +55,17 @@ test('a wrong password keeps Admin on Sign in with a generic message', async ({ 
 
   await expect(page.getByLabel('Email')).toHaveAccessibleDescription('These credentials do not match our records.')
   await expect(page).toHaveURL(/\/sign-in$/)
+})
+
+test('Admin Courses with no Courses shows its empty state and New Course', async ({ page }) => {
+  // The e2e database is seeded with demo Courses, so the empty list comes from a mocked response.
+  await page.route('**/api/v1/admin/courses', (route) => route.fulfill({ json: { data: [] } }))
+  await page.goto('/sign-in')
+  await page.getByLabel('Email').fill(admin.email)
+  await page.getByLabel('Password').fill(admin.password)
+  await page.getByRole('button', { name: 'Sign in' }).click()
+
+  await expect(page).toHaveURL(/\/admin\/courses$/)
+  await expect(page.getByText('No courses yet.')).toBeVisible()
+  await expect(page.getByRole('link', { name: 'New Course' })).toBeVisible()
 })

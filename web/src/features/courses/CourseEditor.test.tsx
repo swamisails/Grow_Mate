@@ -16,6 +16,7 @@ function course(overrides: Partial<Course> = {}): Course {
     title: 'SQL Fundamentals',
     description: 'Queries and joins.',
     status: 'draft',
+    can_publish: false,
     stages: [
       {
         id: 1,
@@ -287,5 +288,106 @@ describe('Course editor', () => {
     render(<App />)
     expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
     expect(requests(fetchMock)).not.toContain('GET /api/v1/admin/courses/abc')
+  })
+})
+
+describe('Course publishing', () => {
+  // jsdom has no native dialog implementation; real focus and Escape behavior is also checked in Playwright.
+  function supportDialog() {
+    HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', '') }
+    HTMLDialogElement.prototype.close = function () { this.removeAttribute('open') }
+  }
+
+  it('uses API eligibility and disables Publish during unsaved changes until Save refetches', async () => {
+    let saved = false
+    const fetchMock = stubApi({
+      'GET /api/v1/admin/courses/7': () => jsonResponse(200, { data: course({ can_publish: true, title: saved ? 'Changed' : 'SQL Fundamentals' }) }),
+      'PUT /api/v1/admin/courses/7': () => { saved = true; return jsonResponse(200, { data: course() }) },
+    })
+    await openEditor()
+    const publish = screen.getByRole('button', { name: 'Publish' }) as HTMLButtonElement
+    expect(publish.disabled).toBe(false)
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Changed' } })
+    expect(publish.disabled).toBe(true)
+    fireEvent.click(publish)
+    expect(requests(fetchMock)).not.toContain('POST /api/v1/admin/courses/7/publish')
+    await save()
+    expect(publish.disabled).toBe(false)
+  })
+
+  it('keeps Publish disabled when the API says the saved draft is incomplete', async () => {
+    stubApi({ 'GET /api/v1/admin/courses/7': () => jsonResponse(200, { data: course() }) })
+    await openEditor()
+    expect((screen.getByRole('button', { name: 'Publish' }) as HTMLButtonElement).disabled).toBe(true)
+  })
+
+  it('cancels without a request and restores focus, then publishes and refetches the frozen editor', async () => {
+    supportDialog()
+    let published = false
+    const fetchMock = stubApi({
+      'GET /api/v1/admin/courses/7': () => jsonResponse(200, { data: course({ status: published ? 'published' : 'draft', can_publish: !published }) }),
+      'POST /api/v1/admin/courses/7/publish': () => { published = true; return jsonResponse(200, { data: course() }) },
+    })
+    await openEditor()
+    const publish = screen.getByRole('button', { name: 'Publish' })
+    publish.focus()
+    fireEvent.click(publish)
+    const dialog = screen.getByRole('dialog', { name: 'Publish' })
+    const cancel = within(dialog).getByRole('button', { name: 'Cancel' })
+    expect(document.activeElement).toBe(cancel)
+    fireEvent.keyDown(cancel, { key: 'Tab', shiftKey: true })
+    expect(document.activeElement).toBe(within(dialog).getByRole('button', { name: 'Publish' }))
+    fireEvent.keyDown(document.activeElement!, { key: 'Tab' })
+    expect(document.activeElement).toBe(cancel)
+    fireEvent.click(cancel)
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(publish)
+
+    // Esc: the browser fires `cancel` on the dialog.
+    fireEvent.click(publish)
+    fireEvent(screen.getByRole('dialog'), new Event('cancel', { cancelable: true }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.activeElement).toBe(publish)
+    expect(published).toBe(false)
+
+    fireEvent.click(publish)
+    await act(async () => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Publish' })) })
+    expect(await screen.findByText('Published')).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Publish' })).toBeNull()
+    expect(screen.queryByRole('textbox')).toBeNull()
+    expect(screen.queryByRole('radio')).toBeNull()
+    // The Publish button is gone, so focus moves to the page title.
+    const heading = screen.getByRole('heading', { level: 1 })
+    expect(document.activeElement).toBe(heading)
+    expect(heading.getAttribute('tabindex')).toBe('-1')
+    expect(within(screen.getByRole('region', { name: 'Course details' })).getByText('Queries and joins.')).toBeTruthy()
+    expect(requests(fetchMock).filter((request) => request.includes('/admin/courses/7'))).toEqual([
+      'GET /api/v1/admin/courses/7', 'POST /api/v1/admin/courses/7/publish', 'GET /api/v1/admin/courses/7',
+    ])
+  })
+
+  it.each(['Save', 'Publish'])('refetches a %s 409 and shows its API message beside the frozen course', async (action) => {
+    supportDialog()
+    let refused = false
+    stubApi({
+      'GET /api/v1/admin/courses/7': () => jsonResponse(200, { data: course({ status: refused ? 'published' : 'draft', can_publish: !refused }) }),
+      [`${action === 'Save' ? 'PUT /api/v1/admin/courses/7' : 'POST /api/v1/admin/courses/7/publish'}`]: () => {
+        refused = true
+        return jsonResponse(409, { message: "Published courses can't be edited.", code: 'COURSES_PUBLISHED' })
+      },
+    })
+    await openEditor()
+    if (action === 'Publish') {
+      fireEvent.click(screen.getByRole('button', { name: 'Publish' }))
+      await act(async () => { fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Publish' })) })
+    } else {
+      await save()
+    }
+    expect(await screen.findByText('Published')).toBeTruthy()
+    expect(screen.getByText("Published courses can't be edited.").getAttribute('aria-live')).toBe('polite')
+    // Not a Publish made here: the title stays out of focus and unfocusable.
+    expect(screen.getByRole('heading', { level: 1 }).hasAttribute('tabindex')).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
   })
 })

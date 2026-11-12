@@ -4,6 +4,12 @@ namespace App\Modules\Courses;
 
 /**
  * The Courses module's 409 rule-refusal codes (AD-10), each value prefixed `COURSES_`.
- * Empty for now: the first code arrives with Publish (entry 4).
  */
-enum ErrorCode: string {}
+enum ErrorCode: string
+{
+    /** Publish was asked for a Course whose saved content is not complete (PublishEligibility). */
+    case Incomplete = 'COURSES_INCOMPLETE';
+
+    /** The Course is published, so it is frozen: no Save and no second Publish (AD-14). */
+    case Published = 'COURSES_PUBLISHED';
+}
