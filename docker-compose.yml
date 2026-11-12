@@ -1,0 +1,91 @@
+# GrowMate stack (AD-17): one stack, three environments (local, e2e, production).
+# Configuration comes only from the root `.env` (see `.env.example`).
+#
+#   docker compose up -d --build                                          # local / production
+#   docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build   # e2e
+
+name: growmate
+
+x-api: &api
+  build:
+    context: ./api
+    args:
+      APP_ENV: ${APP_ENV:-production}
+  image: growmate/api:${APP_ENV:-production}
+  environment: &api-env
+    APP_NAME: GrowMate
+    APP_ENV: ${APP_ENV:?set APP_ENV in .env}
+    APP_KEY: ${APP_KEY:?set APP_KEY in .env}
+    APP_DEBUG: "false"
+    APP_URL: ${APP_URL:?set APP_URL in .env}
+    LOG_CHANNEL: stderr
+    DB_CONNECTION: mysql
+    DB_HOST: mysql
+    DB_PORT: "3306"
+    DB_DATABASE: ${DB_DATABASE:?set DB_DATABASE in .env}
+    DB_USERNAME: ${DB_USERNAME:?set DB_USERNAME in .env}
+    DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    SESSION_DRIVER: database
+    SESSION_DOMAIN: ${SESSION_DOMAIN:-null}
+    SANCTUM_STATEFUL_DOMAINS: ${SANCTUM_STATEFUL_DOMAINS:?set SANCTUM_STATEFUL_DOMAINS in .env}
+    CACHE_STORE: database
+    QUEUE_CONNECTION: database
+    ADMIN_NAME: ${ADMIN_NAME:?set ADMIN_NAME in .env}
+    ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+    ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+  depends_on:
+    mysql:
+      condition: service_healthy
+
+services:
+  mysql:
+    image: mysql:8.4
+    # No `ports:` on purpose: MySQL stays on the internal Compose network only.
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  # One-shot deploy step: migrations, then seeders in module order (idempotent).
+  migrate:
+    <<: *api
+    command: ["php", "artisan", "migrate", "--force", "--seed"]
+    restart: "no"
+
+  api:
+    <<: *api
+    depends_on:
+      mysql:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/up > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./web
+    image: growmate/web:latest
+    ports:
+      - "${WEB_PORT:-8180}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql-data:

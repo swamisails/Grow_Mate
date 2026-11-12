@@ -1,0 +1,94 @@
+/* Design tokens from ux-growmate/DESIGN.md. Light is the default; dark applies with
+   data-theme="dark" on <html>, set before first paint by index.html and by the theme toggle. */
+
+:root {
+  color-scheme: light;
+
+  --color-brand: #4b2aad;
+  --color-brand-hover: #3d2290;
+  --color-brand-foreground: #ffffff;
+  --color-brand-subtle: #ece8f8;
+  --color-nav-indicator: #a8e3ee;
+  --color-action: var(--color-brand);
+  --color-action-hover: var(--color-brand-hover);
+  --color-action-foreground: var(--color-brand-foreground);
+  --color-surface-base: #f7f8fc;
+  --color-surface-raised: #ffffff;
+  --color-surface-band: #eef2fa;
+  --color-ink-primary: #1e1f26;
+  --color-ink-secondary: #5f6370;
+  --color-ink-heading: #14151b;
+  --color-ink-disabled: #a3a7b3;
+  --color-border: #dfe2ea;
+  --color-border-strong: #b8bcc8;
+  --color-link: #4b2aad;
+  --color-focus-ring: #4b2aad;
+  --color-error: #b3261e;
+  --color-status-track: #e6e8ef;
+  --color-status-not-started: #80868b;
+  --color-status-in-progress: #2f6fdb;
+  --color-status-completed: #1e8e3e;
+  --color-status-quit: #c5221f;
+  --shadow-card: 0 2px 8px rgba(20, 21, 40, 0.06);
+  --shadow-dialog: 0 12px 32px rgba(20, 21, 40, 0.18);
+
+  /* Families as registered by @fontsource-variable/lexend and /nunito-sans (imported in main.tsx). */
+  --font-heading: 'Lexend Variable', system-ui, sans-serif;
+  --font-body: 'Nunito Sans Variable', system-ui, sans-serif;
+
+  --type-title-size: 28px;
+  --type-heading-size: 20px;
+  --type-nav-size: 16px;
+  --type-body-size: 15px;
+  --type-label-size: 15px;
+  --type-table-header-size: 13px;
+  --type-meta-size: 14px;
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 28px;
+  --space-7: 40px;
+  --page-gutter: 28px;
+  --min-viewport: 1024px;
+
+  --app-header-height: 72px;
+  --input-height: 46px;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-brand: #2e1b70;
+  --color-brand-hover: #3a2390;
+  --color-brand-foreground: #ffffff;
+  --color-brand-subtle: #2c2650;
+  --color-nav-indicator: #a8e3ee;
+  --color-action: #9d8cf2;
+  --color-action-hover: #b3a6f6;
+  --color-action-foreground: #14121f;
+  --color-surface-base: #121219;
+  --color-surface-raised: #1c1c26;
+  --color-surface-band: #252536;
+  --color-ink-primary: #e9e9f2;
+  --color-ink-secondary: #a4a7b5;
+  --color-ink-heading: #f5f5fa;
+  --color-ink-disabled: #5e6170;
+  --color-border: #33343f;
+  --color-border-strong: #5a5d6b;
+  --color-link: #b3a6f6;
+  --color-focus-ring: #b3a6f6;
+  --color-error: #f28b82;
+  --color-status-track: #2c2d38;
+  --color-status-not-started: #8a9096;
+  --color-status-in-progress: #6c9ef0;
+  --color-status-completed: #4cb46a;
+  --color-status-quit: #e5605c;
+}

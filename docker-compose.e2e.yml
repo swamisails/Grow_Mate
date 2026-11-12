@@ -1,0 +1,41 @@
+# e2e override (AD-6, AD-17): the same stack with APP_ENV=e2e plus the Playwright runner.
+# Runs as its own Compose project so its database never touches the local one.
+#
+#   docker compose -f docker-compose.yml -f docker-compose.e2e.yml up -d --build
+#   ./e2e/run.sh
+
+name: growmate-e2e
+
+x-e2e-env: &e2e-env
+  APP_ENV: e2e
+  # Playwright reaches the SPA as http://web inside the Compose network; a browser on the host uses APP_URL.
+  SANCTUM_STATEFUL_DOMAINS: web,${SANCTUM_STATEFUL_DOMAINS:-localhost:8180}
+  # Host-only session cookie, so it works for both http://web and the host URL.
+  SESSION_DOMAIN: "null"
+
+services:
+  migrate:
+    environment: *e2e-env
+
+  api:
+    environment: *e2e-env
+
+  # No host port: Playwright reaches the SPA as http://web, so e2e runs beside the local stack.
+  web:
+    ports: !reset []
+
+  playwright:
+    build:
+      context: ./e2e
+    image: growmate/e2e:latest
+    profiles: ["e2e"]
+    environment:
+      E2E_BASE_URL: http://web
+      ADMIN_NAME: ${ADMIN_NAME:?set ADMIN_NAME in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?set ADMIN_EMAIL in .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?set ADMIN_PASSWORD in .env}
+      CI: "1"
+    ipc: host
+    depends_on:
+      web:
+        condition: service_started
