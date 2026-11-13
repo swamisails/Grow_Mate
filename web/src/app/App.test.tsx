@@ -4,6 +4,7 @@ import { api } from '../api/client'
 import { App } from './App'
 
 const admin = { id: 1, name: 'Noor', email: 'noor@example.com', is_admin: true }
+const employee = { id: 2, name: 'Priya', email: 'priya@example.com', is_admin: false }
 
 function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -70,5 +71,34 @@ describe('App routing', () => {
 
     await waitFor(() => expect(location()).toBe('/admin/courses'))
     expect(await screen.findByRole('heading', { level: 1, name: 'Courses' })).toBeTruthy()
+  })
+
+  it.each([
+    ['pending', true, '/mentor-check', 'Mentor check'],
+    ['done', false, '/courses', 'Courses'],
+  ])('signs in an Employee whose Mentor check is %s', async (_label, pending, path, heading) => {
+    window.history.replaceState(null, '', '/sign-in?return=%2Fcourses')
+    let signedIn = false
+    stubApi({
+      '/api/v1/me': () => (signedIn ? jsonResponse(200, { data: employee }) : jsonResponse(401, { message: 'Unauthenticated.' })),
+      '/sanctum/csrf-cookie': () => new Response(null, { status: 204 }),
+      '/api/v1/login': () => {
+        signedIn = true
+        return jsonResponse(200, { data: employee })
+      },
+      '/api/v1/mentor-check': () => jsonResponse(200, { data: { pending, courses: [] } }),
+      '/api/v1/courses': () => jsonResponse(200, { data: [] }),
+    })
+    render(<App />)
+
+    fireEvent.change(await screen.findByLabelText('Email'), { target: { value: employee.email } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret' } })
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Sign in' }))
+    })
+
+    // Pending, the step wins over the return path; done, the return path is kept.
+    await waitFor(() => expect(location()).toBe(path))
+    expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeTruthy()
   })
 })

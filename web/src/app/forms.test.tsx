@@ -94,9 +94,12 @@ describe('Sign in with a 422', () => {
     const session: SessionValue = {
       loading: false,
       user: null,
+      mentorCheck: null,
       signIn: vi.fn().mockRejectedValue(credentialsError),
       signUp: vi.fn(),
       signOut: vi.fn(),
+      setMentorCheck: vi.fn(),
+      refreshMentorCheck: vi.fn(),
     }
     render(
       <SessionContext.Provider value={session}>

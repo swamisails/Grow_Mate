@@ -6,7 +6,9 @@ use App\Modules\Accounts\Actions\CreateEmployee;
 use App\Modules\Accounts\Queries\EmployeeIdByEmail;
 use App\Modules\Courses\Queries\PublishedCourses;
 use App\Modules\Mentors\Actions\GrantMentor;
+use App\Modules\Mentors\Actions\SubmitMentorCheck;
 use App\Modules\Mentors\Models\Route;
+use App\Modules\Mentors\Queries\MentorCheckStatus;
 use Illuminate\Database\Seeder;
 
 class MentorsSeeder extends Seeder
@@ -17,13 +19,16 @@ class MentorsSeeder extends Seeder
     /**
      * Demo Employees and Mentor grants, in `local` and `e2e` only (AD-17: runs after Courses).
      * Employees are created through Accounts and grants through GrantMentor, so reseeding changes
-     * nothing. No Mentor check or Registration decision rows are made.
+     * nothing. Each demo Employee has skipped the Mentor check (no Course rows), so they sign in
+     * straight to Home; no named Course or Registration decision rows are made.
      */
     public function run(
         EmployeeIdByEmail $employeeIdByEmail,
         CreateEmployee $createEmployee,
         PublishedCourses $publishedCourses,
         GrantMentor $grantMentor,
+        MentorCheckStatus $mentorCheckStatus,
+        SubmitMentorCheck $submitMentorCheck,
     ): void {
         if (! app()->environment(['local', 'e2e'])) {
             return;
@@ -41,6 +46,13 @@ class MentorsSeeder extends Seeder
             $courseId = $courseIds->get($title);
             if ($courseId !== null) {
                 $grantMentor->handle($employeeIds[$employee], (int) $courseId, $route);
+            }
+        }
+
+        // A skip, once: on a reseed the check is already done, which is not an error here.
+        foreach ($employeeIds as $employeeId) {
+            if ($mentorCheckStatus->handle($employeeId)['pending']) {
+                $submitMentorCheck->handle($employeeId, []);
             }
         }
     }

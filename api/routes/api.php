@@ -14,6 +14,8 @@ use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
 use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
+use App\Modules\Mentors\Http\Controllers\MentorCheckController;
+use App\Modules\Mentors\Http\Controllers\SubmitMentorCheckController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -32,6 +34,9 @@ Route::prefix('v1')->group(function () {
             Route::get('courses/{course}', PublishedCourseController::class)->where('course', '[0-9]{1,18}');
             // A published Course's Mentors (R6), without the viewer and without any route (AD-8).
             Route::get('courses/{course}/mentors', CourseMentorsController::class)->where('course', '[0-9]{1,18}');
+            // The Employee's one Mentor check (R2, AD-15): its status, then one submission or skip.
+            Route::get('mentor-check', MentorCheckController::class);
+            Route::post('mentor-check', SubmitMentorCheckController::class);
         });
 
         Route::prefix('admin')->middleware('can:admin')->group(function () {

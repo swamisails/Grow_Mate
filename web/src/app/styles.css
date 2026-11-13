@@ -588,3 +588,37 @@ a.button {
   gap: var(--space-3);
   margin-top: var(--space-6);
 }
+
+/* Mentor check (sign-up step 2): a card of Course checkboxes, then Submit and Skip side by side */
+.mentor-check {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.mentor-check__courses {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mentor-check__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.checkbox-row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--color-action);
+}

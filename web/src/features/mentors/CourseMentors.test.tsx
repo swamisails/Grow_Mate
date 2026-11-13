@@ -11,6 +11,7 @@ function open(mentors: () => Response | Promise<Response>) {
   const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input)
     if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 5, name: 'Rafi Haddad', email: 'rafi@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
     if (url === '/api/v1/courses/3') return jsonResponse(200, { data: course })
     if (url === '/api/v1/courses/3/mentors') return mentors()
     return jsonResponse(404, { message: 'Not Found' })

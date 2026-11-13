@@ -1,6 +1,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { User } from '../api/types/accounts'
+import type { MentorCheck } from '../api/types/mentors'
 import { App } from './App'
 
 const admin: User = { id: 1, name: 'Noor', email: 'noor@example.com', is_admin: true }
@@ -10,14 +11,23 @@ function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-/** `GET /api/v1/me` answers `me` (null: 401); every other call answers 204 (sign out) or 200 with an empty list. */
-function stubSession(me: User | null) {
+const done: MentorCheck = { pending: false, courses: [] }
+const pending: MentorCheck = { pending: true, courses: [{ id: 3, title: 'Python Basics' }] }
+
+/**
+ * `GET /api/v1/me` answers `me` (null: 401) and `GET /api/v1/mentor-check` answers `check`; every
+ * other call answers 204 (sign out) or 200 with an empty list.
+ */
+function stubSession(me: User | null, check: MentorCheck = done) {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL) => {
       const path = typeof input === 'string' ? input : input instanceof URL ? input.pathname : input.url
       if (path === '/api/v1/me') {
         return me ? jsonResponse(200, { data: me }) : jsonResponse(401, { message: 'Unauthenticated.' })
+      }
+      if (path === '/api/v1/mentor-check') {
+        return jsonResponse(200, { data: check })
       }
       if (path === '/api/v1/logout' || path === '/sanctum/csrf-cookie') {
         return new Response(null, { status: 204 })
@@ -31,9 +41,9 @@ function location() {
   return window.location.pathname + window.location.search
 }
 
-function open(path: string, me: User | null) {
+function open(path: string, me: User | null, check: MentorCheck = done) {
   window.history.replaceState(null, '', path)
-  stubSession(me)
+  stubSession(me, check)
   render(<App />)
 }
 
@@ -49,7 +59,7 @@ describe('Employee routing', () => {
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
     expect(location()).toBe('/home')
-    expect(document.title).toBe('Home · GrowMate')
+    await waitFor(() => expect(document.title).toBe('Home · GrowMate'))
 
     const banner = screen.getByRole('banner')
     const links = within(banner).getAllByRole('link')
@@ -108,6 +118,74 @@ describe('Employee routing', () => {
   })
 })
 
+describe('Employee routing while the Mentor check is pending', () => {
+  it.each(['/', '/home', '/courses', '/courses/3', '/sign-in', '/sign-up', '/sign-in?return=%2Fcourses'])(
+    'sends %s to the Mentor check',
+    async (path) => {
+      open(path, employee, pending)
+
+      expect(await screen.findByRole('heading', { level: 1, name: 'Mentor check' })).toBeTruthy()
+      expect(location()).toBe('/mentor-check')
+    },
+  )
+
+  it('shows the step under a bar of GrowMate, the theme toggle, the name and Sign out, with no links', async () => {
+    open('/mentor-check', employee, pending)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mentor check' })).toBeTruthy()
+    await waitFor(() => expect(document.title).toBe('Mentor check · GrowMate'))
+    const banner = screen.getByRole('banner')
+    expect(within(banner).getByText('GrowMate')).toBeTruthy()
+    expect(within(banner).queryAllByRole('link')).toEqual([])
+    expect(screen.queryByRole('navigation')).toBeNull()
+    expect(within(banner).getAllByRole('button').map((button) => button.getAttribute('aria-label') ?? button.textContent)).toEqual([
+      expect.stringMatching(/^Switch to (dark|light) mode$/),
+      'Sign out',
+    ])
+    expect(within(banner).getByText('Priya')).toBeTruthy()
+  })
+
+  it('shows Not found on an unknown page in the step layout', async () => {
+    open('/nope', employee, pending)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
+    expect(screen.queryByRole('navigation')).toBeNull()
+  })
+
+  it('signs out from the step to Sign in', async () => {
+    open('/mentor-check', employee, pending)
+
+    const signOut = await screen.findByRole('button', { name: 'Sign out' })
+    await act(async () => {
+      fireEvent.click(signOut)
+    })
+
+    await waitFor(() => expect(location()).toBe('/sign-in'))
+  })
+})
+
+describe('Employee routing once the Mentor check is done', () => {
+  it('sends the Mentor check Home', async () => {
+    open('/mentor-check', employee, done)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
+    expect(location()).toBe('/home')
+  })
+
+  it('opens Employee pages as usual when the status could not be read', async () => {
+    window.history.replaceState(null, '', '/mentor-check')
+    stubSession(employee)
+    const stubbed = vi.mocked(fetch).getMockImplementation()!
+    vi.mocked(fetch).mockImplementation(async (input, init) =>
+      String(input) === '/api/v1/mentor-check' ? jsonResponse(500, { message: 'Server Error' }) : stubbed(input, init),
+    )
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
+    expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Courses' })).toBeTruthy()
+  })
+})
+
 describe('Admin routing', () => {
   it('shows Not found in the Admin layout on an Employee page', async () => {
     open('/home', admin)
@@ -121,6 +199,13 @@ describe('Admin routing', () => {
   it('goes to Admin Courses from Sign up', async () => {
     open('/sign-up', admin)
     await waitFor(() => expect(location()).toBe('/admin/courses'))
+  })
+
+  it('never reads the Mentor check, and sees it as Not found', async () => {
+    open('/mentor-check', admin)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
+    expect(vi.mocked(fetch).mock.calls.map(([input]) => String(input))).not.toContain('/api/v1/mentor-check')
   })
 })
 

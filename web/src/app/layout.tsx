@@ -22,10 +22,10 @@ export function BareLayout({ children }: { children: ReactNode }) {
 }
 
 /**
- * A signed-in top bar (R11): the product name, links to built pages only, then the theme toggle,
- * the user's name and Sign out.
+ * A signed-in top bar (R11): the product name, links to built pages only (none on a step), then the
+ * theme toggle, the user's name and Sign out.
  */
-function SignedInLayout({ name, nav, children }: { name: ReactNode; nav: ReactNode; children: ReactNode }) {
+function SignedInLayout({ name, nav, children }: { name: ReactNode; nav?: ReactNode; children: ReactNode }) {
   const { user, signOut } = useSession()
   const { navigate } = useRouter()
 
@@ -43,9 +43,11 @@ function SignedInLayout({ name, nav, children }: { name: ReactNode; nav: ReactNo
     <>
       <header className="app-header">
         <p className="app-header__name">{name}</p>
-        <nav className="app-header__nav" aria-label={copy.nav.primary}>
-          {nav}
-        </nav>
+        {nav && (
+          <nav className="app-header__nav" aria-label={copy.nav.primary}>
+            {nav}
+          </nav>
+        )}
         <div className="app-header__account">
           <ThemeToggle />
           <span>{user?.name}</span>
@@ -101,4 +103,12 @@ export function EmployeeLayout({ children }: { children: ReactNode }) {
       {children}
     </SignedInLayout>
   )
+}
+
+/**
+ * Sign-up step 2 (the Mentor check): the Employee bar with no links, since each would come back to
+ * the step while it is pending.
+ */
+export function EmployeeStepLayout({ children }: { children: ReactNode }) {
+  return <SignedInLayout name={copy.appName}>{children}</SignedInLayout>
 }

@@ -28,13 +28,20 @@ async function signUp(page: Page, employee: { name: string; email: string }) {
   await page.getByRole('button', { name: 'Sign up' }).click()
 }
 
+/** Sign-up step 2: a new Employee skips the Mentor check and lands on Home. */
+async function skipMentorCheck(page: Page) {
+  await expect(page).toHaveURL(/\/mentor-check$/)
+  await page.getByRole('button', { name: 'Skip' }).click()
+  await expect(page).toHaveURL(/\/home$/)
+}
+
 async function signIn(page: Page, email: string, secret: string) {
   await page.getByLabel('Email').fill(email)
   await page.getByLabel('Password').fill(secret)
   await page.getByRole('button', { name: 'Sign in' }).click()
 }
 
-test('an Employee signs up from Sign in and lands on Home under the Employee bar', async ({ page }) => {
+test('an Employee signs up from Sign in, passes the Mentor check step and lands on Home under the Employee bar', async ({ page }) => {
   const priya = newEmployee('signup')
 
   await page.goto('/')
@@ -45,7 +52,9 @@ test('an Employee signs up from Sign in and lands on Home under the Employee bar
 
   await signUp(page, priya)
 
-  await expect(page).toHaveURL(/\/home$/)
+  await expect(page).toHaveURL(/\/mentor-check$/)
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mentor check')
+  await skipMentorCheck(page)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home')
   await expect(page.getByRole('region', { name: 'Learning' })).toContainText("You aren't learning a course yet.")
 
@@ -67,7 +76,7 @@ test('an Employee signs out, then back in, and Home needs a session again', asyn
   const priya = newEmployee('signout')
   await page.goto('/sign-up')
   await signUp(page, priya)
-  await expect(page).toHaveURL(/\/home$/)
+  await skipMentorCheck(page)
 
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expect(page).toHaveURL(/\/sign-in$/)
@@ -85,7 +94,7 @@ test('a taken email, in any case, is refused under Email', async ({ page }) => {
   const priya = newEmployee('duplicate')
   await page.goto('/sign-up')
   await signUp(page, priya)
-  await expect(page).toHaveURL(/\/home$/)
+  await skipMentorCheck(page)
   await page.getByRole('button', { name: 'Sign out' }).click()
   await expect(page).toHaveURL(/\/sign-in$/)
 
@@ -116,7 +125,7 @@ test.describe('the wrong role sees Not found in its own layout', () => {
   test('an Employee on an Admin page', async ({ page }) => {
     await page.goto('/sign-up')
     await signUp(page, newEmployee('wrongrole'))
-    await expect(page).toHaveURL(/\/home$/)
+    await skipMentorCheck(page)
 
     await page.goto('/admin/courses')
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found.')
@@ -147,7 +156,7 @@ test('when the session expires on Home, Sign in returns to it', async ({ page, c
   const priya = newEmployee('expired')
   await page.goto('/sign-up')
   await signUp(page, priya)
-  await expect(page).toHaveURL(/\/home$/)
+  await skipMentorCheck(page)
 
   await context.clearCookies()
   await page.reload()

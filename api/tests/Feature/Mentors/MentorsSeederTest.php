@@ -5,6 +5,7 @@ namespace Tests\Feature\Mentors;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Mentors\Database\Seeders\MentorsSeeder;
+use App\Modules\Mentors\Models\MentorCheck;
 use App\Modules\Mentors\Models\MentorRoute;
 use App\Modules\Mentors\Models\Route;
 use Database\Seeders\DatabaseSeeder;
@@ -34,10 +35,12 @@ class MentorsSeederTest extends MentorsTestCase
         $this->seedAll($environment);
         $users = User::query()->orderBy('id')->get()->toArray();
         $routes = MentorRoute::query()->orderBy('id')->get()->toArray();
+        $checks = MentorCheck::query()->orderBy('id')->get()->toArray();
         $this->seedAll($environment);
 
         $this->assertSame($users, User::query()->orderBy('id')->get()->toArray());
         $this->assertSame($routes, MentorRoute::query()->orderBy('id')->get()->toArray());
+        $this->assertSame($checks, MentorCheck::query()->orderBy('id')->get()->toArray());
 
         $employees = User::query()->where('is_admin', false)->orderBy('name')->get();
         $this->assertSame(['Imani Okafor', 'Priya Nair', 'Rafi Haddad'], $employees->pluck('name')->all());
@@ -56,6 +59,10 @@ class MentorsSeederTest extends MentorsTestCase
             $this->assertSame($python->id, $mentor->course_id);
             $this->assertSame(Route::RegistrationApproval, $mentor->route);
         }
+
+        // Each demo Employee has skipped the Mentor check: one check, no named Courses.
+        $this->assertEqualsCanonicalizing($employees->pluck('id')->all(), MentorCheck::query()->pluck('user_id')->all());
+        $this->assertDatabaseCount('mentor_check_courses', 0);
     }
 
     public function test_seeded_demo_employees_sign_in_with_the_demo_password(): void
@@ -68,6 +75,9 @@ class MentorsSeederTest extends MentorsTestCase
             ->assertOk()
             ->assertJsonPath('data.name', 'Rafi Haddad')
             ->assertJsonPath('data.is_admin', false);
+
+        // Straight to Home: the Mentor check is already done.
+        $this->getJson('/api/v1/mentor-check')->assertOk()->assertExactJson(['data' => ['pending' => false, 'courses' => []]]);
     }
 
     public function test_production_has_no_demo_employees_or_grants(): void
@@ -76,5 +86,6 @@ class MentorsSeederTest extends MentorsTestCase
 
         $this->assertSame(0, User::query()->where('is_admin', false)->count());
         $this->assertDatabaseCount('mentor_routes', 0);
+        $this->assertDatabaseCount('mentor_checks', 0);
     }
 }

@@ -31,7 +31,7 @@ export function SignUp() {
     setErrors({})
     setFormError(null)
     try {
-      // Once the session holds the new Employee, the router leaves Sign up for the return path or Home.
+      // Once the session holds the new Employee, the router leaves Sign up for the pending Mentor check.
       await signUp(name, email, password)
     } catch (caught) {
       const invalid = fieldErrors(caught)

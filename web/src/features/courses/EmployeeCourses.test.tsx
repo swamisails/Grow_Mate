@@ -9,6 +9,7 @@ function open(path: string, status = 200, courses = [course], detail: typeof cou
   vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input)
     if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya', email: 'priya@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
     if (url === '/api/v1/courses') return jsonResponse(status, { data: courses })
     if (url.endsWith('/mentors')) return jsonResponse(200, { data: [] })
     return jsonResponse(status, { data: detail })
@@ -52,5 +53,6 @@ it('shows a failure when the course list cannot load', async () => {
 it('does not request a nonnumeric Course id', async () => {
   open('/courses/abc')
   await waitFor(() => expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Page not found.'))
-  expect(vi.mocked(fetch).mock.calls).toHaveLength(1)
+  // Only the session's own calls.
+  expect(vi.mocked(fetch).mock.calls.map(([input]) => String(input))).toEqual(['/api/v1/me', '/api/v1/mentor-check'])
 })
