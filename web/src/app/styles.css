@@ -224,6 +224,35 @@ a {
   text-align: center;
 }
 
+/* Card grid: detail pages (Course page) lay cards out in two columns with a 28px gap */
+.card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-6);
+  align-items: start;
+}
+
+/* List row: a name or sentence on the left and at most one button on the right, hairline dividers */
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  min-height: 60px;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.list-row:last-child {
+  border-bottom: 0;
+}
+
 /* Form */
 .form {
   display: flex;

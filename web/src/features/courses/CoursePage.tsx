@@ -6,12 +6,14 @@ import { copy } from '../../app/copy'
 import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
 import { useRouter } from '../../app/router'
+import { CourseMentors } from '../mentors/CourseMentors'
 
 type LoadState = { status: 'loading' } | { status: 'notFound' } | { status: 'error' } | { status: 'ready'; course: PublishedCourse }
 
 /**
- * The Course page for an Employee: the published Course's description. A draft, a missing Course
- * and a non-numeric id all show Not found. Mentors (R6) and Stages arrive in later entries.
+ * The Course page for an Employee: the published Course's description and its Mentors (R6), in the
+ * two-column card grid. A draft, a missing Course and a non-numeric id all show Not found. Stages
+ * arrive in a later epic.
  */
 export function CoursePage() {
   const { params } = useRouter()
@@ -54,13 +56,18 @@ export function CoursePage() {
           {copy.errors.generic}
         </p>
       )}
-      {state.status === 'ready' && state.course.description && (
-        <section className="card" aria-labelledby={descriptionId}>
-          <h2 className="card__header" id={descriptionId}>
-            {copy.employeeCourses.description}
-          </h2>
-          <div className="card__body preserve-lines">{state.course.description}</div>
-        </section>
+      {state.status === 'ready' && (
+        <div className="card-grid">
+          {state.course.description && (
+            <section className="card" aria-labelledby={descriptionId}>
+              <h2 className="card__header" id={descriptionId}>
+                {copy.employeeCourses.description}
+              </h2>
+              <div className="card__body preserve-lines">{state.course.description}</div>
+            </section>
+          )}
+          <CourseMentors key={state.course.id} courseId={state.course.id} />
+        </div>
       )}
     </>
   )

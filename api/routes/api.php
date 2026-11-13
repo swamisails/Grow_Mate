@@ -13,6 +13,7 @@ use App\Modules\Courses\Http\Controllers\PublishedCoursesController;
 use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
 use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
+use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -29,6 +30,8 @@ Route::prefix('v1')->group(function () {
         Route::middleware('can:browse,'.Course::class)->group(function () {
             Route::get('courses', PublishedCoursesController::class);
             Route::get('courses/{course}', PublishedCourseController::class)->where('course', '[0-9]{1,18}');
+            // A published Course's Mentors (R6), without the viewer and without any route (AD-8).
+            Route::get('courses/{course}/mentors', CourseMentorsController::class)->where('course', '[0-9]{1,18}');
         });
 
         Route::prefix('admin')->middleware('can:admin')->group(function () {
