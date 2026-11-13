@@ -9,7 +9,8 @@ export type RouteDef = {
   /** An exact path (`/admin/courses`) or a pattern with `:name` segments (`/admin/courses/:id`). */
   path: string
   access: Access
-  layout: 'bare' | 'admin' | 'employee'
+  /** `employee-step`: the Employee bar without nav links, for sign-up step 2 (the Mentor check). */
+  layout: 'bare' | 'admin' | 'employee' | 'employee-step'
   Component: ComponentType
 }
 

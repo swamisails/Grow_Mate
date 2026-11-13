@@ -66,6 +66,13 @@ export const copy = {
     title: 'Mentors',
     empty: 'No mentors for this course yet.',
   },
+  mentorCheck: {
+    /** Sign-up step 2 (AD-15). */
+    title: 'Mentor check',
+    courses: 'Courses you can mentor',
+    submit: 'Submit',
+    skip: 'Skip',
+  },
   courseEditor: {
     /** The page name while the Course loads. */
     pageName: 'Course editor',

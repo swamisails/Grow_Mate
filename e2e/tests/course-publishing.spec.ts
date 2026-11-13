@@ -53,6 +53,8 @@ test('Admin publishes saved content with keyboard confirmation; Employees see on
   await employee.getByLabel('Email').fill('publishing-reader@example.com')
   await employee.getByLabel('Password').fill('employee-password')
   await employee.getByRole('button', { name: 'Sign up' }).click()
+  await expect(employee).toHaveURL(/\/mentor-check$/)
+  await employee.getByRole('button', { name: 'Skip' }).click()
   await expect(employee).toHaveURL(/\/home$/)
   await employee.getByRole('region', { name: 'Learning' }).getByRole('link', { name: 'Courses' }).click()
   // The seeded demo Courses are published; the draft is not listed.
@@ -106,6 +108,8 @@ test('an empty published list shows its empty state', async ({ page }) => {
   await page.getByLabel('Email').fill('empty-list-reader@example.com')
   await page.getByLabel('Password').fill('employee-password')
   await page.getByRole('button', { name: 'Sign up' }).click()
+  await expect(page).toHaveURL(/\/mentor-check$/)
+  await page.getByRole('button', { name: 'Skip' }).click()
   await expect(page).toHaveURL(/\/home$/)
   await page.route('**/api/v1/courses', (route) => route.fulfill({ json: { data: [] } }))
   await page.getByRole('navigation').getByRole('link', { name: 'Courses' }).click()

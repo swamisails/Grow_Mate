@@ -9,7 +9,7 @@ function jsonResponse(status: number, body: unknown): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 }
 
-/** Signed out until `POST /api/v1/register` answers `register()`; a 201 signs Priya in. */
+/** Signed out until `POST /api/v1/register` answers `register()`; a 201 signs Priya in, with her Mentor check pending. */
 function stubRegister(register: () => Response) {
   let me: User | null = null
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -20,6 +20,9 @@ function stubRegister(register: () => Response) {
     }
     if (method === 'GET' && path === '/api/v1/me') {
       return me ? jsonResponse(200, { data: me }) : jsonResponse(401, { message: 'Unauthenticated.' })
+    }
+    if (method === 'GET' && path === '/api/v1/mentor-check' && me) {
+      return jsonResponse(200, { data: { pending: true, courses: [{ id: 3, title: 'Python Basics' }] } })
     }
     if (method === 'POST' && path === '/api/v1/register') {
       const response = register()
@@ -62,15 +65,16 @@ describe('Sign up', () => {
     expect(screen.getByLabelText('Password').getAttribute('autocomplete')).toBe('new-password')
   })
 
-  it('creates the account, signs in and lands on Home under the Employee bar', async () => {
-    window.history.replaceState(null, '', '/sign-up')
+  it('creates the account, signs in and lands on step 2, the Mentor check', async () => {
+    window.history.replaceState(null, '', '/sign-up?return=%2Fcourses')
     const fetchMock = stubRegister(() => jsonResponse(201, { data: priya }))
     render(<App />)
 
     await fillAndSubmit('Priya', 'priya@example.com', 'secret-password')
 
-    await waitFor(() => expect(window.location.pathname).toBe('/home'))
-    expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
+    await waitFor(() => expect(window.location.pathname).toBe('/mentor-check'))
+    expect(await screen.findByRole('heading', { level: 1, name: 'Mentor check' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'Python Basics' })).toBeTruthy()
     expect(within(screen.getByRole('banner')).getByText('Priya')).toBeTruthy()
 
     const register = fetchMock.mock.calls.find(([input]) => input === '/api/v1/register')
@@ -82,6 +86,8 @@ describe('Sign up', () => {
     // The CSRF cookie is fetched before the state-changing call.
     const paths = fetchMock.mock.calls.map(([input]) => String(input))
     expect(paths.indexOf('/sanctum/csrf-cookie')).toBeLessThan(paths.indexOf('/api/v1/register'))
+    // The new Employee's Mentor check status is read once the account exists.
+    expect(paths.indexOf('/api/v1/register')).toBeLessThan(paths.indexOf('/api/v1/mentor-check'))
   })
 
   it('puts each 422 message under its own field and focuses the first invalid field', async () => {
