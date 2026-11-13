@@ -61,6 +61,11 @@ export const copy = {
     empty: 'No courses yet.',
     description: 'Description',
   },
+  mentors: {
+    /** The Course page's Mentors card (R6). */
+    title: 'Mentors',
+    empty: 'No mentors for this course yet.',
+  },
   courseEditor: {
     /** The page name while the Course loads. */
     pageName: 'Course editor',

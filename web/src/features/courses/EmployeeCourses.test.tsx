@@ -10,6 +10,7 @@ function open(path: string, status = 200, courses = [course], detail: typeof cou
     const url = String(input)
     if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya', email: 'priya@example.com', is_admin: false } })
     if (url === '/api/v1/courses') return jsonResponse(status, { data: courses })
+    if (url.endsWith('/mentors')) return jsonResponse(200, { data: [] })
     return jsonResponse(status, { data: detail })
   }))
   render(<App />)
@@ -23,7 +24,7 @@ it('browses published Courses and opens their descriptions as text', async () =>
   expect(screen.getByText(/<script>Variables<\/script>/)).toBeTruthy()
   expect(document.querySelector('main script')).toBeNull()
   expect(screen.queryByText('Stages')).toBeNull()
-  expect(screen.queryByText('Mentors')).toBeNull()
+  expect(screen.getByRole('heading', { level: 2, name: 'Mentors' })).toBeTruthy()
   await waitFor(() => expect(document.title).toBe('Python Basics · GrowMate'))
 })
 
