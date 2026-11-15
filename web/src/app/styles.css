@@ -253,6 +253,55 @@ a {
   border-bottom: 0;
 }
 
+/* A Mentor row wraps its name and an optional message, so the divider follows the card's last row. */
+.list > li > .list-row {
+  border-bottom: 1px solid var(--color-border);
+}
+
+.list > li:last-child > .list-row {
+  border-bottom: 0;
+}
+
+.list-row__error {
+  margin: 0;
+  padding: 0 var(--space-5) var(--space-3);
+}
+
+/* Progress bar: 160×10, the state word beside it. Grey, or the left half blue. No numbers. */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.card__body .preserve-lines + .progress {
+  margin-top: var(--space-4);
+}
+
+.progress__track {
+  flex: none;
+  width: 160px;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-full);
+  background: var(--color-status-track);
+}
+
+.progress__fill {
+  height: 100%;
+}
+
+.progress__fill--not-yet-started {
+  width: 100%;
+  background: var(--color-status-not-started);
+}
+
+.progress__fill--in-progress {
+  width: 50%;
+  background: var(--color-status-in-progress);
+}
+
 /* Form */
 .form {
   display: flex;

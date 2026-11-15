@@ -30,9 +30,9 @@ test('an Employee signs up from Sign in, passes the Mentor check step and lands 
   expect((await homeRead).status()).toBe(200)
   await expect(page.getByRole('region', { name: 'Mentor check' })).toHaveCount(0)
 
-  // The bar: GrowMate, Home, Courses, Notices, the theme toggle, the name and Sign out, and nothing else.
+  // The bar: GrowMate, Home, Courses, Requests, Notices, the theme toggle, the name and Sign out.
   const banner = page.getByRole('banner')
-  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home', 'Courses', 'Notices'])
+  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home', 'Courses', 'Requests', 'Notices'])
   await expect(banner.getByRole('button')).toHaveCount(2)
   await expect(banner.getByRole('button', { name: /^Switch to (dark|light) mode$/ })).toBeVisible()
   await expect(banner.getByRole('button', { name: 'Sign out' })).toBeVisible()

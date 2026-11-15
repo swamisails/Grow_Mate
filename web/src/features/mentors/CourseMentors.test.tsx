@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { App } from '../../app/App'
 import { jsonResponse } from '../../test/api'
@@ -68,4 +68,68 @@ it('shows the generic error when the list cannot load, and keeps the rest of the
   expect((await within(card).findByRole('alert')).textContent).toBe('Something went wrong. Try again.')
   expect(screen.getByRole('heading', { level: 1, name: 'Python Basics' })).toBeTruthy()
   expect(screen.getByText('Variables and functions.')).toBeTruthy()
+})
+
+const sent = { current: false }
+
+it('shows Request when the Learner may ask, then a grey bar and no buttons after sending', async () => {
+  sent.current = false
+  window.history.replaceState(null, '', '/courses/3')
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    const method = init?.method ?? 'GET'
+    if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya Nair', email: 'priya@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
+    if (url === '/api/v1/courses/3') return jsonResponse(200, { data: course })
+    if (url === '/api/v1/courses/3/mentors') return jsonResponse(200, { data: [{ id: 8, name: 'Rafi Haddad' }, { id: 4, name: 'Imani Okafor' }] })
+    if (url === '/api/v1/courses/3/request-eligibility') return jsonResponse(200, { data: { can_request: method === 'GET' && sent.current ? false : true } })
+    if (url === '/api/v1/courses/3/progress') return jsonResponse(200, { data: { status: sent.current ? 'not_yet_started' : null } })
+    if (method === 'POST' && url === '/api/v1/courses/3/requests') {
+      sent.current = true
+      return jsonResponse(201, { data: { id: 1, course_id: 3, mentor_id: 8, sent_at: '2026-11-15T08:30:00.000000Z' } })
+    }
+    return jsonResponse(404, { message: 'Not Found' })
+  }))
+  render(<App />)
+
+  const card = await mentorsCard()
+  const request = await within(card).findAllByRole('button', { name: 'Request' })
+  expect(request).toHaveLength(2)
+  fireEvent.click(request[0])
+
+  const bar = await screen.findByRole('img', { name: 'Progress: Not yet started' })
+  expect(bar.textContent).toBe('Not yet started')
+  expect(bar.querySelector('.progress__fill--not-yet-started')).toBeTruthy()
+  await waitFor(() => expect(within(card).queryByRole('button', { name: 'Request' })).toBeNull())
+  expect(screen.getByRole('heading', { level: 1, name: 'Python Basics' })).toBeTruthy()
+})
+
+it('keeps the API message and the Course page when the refresh after a 409 fails', async () => {
+  window.history.replaceState(null, '', '/courses/3')
+  let posted = false
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    const method = init?.method ?? 'GET'
+    if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya Nair', email: 'priya@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
+    if (url === '/api/v1/courses/3') return jsonResponse(200, { data: course })
+    if (url === '/api/v1/courses/3/mentors') return jsonResponse(200, { data: [{ id: 8, name: 'Rafi Haddad' }] })
+    if (method === 'POST' && url === '/api/v1/courses/3/requests') {
+      posted = true
+      return jsonResponse(409, { message: 'You already have an open request for this course.', code: 'MATCHING_REQUEST_ALREADY_OPEN' })
+    }
+    if (posted && (url.endsWith('/request-eligibility') || url.endsWith('/progress'))) return jsonResponse(500, { message: 'Server Error' })
+    if (url === '/api/v1/courses/3/request-eligibility') return jsonResponse(200, { data: { can_request: true } })
+    if (url === '/api/v1/courses/3/progress') return jsonResponse(200, { data: { status: null } })
+    return jsonResponse(404, { message: 'Not Found' })
+  }))
+  render(<App />)
+
+  const card = await mentorsCard()
+  fireEvent.click(await within(card).findByRole('button', { name: 'Request' }))
+
+  expect((await within(card).findByRole('alert')).textContent).toBe('You already have an open request for this course.')
+  expect(screen.getByRole('heading', { level: 1, name: 'Python Basics' })).toBeTruthy()
+  expect(screen.getByText('Variables and functions.')).toBeTruthy()
+  expect(screen.queryByText('Something went wrong. Try again.')).toBeNull()
 })
