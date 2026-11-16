@@ -19,6 +19,7 @@ class MentorRuleViolation extends RuntimeException implements ShouldntReport
         parent::__construct(match ($errorCode) {
             ErrorCode::CheckDone => "You've already done the Mentor check.",
             ErrorCode::CourseNotEligible => "One or more of these courses can't be named.",
+            ErrorCode::AlreadyDecided => 'This course has already been decided.',
         });
     }
 

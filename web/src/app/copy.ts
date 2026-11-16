@@ -7,6 +7,7 @@ export const copy = {
   nav: {
     home: 'Home',
     courses: 'Courses',
+    registrationDecisions: 'Registration decisions',
     signOut: 'Sign out',
     primary: 'Main',
   },
@@ -104,7 +105,27 @@ export const copy = {
     save: 'Save',
     publish: 'Publish',
     confirmation: "Published courses can't be edited.",
+  },
+  /** The confirmation dialog for a final action (Publish, a Registration decision). */
+  confirmation: {
     cancel: 'Cancel',
+  },
+  registrationDecisions: {
+    /** Admin's Registration decisions (R3). */
+    title: 'Registration decisions',
+    empty: 'No registration decisions.',
+    columnEmployee: 'Employee',
+    columnCourse: 'Course',
+    columnDecision: 'Decision',
+    approve: 'Approve',
+    refuse: 'Refuse',
+    /** The confirmation dialog's message for either decision. */
+    final: 'This decision is final.',
+  },
+  /** The tag for each Registration decision `outcome` the API returns. */
+  registrationOutcome: {
+    approved: 'Approved',
+    refused: 'Refused',
   },
   errors: {
     generic: 'Something went wrong. Try again.',
