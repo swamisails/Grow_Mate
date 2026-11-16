@@ -80,27 +80,17 @@ async function requestRafi(page: Page): Promise<{ sentAt: string; requestId: num
   return pending
 }
 
-async function acceptLeftover(page: Page, requestId: number, sentAt: string) {
-  await setClock(page, plus(sentAt, 1))
-  await signIn(page, rafi.email)
-  const status = await page.evaluate(async (id) => {
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length)
-    const response = await fetch(`/api/v1/requests/${id}/accept`, {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token ?? '') },
-      body: '{}',
-    })
-    return response.status
-  }, requestId)
-  if (status !== 201 && status !== 404) {
-    throw new Error(`cleanup accept failed: ${status}`)
+async function releaseLeftover(page: Page, requestId: number) {
+  await page.goto('about:blank')
+  await page.context().clearCookies()
+  const response = await page.request.delete(`/api/v1/testing/requests/${requestId}`, {
+    headers: { Accept: 'application/json' },
+  })
+  const body: unknown = await response.json()
+  if (response.status() !== 200) {
+    throw new Error(`cleanup delete failed (${response.status()}): ${JSON.stringify(body)}`)
   }
-  const list = page.waitForResponse((response) => response.url().endsWith('/api/v1/requests') && response.request().method() === 'GET')
-  await page.goto('/requests')
-  const body = await (await list).json()
-  const ids = (body.data as { id: number }[]).map((row) => row.id)
-  expect(ids).not.toContain(requestId)
+  hidesSecrets(body)
 }
 
 test.afterEach(async ({ page }) => {
@@ -108,7 +98,7 @@ test.afterEach(async ({ page }) => {
   pending = null
   try {
     if (leftover) {
-      await acceptLeftover(page, leftover.requestId, leftover.sentAt)
+      await releaseLeftover(page, leftover.requestId)
     }
   } finally {
     await clearClock(page)

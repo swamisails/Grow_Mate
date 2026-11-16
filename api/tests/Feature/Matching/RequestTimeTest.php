@@ -232,12 +232,14 @@ class RequestTimeTest extends MatchingTestCase
     {
         $this->assertContains(app()->environment(), ['local', 'testing', 'production']);
         $this->postJson('/api/v1/testing/clock', ['now' => '2026-11-18T00:00:00Z'])->assertNotFound();
+        $this->deleteJson('/api/v1/testing/requests/1')->assertNotFound();
 
         $uris = [];
         foreach (app('router')->getRoutes() as $route) {
             $uris[] = $route->uri();
         }
         $this->assertNotContains('api/v1/testing/clock', $uris);
+        $this->assertNotContains('api/v1/testing/requests/{id}', $uris);
     }
 
     private function at(string $instant): Carbon
