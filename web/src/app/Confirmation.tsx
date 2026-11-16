@@ -1,17 +1,23 @@
 import { useEffect, useId, useRef, type KeyboardEvent } from 'react'
-import { copy } from '../../app/copy'
+import { copy } from './copy'
 
-type PublishConfirmationProps = {
+type ConfirmationProps = {
+  /** The dialog's heading, and its accessible name. */
+  title: string
+  /** The one sentence under the heading. */
+  message: string
+  /** The confirming button's label: the action being confirmed. */
+  confirmLabel: string
   onCancel: () => void
   onConfirm: () => void
 }
 
 /**
- * The Publish confirmation (EXPERIENCE.md, Component Patterns): a modal dialog that traps focus
- * between its two buttons, closes on Esc, and returns focus to the button that opened it.
- * Rendered only while open; unmounting closes it.
+ * A confirmation for a final action (EXPERIENCE.md, Component Patterns): a modal dialog that traps
+ * focus between Cancel and the action, closes on Esc, and returns focus to the button that opened
+ * it. Rendered only while open; unmounting closes it.
  */
-export function PublishConfirmation({ onCancel, onConfirm }: PublishConfirmationProps) {
+export function Confirmation({ title, message, confirmLabel, onCancel, onConfirm }: ConfirmationProps) {
   const dialog = useRef<HTMLDialogElement>(null)
   const cancel = useRef<HTMLButtonElement>(null)
   const confirm = useRef<HTMLButtonElement>(null)
@@ -54,15 +60,15 @@ export function PublishConfirmation({ onCancel, onConfirm }: PublishConfirmation
       onKeyDown={trapFocus}
     >
       <h2 className="dialog__title" id={titleId}>
-        {copy.courseEditor.publish}
+        {title}
       </h2>
-      <p id={descriptionId}>{copy.courseEditor.confirmation}</p>
+      <p id={descriptionId}>{message}</p>
       <div className="dialog__actions">
         <button ref={cancel} type="button" className="button button--secondary" onClick={onCancel}>
-          {copy.courseEditor.cancel}
+          {copy.confirmation.cancel}
         </button>
         <button ref={confirm} type="button" className="button button--primary" onClick={onConfirm}>
-          {copy.courseEditor.publish}
+          {confirmLabel}
         </button>
       </div>
     </dialog>

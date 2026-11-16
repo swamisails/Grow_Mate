@@ -405,7 +405,7 @@ a.button {
   border-bottom: 0;
 }
 
-/* Tag: a neutral outlined record state (Draft, Published); no fill colour, no dot */
+/* Tag: a neutral outlined record state (Draft, Published, Approved, Refused); no fill colour, no dot */
 .tag {
   display: inline-block;
   padding: 2px var(--space-2);
@@ -621,4 +621,18 @@ a.button {
   height: 18px;
   margin: 0;
   accent-color: var(--color-action);
+}
+
+/* Registration decisions: Approve and Refuse side by side in the Decision cell, any 409 message below */
+.decision__actions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.decision__actions .button {
+  padding: var(--space-2) var(--space-4);
+}
+
+.decision .field-error:not(:empty) {
+  margin-top: var(--space-1);
 }

@@ -12,4 +12,7 @@ enum ErrorCode: string
 
     /** A named Course is unknown, a draft, or was not published before the account was created (AD-15). */
     case CourseNotEligible = 'MENTORS_COURSE_NOT_ELIGIBLE';
+
+    /** The Mentor-check Course already has its one final Registration decision (R3). */
+    case AlreadyDecided = 'MENTORS_ALREADY_DECIDED';
 }

@@ -26,3 +26,26 @@ export type MentorCheck = {
 
 /** POST /api/v1/mentor-check: one or more distinct Course ids, or a skip; never both. */
 export type SubmitMentorCheckRequest = { course_ids: number[] } | { skip: true }
+
+/** Admin's final Registration decision on one Mentor-check Course (R3). */
+export type Outcome = 'approved' | 'refused'
+
+/**
+ * App\Modules\Mentors\Http\Resources\RegistrationDecisionRowResource: GET /api/v1/admin/registration-decisions.
+ * `id` is the Mentor-check Course row; `outcome` is null until it is decided. Never carries a route (AD-8).
+ */
+export type RegistrationDecisionRow = {
+  id: number
+  employee_name: string
+  course_title: string
+  outcome: Outcome | null
+}
+
+/**
+ * App\Modules\Mentors\Http\Resources\RegistrationDecisionResource: POST
+ * /api/v1/admin/registration-decisions/{id}/approve and .../refuse.
+ */
+export type RegistrationDecision = {
+  id: number
+  outcome: Outcome
+}

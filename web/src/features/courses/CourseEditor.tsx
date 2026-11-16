@@ -2,12 +2,12 @@ import { useCallback, useEffect, useId, useRef, useState, type ChangeEvent, type
 import { ApiError } from '../../api/client'
 import { createCourse, getCourse, publishCourse, saveCourseDraft } from '../../api/courses'
 import type { Course, SaveCourseDraftRequest, StageLevel } from '../../api/types/courses'
+import { Confirmation } from '../../app/Confirmation'
 import { copy } from '../../app/copy'
 import { ConflictMessage, fieldErrors, focusFirstInvalid, useConflict, type FieldErrors } from '../../app/forms'
 import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
 import { useRouter } from '../../app/router'
-import { PublishConfirmation } from './PublishConfirmation'
 
 // The Course editor (EXPERIENCE.md, Component Patterns). Drafts are saved with Save only: no
 // autosave and no optimistic update. After Save the editor re-fetches and shows the server state
@@ -634,7 +634,15 @@ function EditCourse({ id }: { id: number }) {
         }
       />
       <ConflictMessage message={conflict.message} />
-      {confirming && <PublishConfirmation onCancel={() => setConfirming(false)} onConfirm={handlePublish} />}
+      {confirming && (
+        <Confirmation
+          title={copy.courseEditor.publish}
+          message={copy.courseEditor.confirmation}
+          confirmLabel={copy.courseEditor.publish}
+          onCancel={() => setConfirming(false)}
+          onConfirm={handlePublish}
+        />
+      )}
       <form className="editor" ref={formRef} onSubmit={handleSubmit} noValidate>
         {/* No edits while a request is pending: the re-fetch would replace them. */}
         <fieldset className="editor__fields" disabled={saving}>

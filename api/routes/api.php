@@ -13,8 +13,11 @@ use App\Modules\Courses\Http\Controllers\PublishedCoursesController;
 use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
 use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
+use App\Modules\Mentors\Http\Controllers\ApproveRegistrationController;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
 use App\Modules\Mentors\Http\Controllers\MentorCheckController;
+use App\Modules\Mentors\Http\Controllers\RefuseRegistrationController;
+use App\Modules\Mentors\Http\Controllers\RegistrationDecisionsController;
 use App\Modules\Mentors\Http\Controllers\SubmitMentorCheckController;
 use Illuminate\Support\Facades\Route;
 
@@ -48,6 +51,12 @@ Route::prefix('v1')->group(function () {
             Route::get('courses/{course}', ShowCourseController::class)->where('course', '[0-9]{1,18}');
             Route::post('courses/{course}/publish', PublishCourseController::class)->middleware('can:publish,'.Course::class)->where('course', '[0-9]{1,18}');
             Route::put('courses/{course}', SaveCourseDraftController::class)->where('course', '[0-9]{1,18}');
+
+            // Registration decisions (R3): every Mentor-check Course, then one final Approve or Refuse each.
+            // The id is the `mentor_check_courses` row's; one that isn't a number, or doesn't fit an int, is a 404.
+            Route::get('registration-decisions', RegistrationDecisionsController::class);
+            Route::post('registration-decisions/{id}/approve', ApproveRegistrationController::class)->where('id', '[0-9]{1,18}');
+            Route::post('registration-decisions/{id}/refuse', RefuseRegistrationController::class)->where('id', '[0-9]{1,18}');
         });
     });
 });
