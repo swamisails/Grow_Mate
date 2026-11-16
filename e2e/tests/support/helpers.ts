@@ -1,4 +1,4 @@
-import { expect, type Browser, type Page } from '@playwright/test'
+import { expect, type Browser, type Locator, type Page } from '@playwright/test'
 
 // Helpers shared by the specs. Not a spec itself: Playwright collects only `*.spec.ts` under tests/.
 
@@ -111,4 +111,19 @@ export function decisionsRead(page: Page) {
   return page.waitForResponse(
     (response) => response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/v1/registration-decisions',
   )
+}
+
+/**
+ * Admin decides one Registration decisions row: the dialog says the decision is final and offers Cancel
+ * and the action; confirming leaves the row with its tag and no buttons.
+ */
+export async function decide(adminPage: Page, row: Locator, action: 'Approve' | 'Refuse', tag: string) {
+  await row.getByRole('button', { name: action }).click()
+  const dialog = adminPage.getByRole('dialog', { name: action })
+  await expect(dialog).toContainText('This decision is final.')
+  await expect(dialog.getByRole('button')).toHaveText(['Cancel', action])
+  await dialog.getByRole('button', { name: action }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(row.locator('.tag')).toHaveText(tag)
+  await expect(row.getByRole('button')).toHaveCount(0)
 }
