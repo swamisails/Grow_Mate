@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import { afterEach, expect, it, vi } from 'vitest'
 import type { EmployeeRegistrationDecisions } from '../../api/types/mentors'
 import { App } from '../../app/App'
-import { jsonResponse } from '../courses/testApi'
+import { jsonResponse } from '../../test/api'
 
 /** Opens Home as Sam, answering his Registration decisions with `decisions()`. */
 function open(decisions: () => Response | Promise<Response>) {

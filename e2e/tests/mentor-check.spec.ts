@@ -1,57 +1,13 @@
-import { expect, test, type Browser, type Page } from '@playwright/test'
+import { expect, test, type Browser } from '@playwright/test'
+import { adminSignIn, apiRequest, newEmployee, newPage, publishCourse, signIn, signOut, signUp } from './support/helpers'
 
 // The demo Courses (Python Basics, Git Essentials) are seeded and published before any test signs up.
-const password = 'employee-password'
-
-/** A fresh Employee per test: run.sh resets the database per run, and each test needs its own email. */
-function newEmployee(label: string) {
-  const id = `${label}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
-  return { name: `Sam ${label}`, email: `sam-${id}@example.com` }
-}
-
-async function signUp(page: Page, employee: { name: string; email: string }) {
-  await page.goto('/sign-up')
-  await page.getByLabel('Name').fill(employee.name)
-  await page.getByLabel('Email').fill(employee.email)
-  await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign up' }).click()
-}
-
-async function signIn(page: Page, email: string, secret = password) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(secret)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-}
-
-async function signOut(page: Page) {
-  await page.getByRole('banner').getByRole('button', { name: 'Sign out' }).click()
-  await expect(page).toHaveURL(/\/sign-in$/)
-}
-
-async function adminSignIn(page: Page) {
-  await signIn(page, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
-  await expect(page).toHaveURL(/\/admin\/courses$/)
-}
-
-async function apiRequest(page: Page, method: 'GET' | 'PUT' | 'POST', path: string, body?: unknown) {
-  return page.evaluate(async ({ method, path, body }) => {
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length)
-    const response = await fetch(path, {
-      method,
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token ?? '') },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    })
-    return { status: response.status, body: await response.json() }
-  }, { method, path, body })
-}
 
 /** A new Admin page in its own browser context, so its session doesn't replace the Employee's. */
 async function adminPage(browser: Browser) {
-  const context = await browser.newContext()
-  const page = await context.newPage()
-  await adminSignIn(page)
-  return { page, close: () => context.close() }
+  const admin = await newPage(browser)
+  await adminSignIn(admin.page)
+  return admin
 }
 
 test('a new Employee names two Courses at step 2, lands on Home, and never sees the step again', async ({ page }) => {
@@ -149,15 +105,7 @@ test('the API refuses a later, draft or unknown Course and a bad shape, storing 
   // Admin publishes a Course after the sign-up, and keeps another as a draft.
   const admin = await adminPage(browser)
   const draft = (await apiRequest(admin.page, 'POST', '/api/v1/admin/courses', { title: 'Mentor check draft', description: null })).body.data.id
-  const later = (await apiRequest(admin.page, 'POST', '/api/v1/admin/courses', { title: 'Mentor check later', description: null })).body.data.id
-  const document = {
-    title: 'Mentor check later', description: null,
-    stages: ['bronze', 'silver', 'gold'].map((level) => ({
-      level, pass_mark: 70, questions: [{ text: 'Question?', options: [{ text: 'Yes', is_correct: true }, { text: 'No', is_correct: false }] }],
-    })),
-  }
-  expect((await apiRequest(admin.page, 'PUT', `/api/v1/admin/courses/${later}`, document)).status).toBe(200)
-  expect((await apiRequest(admin.page, 'POST', `/api/v1/admin/courses/${later}/publish`, {})).status).toBe(200)
+  const later = await publishCourse(admin.page, 'Mentor check later')
   // Admin has no Mentor check.
   expect((await apiRequest(admin.page, 'GET', '/api/v1/mentor-check')).status).toBe(403)
   expect((await apiRequest(admin.page, 'POST', '/api/v1/mentor-check', { skip: true })).status).toBe(403)

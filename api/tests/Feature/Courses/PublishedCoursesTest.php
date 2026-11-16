@@ -44,7 +44,7 @@ class PublishedCoursesTest extends CoursesTestCase
         $employee = User::factory()->create();
         $this->assertTrue(Gate::forUser($admin)->allows('publish', Course::class));
         $this->assertFalse(Gate::forUser($employee)->allows('publish', Course::class));
-        $this->assertFalse(Gate::forUser($admin)->allows('browse', Course::class));
-        $this->assertTrue(Gate::forUser($employee)->allows('browse', Course::class));
+        $this->assertFalse(Gate::forUser($admin)->allows('employee'));
+        $this->assertTrue(Gate::forUser($employee)->allows('employee'));
     }
 }

@@ -1,66 +1,9 @@
-import { expect, test, type Browser, type Locator, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
+import { adminSignIn, apiRequest, newEmployee, newPage, publishCourse, signIn, signUp } from './support/helpers'
 
 // Admin decides each Course an Employee named in the Mentor check (R3). The spec publishes its own two
 // Courses, so the demo Courses' Mentor lists stay as seeded. Priya (seeded) is the demo Employee.
-const password = 'employee-password'
 const priya = { email: 'priya.nair@example.com', password: 'demo-password' }
-
-/** A fresh Employee per test: each needs its own email, and its name finds its rows in the shared list. */
-function newEmployee(label: string) {
-  const id = `${label}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
-  return { id, name: `Sam ${id}`, email: `sam-${id}@example.com` }
-}
-
-async function signUp(page: Page, employee: { name: string; email: string }) {
-  await page.goto('/sign-up')
-  await page.getByLabel('Name').fill(employee.name)
-  await page.getByLabel('Email').fill(employee.email)
-  await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign up' }).click()
-}
-
-async function signIn(page: Page, email: string, secret = password) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(secret)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-}
-
-async function adminSignIn(page: Page) {
-  await signIn(page, process.env.ADMIN_EMAIL!, process.env.ADMIN_PASSWORD!)
-  await expect(page).toHaveURL(/\/admin\/courses$/)
-}
-
-async function apiRequest(page: Page, method: 'GET' | 'PUT' | 'POST', path: string, body?: unknown) {
-  return page.evaluate(async ({ method, path, body }) => {
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length)
-    const response = await fetch(path, {
-      method,
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token ?? '') },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    })
-    return { status: response.status, body: await response.json() }
-  }, { method, path, body })
-}
-
-/** A new page in its own browser context, so its session doesn't replace another page's. */
-async function newPage(browser: Browser) {
-  const context = await browser.newContext()
-  return { page: await context.newPage(), close: () => context.close() }
-}
-
-/** Admin creates and publishes a complete Course through the API. */
-async function publishCourse(admin: Page, title: string) {
-  const id: number = (await apiRequest(admin, 'POST', '/api/v1/admin/courses', { title, description: null })).body.data.id
-  const document = {
-    title, description: null,
-    stages: ['bronze', 'silver', 'gold'].map((level) => ({
-      level, pass_mark: 70, questions: [{ text: 'Question?', options: [{ text: 'Yes', is_correct: true }, { text: 'No', is_correct: false }] }],
-    })),
-  }
-  expect((await apiRequest(admin, 'PUT', `/api/v1/admin/courses/${id}`, document)).status).toBe(200)
-  expect((await apiRequest(admin, 'POST', `/api/v1/admin/courses/${id}/publish`, {})).status).toBe(200)
-}
 
 async function decide(admin: Page, row: Locator, action: 'Approve' | 'Refuse', tag: string) {
   await row.getByRole('button', { name: action }).click()
@@ -74,7 +17,7 @@ async function decide(admin: Page, row: Locator, action: 'Approve' | 'Refuse', t
 }
 
 test('Admin approves one named Course and refuses another; only the approved one lists the Employee', async ({ page, browser }) => {
-  const sam = newEmployee('decisions')
+  const sam = newEmployee('decisions', { nameWithId: true })
   const approved = `Approved course ${sam.id}`
   const refused = `Refused course ${sam.id}`
 

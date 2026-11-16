@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, expect, it, vi } from 'vitest'
 import type { MentorCheck } from '../../api/types/mentors'
 import { App } from '../../app/App'
-import { jsonResponse } from '../courses/testApi'
+import { jsonResponse } from '../../test/api'
 
 const sam = { id: 12, name: 'Sam Lindqvist', email: 'sam@example.com', is_admin: false }
 const courses = [

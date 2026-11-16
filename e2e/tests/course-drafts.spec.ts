@@ -1,28 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`${name} must be set (it comes from the root .env through docker-compose.e2e.yml)`)
-  }
-  return value
-}
-
-const admin = {
-  email: requiredEnv('ADMIN_EMAIL'),
-  password: requiredEnv('ADMIN_PASSWORD'),
-}
+import { adminSignIn } from './support/helpers'
 
 type QuestionSpec = { text: string; options: string[]; correct: number }
 type StageSpec = { name: 'Bronze' | 'Silver' | 'Gold'; passMark: string; questions: QuestionSpec[] }
-
-async function signIn(page: Page) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(admin.email)
-  await page.getByLabel('Password').fill(admin.password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page).toHaveURL(/\/admin\/courses$/)
-}
 
 /** New Course → title and description → Save; resolves on the created Course's editor. */
 async function createCourse(page: Page, title: string) {
@@ -97,7 +77,7 @@ async function save(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await signIn(page)
+  await adminSignIn(page)
 })
 
 test('Admin drafts a Course with all three Stages, and a reload shows it unchanged', async ({ page }) => {

@@ -3,21 +3,15 @@
 namespace Tests\Feature\Notifications;
 
 use App\Modules\Accounts\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\TestCase;
+use Tests\Feature\ApiTestCase;
 
-abstract class NotificationsTestCase extends TestCase
+abstract class NotificationsTestCase extends ApiTestCase
 {
-    use RefreshDatabase;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Requests come from the SPA on the shared origin (AD-1), so Sanctum treats them as stateful.
-        config(['sanctum.stateful' => ['localhost']]);
-        $this->withHeader('Referer', 'http://localhost/');
         $this->travelTo(now()->startOfSecond());
     }
 

@@ -6,22 +6,10 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Mentors\Actions\GrantMentor;
 use App\Modules\Mentors\Models\Route;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\Feature\ApiTestCase;
 
-abstract class MentorsTestCase extends TestCase
+abstract class MentorsTestCase extends ApiTestCase
 {
-    use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Requests come from the SPA on the shared origin (AD-1), so Sanctum treats them as stateful.
-        config(['sanctum.stateful' => ['localhost']]);
-        $this->withHeader('Referer', 'http://localhost/');
-    }
-
     protected function publishedCourse(): Course
     {
         return Course::factory()->create(['published_at' => now()]);

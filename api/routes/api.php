@@ -33,8 +33,9 @@ Route::prefix('v1')->group(function () {
         Route::post('logout', SignOutController::class);
         Route::get('me', MeController::class);
 
-        // Employee Courses (R6): published Courses only. The role check runs before any lookup.
-        Route::middleware('can:browse,'.Course::class)->group(function () {
+        // Employee routes. The role check runs before any lookup.
+        Route::middleware('can:employee')->group(function () {
+            // Employee Courses (R6): published Courses only.
             Route::get('courses', PublishedCoursesController::class);
             Route::get('courses/{course}', PublishedCourseController::class)->where('course', '[0-9]{1,18}');
             // A published Course's Mentors (R6), without the viewer and without any route (AD-8).

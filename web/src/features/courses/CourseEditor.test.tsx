@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Course } from '../../api/types/courses'
 import { App } from '../../app/App'
-import { jsonResponse, requests, stubApi } from './testApi'
+import { jsonResponse, requests, stubApi } from '../../test/api'
 
 afterEach(() => {
   cleanup()
