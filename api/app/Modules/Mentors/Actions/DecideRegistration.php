@@ -2,30 +2,40 @@
 
 namespace App\Modules\Mentors\Actions;
 
+use App\Modules\Courses\Queries\CourseTitles;
 use App\Modules\Mentors\ErrorCode;
 use App\Modules\Mentors\Exceptions\MentorRuleViolation;
 use App\Modules\Mentors\Models\MentorCheckCourse;
 use App\Modules\Mentors\Models\Outcome;
 use App\Modules\Mentors\Models\RegistrationDecision;
 use App\Modules\Mentors\Models\Route;
+use App\Modules\Notifications\Actions\SendNotice;
+use App\Modules\Notifications\NoticeType;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class DecideRegistration
 {
-    public function __construct(private readonly GrantMentor $grantMentor) {}
+    public function __construct(
+        private readonly GrantMentor $grantMentor,
+        private readonly CourseTitles $courseTitles,
+        private readonly SendNotice $sendNotice,
+    ) {}
 
     /**
      * Records Admin's one final Registration decision (R3) on a Course from an Employee's Mentor
      * check. An approval makes the Employee a Mentor for the Course by Registration approval (AD-7),
-     * in the same transaction; a refusal is only stored. The only writer of `registration_decisions`.
+     * in the same transaction; a refusal is only stored. Either way the Employee gets one
+     * Registration-decision notice once the decision commits (AD-11). The only writer of
+     * `registration_decisions`.
      *
      * @param  int  $mentorCheckCourseId  the `mentor_check_courses` row being decided
      * @return array{id: int, outcome: Outcome}
      *
-     * @throws NotFoundHttpException (a 404) when there is no such Mentor-check Course
-     * @throws MentorRuleViolation (a 409) when the Course already has its decision. Nothing changes.
+     * @throws NotFoundHttpException (a 404) when there is no such Mentor-check Course; no notice is sent
+     * @throws MentorRuleViolation (a 409) when the Course already has its decision. Nothing changes
+     *                             and no notice is sent.
      */
     public function handle(int $mentorCheckCourseId, Outcome $outcome): array
     {
@@ -55,9 +65,15 @@ class DecideRegistration
                 // A pair already granted keeps its first route (AD-7).
                 $this->grantMentor->handle($userId, $courseId, Route::RegistrationApproval);
             }
+
+            // Stored only after this transaction commits (AD-11). A published Course's title is
+            // frozen (AD-14), so the notice keeps it; it carries no route (AD-8).
+            $this->sendNotice->handle($userId, NoticeType::RegistrationDecision, [
+                'course_title' => $this->courseTitles->handle([$courseId])[$courseId] ?? '',
+                'outcome' => $outcome->value,
+            ]);
         });
 
-        // The decision is committed here. Entry 8 sends its notice from this point, after the commit (AD-11).
         return ['id' => $mentorCheckCourseId, 'outcome' => $outcome];
     }
 }

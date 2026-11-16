@@ -49,3 +49,20 @@ export type RegistrationDecision = {
   id: number
   outcome: Outcome
 }
+
+/** A Course in one of the Employee's own Registration-decision lists. */
+export type DecidedCourse = {
+  id: number
+  title: string
+}
+
+/**
+ * App\Modules\Mentors\Http\Resources\EmployeeRegistrationDecisionsResource: GET /api/v1/registration-decisions.
+ * `named` is true when the Employee's Mentor check named any Course; each list is by title, and an
+ * undecided Course is in neither. Never carries a route (AD-8).
+ */
+export type EmployeeRegistrationDecisions = {
+  named: boolean
+  approved: DecidedCourse[]
+  refused: DecidedCourse[]
+}

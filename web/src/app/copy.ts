@@ -1,5 +1,8 @@
 // Every user-facing string in the SPA lives here (AD-16).
 
+/** Month names in dates, fixed here rather than taken from the browser's locale. */
+const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
+
 export const copy = {
   appName: 'GrowMate',
   /** `<title>` on every page: "{page} · GrowMate". */
@@ -8,6 +11,7 @@ export const copy = {
     home: 'Home',
     courses: 'Courses',
     registrationDecisions: 'Registration decisions',
+    notices: 'Notices',
     signOut: 'Sign out',
     primary: 'Main',
   },
@@ -43,6 +47,26 @@ export const copy = {
     title: 'Home',
     learning: 'Learning',
     learningEmpty: "You aren't learning a course yet.",
+    /** The Mentor check card: the Employee's own Registration decisions (R3). */
+    mentorCheck: 'Mentor check',
+    approved: 'Approved',
+    refused: 'Refused',
+    /** Under a heading whose list is empty. */
+    none: 'None.',
+  },
+  notices: {
+    title: 'Notices',
+    empty: 'No notices.',
+    /** The Registration-decision notice's sentence for each `outcome` (R3). */
+    registrationDecision: {
+      approved: (course: string) => `You can now mentor ${course}.`,
+      refused: (course: string) => `You weren't approved to mentor ${course}.`,
+    },
+  },
+  /** A timestamp the API returns, as its UTC calendar date (AD-5): "16 Nov 2026". */
+  date: (iso: string) => {
+    const date = new Date(iso)
+    return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`
   },
   adminCourses: {
     title: 'Courses',
