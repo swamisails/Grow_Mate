@@ -15,10 +15,12 @@ use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Mentors\Http\Controllers\ApproveRegistrationController;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
+use App\Modules\Mentors\Http\Controllers\EmployeeRegistrationDecisionsController;
 use App\Modules\Mentors\Http\Controllers\MentorCheckController;
 use App\Modules\Mentors\Http\Controllers\RefuseRegistrationController;
 use App\Modules\Mentors\Http\Controllers\RegistrationDecisionsController;
 use App\Modules\Mentors\Http\Controllers\SubmitMentorCheckController;
+use App\Modules\Notifications\Http\Controllers\NoticesController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -40,6 +42,10 @@ Route::prefix('v1')->group(function () {
             // The Employee's one Mentor check (R2, AD-15): its status, then one submission or skip.
             Route::get('mentor-check', MentorCheckController::class);
             Route::post('mentor-check', SubmitMentorCheckController::class);
+            // The Employee's own Registration decisions (R3, AD-8): approved and refused Courses, apart.
+            Route::get('registration-decisions', EmployeeRegistrationDecisionsController::class);
+            // The Employee's notices (AD-11), newest first. Admin is never a recipient, so has no inbox.
+            Route::get('notices', NoticesController::class);
         });
 
         Route::prefix('admin')->middleware('can:admin')->group(function () {

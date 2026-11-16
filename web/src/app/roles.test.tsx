@@ -29,6 +29,9 @@ function stubSession(me: User | null, check: MentorCheck = done) {
       if (path === '/api/v1/mentor-check') {
         return jsonResponse(200, { data: check })
       }
+      if (path === '/api/v1/registration-decisions') {
+        return jsonResponse(200, { data: { named: false, approved: [], refused: [] } })
+      }
       if (path === '/api/v1/logout' || path === '/sanctum/csrf-cookie') {
         return new Response(null, { status: 204 })
       }
@@ -54,7 +57,7 @@ afterEach(() => {
 })
 
 describe('Employee routing', () => {
-  it('lands on Home under a top bar of GrowMate, Home, the theme toggle, the name and Sign out only', async () => {
+  it('lands on Home under a top bar of GrowMate, Home, Courses, Notices, the theme toggle, the name and Sign out only', async () => {
     open('/', employee)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
@@ -67,7 +70,13 @@ describe('Employee routing', () => {
       ['GrowMate', '/home'],
       ['Home', '/home'],
       ['Courses', '/courses'],
+      ['Notices', '/notices'],
     ])
+    // Every top-bar link carries its icon, and none carries a count or badge.
+    for (const link of within(screen.getByRole('navigation')).getAllByRole('link')) {
+      expect(link.querySelector('svg.app-header__icon')).toBeTruthy()
+    }
+    expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Notices' }).textContent).toBe('Notices')
     expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Home' }).getAttribute('aria-current')).toBe(
       'page',
     )
@@ -80,6 +89,9 @@ describe('Employee routing', () => {
     const learning = screen.getByRole('region', { name: 'Learning' })
     expect(within(learning).getByText("You aren't learning a course yet.")).toBeTruthy()
     expect(within(learning).getByRole('link', { name: 'Courses' }).getAttribute('href')).toBe('/courses')
+    // Home is a two-column card grid; with nothing named, Learning stands alone.
+    expect(learning.parentElement?.className).toBe('card-grid')
+    expect(screen.queryByRole('region', { name: 'Mentor check' })).toBeNull()
   })
 
   it('shows Not found in the Employee layout on an Admin page, with a link Home', async () => {
@@ -199,6 +211,14 @@ describe('Admin routing', () => {
   it('goes to Admin Courses from Sign up', async () => {
     open('/sign-up', admin)
     await waitFor(() => expect(location()).toBe('/admin/courses'))
+  })
+
+  it('has no Notices: no link, and the page is Not found without reading any notice', async () => {
+    open('/notices', admin)
+
+    expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
+    expect(within(screen.getByRole('navigation')).queryByRole('link', { name: 'Notices' })).toBeNull()
+    expect(vi.mocked(fetch).mock.calls.map(([input]) => String(input))).not.toContain('/api/v1/notices')
   })
 
   it('never reads the Mentor check, and sees it as Not found', async () => {

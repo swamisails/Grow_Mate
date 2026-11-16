@@ -54,13 +54,20 @@ test('an Employee signs up from Sign in, passes the Mentor check step and lands 
 
   await expect(page).toHaveURL(/\/mentor-check$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Mentor check')
+  // Home's own read of the Registration decisions, awaited before checking the card is absent.
+  const decisionsRead = page.waitForResponse(
+    (response) => response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/v1/registration-decisions',
+  )
   await skipMentorCheck(page)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Home')
   await expect(page.getByRole('region', { name: 'Learning' })).toContainText("You aren't learning a course yet.")
+  // A skipped check names nothing, so Home has no Mentor check card.
+  expect((await decisionsRead).status()).toBe(200)
+  await expect(page.getByRole('region', { name: 'Mentor check' })).toHaveCount(0)
 
-  // The bar: GrowMate, Home, the theme toggle, the name and Sign out, and nothing else.
+  // The bar: GrowMate, Home, Courses, Notices, the theme toggle, the name and Sign out, and nothing else.
   const banner = page.getByRole('banner')
-  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home', 'Courses'])
+  await expect(banner.getByRole('link')).toHaveText(['GrowMate', 'Home', 'Courses', 'Notices'])
   await expect(banner.getByRole('button')).toHaveCount(2)
   await expect(banner.getByRole('button', { name: /^Switch to (dark|light) mode$/ })).toBeVisible()
   await expect(banner.getByRole('button', { name: 'Sign out' })).toBeVisible()

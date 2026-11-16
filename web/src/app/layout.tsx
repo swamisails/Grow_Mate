@@ -84,7 +84,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   )
 }
 
-/** Employee pages: "GrowMate" links to Home; the bar links Home and Courses (the pages built so far). */
+/** Employee pages: "GrowMate" links to Home; the bar links Home, Courses and Notices (the pages built so far). */
 export function EmployeeLayout({ children }: { children: ReactNode }) {
   return (
     <SignedInLayout
@@ -102,6 +102,10 @@ export function EmployeeLayout({ children }: { children: ReactNode }) {
           <NavLink to="/courses" className="app-header__link">
             <Icon name="menu_book" className="app-header__icon" />
             {copy.nav.courses}
+          </NavLink>
+          <NavLink to="/notices" className="app-header__link">
+            <Icon name="notifications" className="app-header__icon" />
+            {copy.nav.notices}
           </NavLink>
         </>
       }
