@@ -3,22 +3,10 @@
 namespace Tests\Feature\Courses;
 
 use App\Modules\Accounts\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
+use Tests\Feature\ApiTestCase;
 
-abstract class CoursesTestCase extends TestCase
+abstract class CoursesTestCase extends ApiTestCase
 {
-    use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Requests come from the SPA on the shared origin (AD-1), so Sanctum treats them as stateful.
-        config(['sanctum.stateful' => ['localhost']]);
-        $this->withHeader('Referer', 'http://localhost/');
-    }
-
     protected function signedInAdmin(): static
     {
         return $this->actingAs(User::factory()->admin()->create());

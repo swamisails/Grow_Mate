@@ -1,16 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
+import { signIn } from './support/helpers'
 
 // Seeded by MentorsSeeder in the e2e environment: Rafi and Imani mentor Python Basics; Priya mentors nothing.
 const demoPassword = 'demo-password'
 const rafi = { name: 'Rafi Haddad', email: 'rafi.haddad@example.com' }
-
-async function signIn(page: Page, email: string) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(email)
-  await page.getByLabel('Password').fill(demoPassword)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page).toHaveURL(/\/home$/)
-}
 
 async function openCourse(page: Page, title: string) {
   await page.getByRole('navigation').getByRole('link', { name: 'Courses' }).click()
@@ -19,7 +12,7 @@ async function openCourse(page: Page, title: string) {
 }
 
 test('a demo Mentor sees every other Mentor of Python Basics, never themselves or a route', async ({ page }) => {
-  await signIn(page, rafi.email)
+  await signIn(page, rafi.email, demoPassword, { url: /\/home$/ })
   const mentorsResponse = page.waitForResponse((response) => /\/api\/v1\/courses\/\d+\/mentors$/.test(response.url()))
   await openCourse(page, 'Python Basics')
 
@@ -38,7 +31,7 @@ test('a demo Mentor sees every other Mentor of Python Basics, never themselves o
 })
 
 test('a Course with no Mentors shows the empty state', async ({ page }) => {
-  await signIn(page, rafi.email)
+  await signIn(page, rafi.email, demoPassword, { url: /\/home$/ })
   await openCourse(page, 'Git Essentials')
 
   await expect(page.getByRole('region', { name: 'Mentors' })).toContainText('No mentors for this course yet.')

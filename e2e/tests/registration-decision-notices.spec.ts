@@ -1,62 +1,9 @@
-import { expect, test, type Browser, type Page } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+import { adminSignIn, apiRequest, decisionsRead, newEmployee, newPage, publishCourse, signUp } from './support/helpers'
 
 // An Employee sees Admin's Registration decisions (R3): one notice per decision on Notices, newest
 // first, and the approved and refused Courses as separate lists on Home (AD-8, AD-11). The spec
 // publishes its own three Courses, so the demo Courses stay as seeded.
-const password = 'employee-password'
-
-/** A fresh Employee per test: each needs its own email, and its name finds its rows in the shared list. */
-function newEmployee(label: string) {
-  const id = `${label}-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
-  return { id, name: `Sam ${id}`, email: `sam-${id}@example.com` }
-}
-
-async function signUp(page: Page, employee: { name: string; email: string }) {
-  await page.goto('/sign-up')
-  await page.getByLabel('Name').fill(employee.name)
-  await page.getByLabel('Email').fill(employee.email)
-  await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign up' }).click()
-}
-
-async function adminSignIn(page: Page) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(process.env.ADMIN_EMAIL!)
-  await page.getByLabel('Password').fill(process.env.ADMIN_PASSWORD!)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page).toHaveURL(/\/admin\/courses$/)
-}
-
-async function apiRequest(page: Page, method: 'GET' | 'PUT' | 'POST', path: string, body?: unknown) {
-  return page.evaluate(async ({ method, path, body }) => {
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length)
-    const response = await fetch(path, {
-      method,
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token ?? '') },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    })
-    return { status: response.status, body: await response.json() }
-  }, { method, path, body })
-}
-
-/** A new page in its own browser context, so its session doesn't replace another page's. */
-async function newPage(browser: Browser) {
-  const context = await browser.newContext()
-  return { page: await context.newPage(), close: () => context.close() }
-}
-
-/** Admin creates and publishes a complete Course through the API. */
-async function publishCourse(admin: Page, title: string) {
-  const id: number = (await apiRequest(admin, 'POST', '/api/v1/admin/courses', { title, description: null })).body.data.id
-  const document = {
-    title, description: null,
-    stages: ['bronze', 'silver', 'gold'].map((level) => ({
-      level, pass_mark: 70, questions: [{ text: 'Question?', options: [{ text: 'Yes', is_correct: true }, { text: 'No', is_correct: false }] }],
-    })),
-  }
-  expect((await apiRequest(admin, 'PUT', `/api/v1/admin/courses/${id}`, document)).status).toBe(200)
-  expect((await apiRequest(admin, 'POST', `/api/v1/admin/courses/${id}/publish`, {})).status).toBe(200)
-}
 
 /** Admin decides the Employee's row for `title` on the Registration decisions page, confirming it. */
 async function decide(admin: Page, employeeName: string, title: string, action: 'Approve' | 'Refuse') {
@@ -73,15 +20,8 @@ function utcDate(iso: string) {
   return `${date.getUTCDate()} ${months[date.getUTCMonth()]} ${date.getUTCFullYear()}`
 }
 
-/** Waits for the SPA's own read of the Employee's Registration decisions. */
-function decisionsRead(page: Page) {
-  return page.waitForResponse(
-    (response) => response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/v1/registration-decisions',
-  )
-}
-
 test('an Employee sees one notice per decision, newest first, and the two lists on Home', async ({ page, browser }) => {
-  const sam = newEmployee('notices')
+  const sam = newEmployee('notices', { nameWithId: true })
   const approved = `Approved course ${sam.id}`
   const refused = `Refused course ${sam.id}`
   const undecided = `Undecided course ${sam.id}`
@@ -167,7 +107,7 @@ test('an Employee sees one notice per decision, newest first, and the two lists 
 })
 
 test('an Employee who skipped the Mentor check has no Mentor check card', async ({ page }) => {
-  await signUp(page, newEmployee('skipped'))
+  await signUp(page, newEmployee('skipped', { nameWithId: true }))
   await expect(page).toHaveURL(/\/mentor-check$/)
   const homeRead = decisionsRead(page)
   await page.getByRole('button', { name: 'Skip' }).click()

@@ -12,7 +12,7 @@ use Illuminate\Validation\Rule;
 class SubmitMentorCheckRequest extends FormRequest
 {
     /**
-     * Access is the `browse` policy on the route group: Employees only (AD-9).
+     * Access is the `employee` gate on the route group: Employees only (AD-9).
      */
     public function authorize(): bool
     {

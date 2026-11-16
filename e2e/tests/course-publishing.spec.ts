@@ -1,24 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-async function adminSignIn(page: Page) {
-  await page.goto('/sign-in')
-  await page.getByLabel('Email').fill(process.env.ADMIN_EMAIL!)
-  await page.getByLabel('Password').fill(process.env.ADMIN_PASSWORD!)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-  await expect(page).toHaveURL(/\/admin\/courses$/)
-}
-
-async function apiRequest(page: Page, method: 'GET' | 'PUT' | 'POST', path: string, body?: unknown) {
-  return page.evaluate(async ({ method, path, body }) => {
-    const token = document.cookie.split('; ').find((cookie) => cookie.startsWith('XSRF-TOKEN='))?.slice('XSRF-TOKEN='.length)
-    const response = await fetch(path, {
-      method,
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-XSRF-TOKEN': decodeURIComponent(token ?? '') },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    })
-    return { status: response.status, body: await response.json() }
-  }, { method, path, body })
-}
+import { expect, test } from '@playwright/test'
+import { adminSignIn, apiRequest, newPage, signUp } from './support/helpers'
 
 test('Admin publishes saved content with keyboard confirmation; Employees see only the published description', async ({ page, browser }) => {
   await adminSignIn(page)
@@ -46,13 +27,8 @@ test('Admin publishes saved content with keyboard confirmation; Employees see on
   await expect(publish).toBeEnabled()
   const before = await apiRequest(page, 'GET', `/api/v1/admin/courses/${id}`)
 
-  const employeeContext = await browser.newContext()
-  const employee = await employeeContext.newPage()
-  await employee.goto('/sign-up')
-  await employee.getByLabel('Name').fill('Publishing reader')
-  await employee.getByLabel('Email').fill('publishing-reader@example.com')
-  await employee.getByLabel('Password').fill('employee-password')
-  await employee.getByRole('button', { name: 'Sign up' }).click()
+  const { page: employee, close: closeEmployee } = await newPage(browser)
+  await signUp(employee, { name: 'Publishing reader', email: 'publishing-reader@example.com' })
   await expect(employee).toHaveURL(/\/mentor-check$/)
   await employee.getByRole('button', { name: 'Skip' }).click()
   await expect(employee).toHaveURL(/\/home$/)
@@ -99,15 +75,11 @@ test('Admin publishes saved content with keyboard confirmation; Employees see on
   const detail = await apiRequest(employee, 'GET', `/api/v1/courses/${id}`)
   expect(detail.body.data).toEqual({ id: Number(id), title: 'Published browser course', description: 'A published description.' })
   await expect(employee.getByText('Private correct answer')).toHaveCount(0)
-  await employeeContext.close()
+  await closeEmployee()
 })
 
 test('an empty published list shows its empty state', async ({ page }) => {
-  await page.goto('/sign-up')
-  await page.getByLabel('Name').fill('Empty list reader')
-  await page.getByLabel('Email').fill('empty-list-reader@example.com')
-  await page.getByLabel('Password').fill('employee-password')
-  await page.getByRole('button', { name: 'Sign up' }).click()
+  await signUp(page, { name: 'Empty list reader', email: 'empty-list-reader@example.com' })
   await expect(page).toHaveURL(/\/mentor-check$/)
   await page.getByRole('button', { name: 'Skip' }).click()
   await expect(page).toHaveURL(/\/home$/)

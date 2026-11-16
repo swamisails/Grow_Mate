@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testi
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { RegistrationDecisionRow } from '../../api/types/mentors'
 import { App } from '../../app/App'
-import { jsonResponse, requests, stubApi, type Handler } from '../courses/testApi'
+import { jsonResponse, requests, stubApi, type Handler } from '../../test/api'
 
 const list = '/api/v1/admin/registration-decisions'
 

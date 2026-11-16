@@ -1,7 +1,7 @@
 import { cleanup, render, screen, within } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { App } from '../../app/App'
-import { jsonResponse } from '../courses/testApi'
+import { jsonResponse } from '../../test/api'
 
 const course = { id: 3, title: 'Python Basics', description: 'Variables and functions.' }
 

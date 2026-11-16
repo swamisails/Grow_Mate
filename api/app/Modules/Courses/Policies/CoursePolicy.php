@@ -11,14 +11,6 @@ use App\Modules\Accounts\Models\User;
 class CoursePolicy
 {
     /**
-     * Employees browse published Courses; Admin authors them instead.
-     */
-    public function browse(User $user): bool
-    {
-        return ! $user->is_admin;
-    }
-
-    /**
      * Only Admin publishes.
      */
     public function publish(User $user): bool

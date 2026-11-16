@@ -2,7 +2,7 @@ import { cleanup, render, screen, waitFor, within } from '@testing-library/react
 import { afterEach, expect, it, vi } from 'vitest'
 import type { Notice } from '../../api/types/notifications'
 import { App } from '../../app/App'
-import { jsonResponse } from '../courses/testApi'
+import { jsonResponse } from '../../test/api'
 
 /** Opens Notices as Sam, answering the notice list with `notices()`. */
 function open(notices: () => Response | Promise<Response>) {

@@ -1,18 +1,5 @@
 import { expect, test } from '@playwright/test'
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`${name} must be set (it comes from the root .env through docker-compose.e2e.yml)`)
-  }
-  return value
-}
-
-const admin = {
-  name: requiredEnv('ADMIN_NAME'),
-  email: requiredEnv('ADMIN_EMAIL'),
-  password: requiredEnv('ADMIN_PASSWORD'),
-}
+import { admin } from './support/helpers'
 
 test('Admin signs in, sees the seeded Admin Courses page and signs out', async ({ page }) => {
   await page.goto('/')

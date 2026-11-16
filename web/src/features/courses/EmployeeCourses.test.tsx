@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 import { App } from '../../app/App'
-import { jsonResponse } from './testApi'
+import { jsonResponse } from '../../test/api'
 
 const course = { id: 9, title: 'Python Basics', description: '<script>Variables</script>\nCollections.' }
 function open(path: string, status = 200, courses = [course], detail: typeof course | (Omit<typeof course, 'description'> & { description: null }) = course) {

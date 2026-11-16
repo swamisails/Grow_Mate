@@ -1,24 +1,5 @@
-import { expect, test, type Page } from '@playwright/test'
-
-function requiredEnv(name: string): string {
-  const value = process.env[name]
-  if (!value) {
-    throw new Error(`${name} must be set (it comes from the root .env through docker-compose.e2e.yml)`)
-  }
-  return value
-}
-
-const admin = {
-  name: requiredEnv('ADMIN_NAME'),
-  email: requiredEnv('ADMIN_EMAIL'),
-  password: requiredEnv('ADMIN_PASSWORD'),
-}
-
-async function signIn(page: Page, password = admin.password) {
-  await page.getByLabel('Email').fill(admin.email)
-  await page.getByLabel('Password').fill(password)
-  await page.getByRole('button', { name: 'Sign in' }).click()
-}
+import { expect, test } from '@playwright/test'
+import { admin, signIn } from './support/helpers'
 
 test.describe('theme', () => {
   test('a first visit follows the OS setting, before the app script runs', async ({ page }) => {
@@ -46,7 +27,7 @@ test.describe('theme', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
     await expect(page.getByRole('button', { name: 'Switch to light mode' })).toBeVisible()
 
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
     await expect(page).toHaveURL(/\/admin\/courses$/)
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
 
@@ -63,7 +44,7 @@ test('pages name themselves in the h1 and the title', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Sign in')
   await expect(page).toHaveTitle('Sign in · GrowMate')
 
-  await signIn(page)
+  await signIn(page, admin.email, admin.password, { goto: false })
   await expect(page).toHaveURL(/\/admin\/courses$/)
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Courses')
   await expect(page).toHaveTitle('Courses · GrowMate')
@@ -99,7 +80,7 @@ test.describe('Not found', () => {
 
   test('signed in, an unknown URL shows Not found in the Admin layout with a link home', async ({ page }) => {
     await page.goto('/sign-in')
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
     await expect(page).toHaveURL(/\/admin\/courses$/)
 
     await page.goto('/nope')
@@ -116,27 +97,27 @@ test.describe('401 and the return path', () => {
     await page.goto('/admin/courses')
     await expect(page).toHaveURL(/\/sign-in\?return=%2Fadmin%2Fcourses$/)
 
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
     await expect(page).toHaveURL(/\/admin\/courses$/)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Courses')
   })
 
   test('when the session expires, Sign in returns to the open page', async ({ page, context }) => {
     await page.goto('/sign-in')
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
     await expect(page).toHaveURL(/\/admin\/courses$/)
 
     await context.clearCookies()
     await page.reload()
     await expect(page).toHaveURL(/\/sign-in\?return=%2Fadmin%2Fcourses$/)
 
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
     await expect(page).toHaveURL(/\/admin\/courses$/)
   })
 
   test('a hostile return path is ignored and Sign in goes home', async ({ page }) => {
     await page.goto('/sign-in?return=//evil.com')
-    await signIn(page)
+    await signIn(page, admin.email, admin.password, { goto: false })
 
     await expect(page).toHaveURL(/^http:\/\/[^/]+\/admin\/courses$/)
   })
@@ -144,7 +125,7 @@ test.describe('401 and the return path', () => {
 
 test('a wrong password shows the message under Email and focuses Email', async ({ page }) => {
   await page.goto('/sign-in')
-  await signIn(page, `${admin.password}-wrong`)
+  await signIn(page, admin.email, `${admin.password}-wrong`, { goto: false })
 
   const email = page.getByLabel('Email')
   await expect(email).toHaveAccessibleDescription('These credentials do not match our records.')
