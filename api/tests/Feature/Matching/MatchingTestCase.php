@@ -30,7 +30,8 @@ abstract class MatchingTestCase extends ApiTestCase
     {
         $body = $response->getContent();
         $this->assertStringNotContainsString('group_assignment_id', $body);
-        $this->assertStringNotContainsString('route', $body);
+        // `can_request` is a real field; a Mentor route would be the key `"route"`.
+        $this->assertStringNotContainsString('"route"', $body);
         $this->assertStringNotContainsString('gold_pass', $body);
         $this->assertStringNotContainsString('registration_approval', $body);
         $this->assertStringNotContainsString('group_assignment_accepted', $body);

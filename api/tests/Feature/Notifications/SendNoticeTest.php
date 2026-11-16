@@ -77,6 +77,22 @@ class SendNoticeTest extends NotificationsTestCase
         $this->assertDatabaseCount('notifications', 0);
     }
 
+    public function test_a_derived_request_notice_is_never_stored(): void
+    {
+        $sam = $this->employee('Sam Lindqvist');
+        $fields = ['party' => 'learner', 'person_name' => 'Rafi Haddad', 'course_title' => 'Python Basics'];
+
+        foreach ([NoticeType::RequestReminderDay3, NoticeType::RequestCancelledDay6] as $type) {
+            try {
+                app(SendNotice::class)->handle($sam->id, $type, $fields);
+                $this->fail("Expected a {$type->value} notice to be refused.");
+            } catch (LogicException) {
+            }
+        }
+
+        $this->assertDatabaseCount('notifications', 0);
+    }
+
     public function test_an_unknown_recipient_is_refused(): void
     {
         $this->expectException(LogicException::class);

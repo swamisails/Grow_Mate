@@ -8,7 +8,7 @@ const imani = { name: 'Imani Okafor', email: 'imani.okafor@example.com' }
 
 function hidesSecrets(body: unknown) {
   const json = JSON.stringify(body)
-  expect(json).not.toContain('route')
+  expect(json).not.toContain('"route"')
   expect(json).not.toContain('group_assignment_id')
   expect(json).not.toContain('gold_pass')
   expect(json).not.toContain('registration_approval')

@@ -8,7 +8,8 @@ use App\Modules\Matching\Models\Request;
 
 /**
  * The pending Requests addressed to one Employee, oldest id first (AD-4). A group is not listed:
- * this entry does not accept one. Accepted Requests are not listed.
+ * this entry does not accept one. Accepted Requests are not listed. A Request at or after
+ * `sent_at` + 144 hours is cancelled and dropped. Day 3 does not change the list.
  */
 class IncomingRequests
 {
@@ -26,6 +27,7 @@ class IncomingRequests
             ->where('mentor_id', $mentorId)
             ->whereNull('accepted_at')
             ->whereNull('group_assignment_id')
+            ->where('sent_at', '>', now()->copy()->subHours(RequestState::CANCEL_HOURS))
             ->orderBy('id')
             ->get(['id', 'learner_id', 'course_id']);
 

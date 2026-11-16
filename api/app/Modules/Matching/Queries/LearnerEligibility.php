@@ -6,7 +6,8 @@ use App\Modules\Matching\Models\Request;
 
 /**
  * The only eligibility check this entry owns: an open Request already exists for the Learner and
- * Course. Open is `accepted_at` null (AD-4). Later entries add the rest of the check.
+ * Course. Open is `accepted_at` null and still before `sent_at` + 144 hours (AD-4). A cancelled
+ * row does not block a new Request. Later entries add the rest of the check.
  */
 class LearnerEligibility
 {
@@ -19,10 +20,12 @@ class LearnerEligibility
         $query = Request::query()
             ->where('learner_id', $learnerId)
             ->where('course_id', $courseId)
-            ->whereNull('accepted_at');
+            ->whereNull('accepted_at')
+            ->where('sent_at', '>', now()->copy()->subHours(RequestState::CANCEL_HOURS));
 
+        // `exists()` wraps the select, and MySQL rejects FOR UPDATE in that subquery.
         if ($lock) {
-            $query->lockForUpdate();
+            return $query->lockForUpdate()->first(['id']) === null;
         }
 
         return ! $query->exists();

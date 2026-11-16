@@ -3,7 +3,7 @@ title: 'A Learner requests a Mentor and the Mentor Accepts'
 type: 'feature'
 ticket: '1'
 created: '2026-11-13'
-status: 'built'
+status: 'in-review'
 baseline_revision: '06a0d057d34695d84c59ee1b116bbd688dadf5b6'
 route: 'full'
 route_source: 'auto'
@@ -11,7 +11,7 @@ risk: 'high'
 review: 'quick'
 review_source: 'pinned'
 lenses_ran: ['quick']
-review_loop_iteration: 2
+review_loop_iteration: 3
 context: []
 ---
 
@@ -49,8 +49,8 @@ context: []
 
 ## Code Map
 
-- `web/src/features/mentors/CourseMentors.tsx` — names only. Add Request when a Matching read says the viewer may ask. `CourseMentorResource.php` stays `{id, name}`. Never add `can_request` or `route`.
-- `web/src/features/courses/CoursePage.tsx` — Mentors card is in `.card-grid`. The bar comes from a Progress read, beside the description. A failed refresh keeps the page and any 409 message.
+- `web/src/features/courses/CoursePage.tsx` — Mentors card is in `.card-grid`. The bar comes from a Progress read, beside the description. A failed refresh keeps the page and any 409 message. A progress response that started before the latest read is ignored, so an earlier `null` cannot clear "Not yet started".
+- `web/src/features/mentors/CourseMentors.tsx` — names only. Add Request when a Matching read says the viewer may ask. The 409 message sits inside that Mentor's row, and the divider comes after the message. `CourseMentorResource.php` stays `{id, name}`. Never add `can_request` or `route`.
 - `PublishedCourseController.php` and `CourseMentorsController.php` — do not call Matching or Progress. Each controller calls one query in its own module.
 - `web/src/app/layout.tsx` — add Requests beside Home and Courses.
 - `web/src/features/matching/Requests.tsx` — while one Accept is in flight, every Accept button is disabled. A list response from an earlier Accept is ignored, so an accepted Request cannot come back.
@@ -63,11 +63,11 @@ context: []
 **Execution:**
 - [ ] `api/database/migrations/2026_11_14_000000_create_matching_tables.php` — `group_assignments` (id only, unused); `requests` (`learner_id`, `mentor_id`, `course_id`, nullable `group_assignment_id`, `sent_at`, nullable `accepted_at`); `matches` (`request_id` unique, `started_at`). No `open_course_id` and no status column. One open Request is the eligibility check inside the send transaction, not a column.
 - [ ] `api/app/Modules/Accounts/Queries/LockUser.php`, `api/app/Modules/Courses/Queries/LockCourse.php` — each locks its own row by id. `SendRequest` calls those. It does not use `DB::table` on `users` or `courses`, and it does not import those Models.
-- [ ] `api/app/Modules/Matching/Actions/SendRequest.php`, `AcceptRequest.php`, `Queries/LearnerEligibility.php`, `Queries/RequestState.php`, `ErrorCode.php`, `Exceptions/MatchingRuleViolation.php`, `api/database/factories/RequestFactory.php`, `MentorMatchFactory.php` — eligibility is only "open Request already exists", derived from `accepted_at`. Accept writes `accepted_at` and one Match for an ungrouped Request addressed to the caller.
+- [ ] `api/app/Modules/Matching/Actions/SendRequest.php`, `AcceptRequest.php`, `Queries/LearnerEligibility.php`, `Queries/RequestState.php`, `ErrorCode.php`, `Exceptions/MatchingRuleViolation.php`, `api/database/factories/RequestFactory.php`, `MentorMatchFactory.php`, `GroupAssignmentFactory.php` — eligibility is only "open Request already exists", derived from `accepted_at`. Accept writes `accepted_at` and one Match for an ungrouped Request addressed to the caller.
 - [ ] `api/app/Modules/Progress/Queries/ProgressStatus.php`, `Http/Controllers/CourseProgressController.php` — read-only: open Request → `not_yet_started`; accepted → `in_progress`; otherwise nothing. `GET /api/v1/courses/{course}/progress` returns that status. No table, and not a field on the published Course.
 - [ ] `api/app/Modules/Matching/Http/Controllers/`, `Http/Resources/`, `api/routes/api.php` — `POST /api/v1/courses/{course}/requests` (`mentor_id`); `GET /api/v1/courses/{course}/request-eligibility` (`can_request`); `GET /api/v1/requests`; `POST /api/v1/requests/{request}/accept`. Each controller calls one Matching action or query. Never return `group_assignment_id` or `route`.
 - [ ] `api/tests/Feature/Matching/SendRequestTest.php`, `AcceptRequestTest.php` — one test per I/O row. No session is 401. Admin is 403.
-- [ ] `web/src/features/mentors/CourseMentors.tsx`, `web/src/features/courses/CoursePage.tsx`, `web/src/features/matching/Requests.tsx`, `routes.ts`, `web/src/app/routes.ts`, `layout.tsx`, `copy.ts`, `web/src/api/types/matching.ts` — button, bar, Requests page, top-bar link. Wording only from `copy.ts`. If the progress or eligibility read fails after a send or a 409, leave the Course page up and keep the 409 message under the row. On Requests, disable every Accept button until that Accept and its list refresh finish, and ignore a list response that started earlier.
+- [ ] `web/src/features/mentors/CourseMentors.tsx`, `web/src/features/courses/CoursePage.tsx`, `web/src/features/matching/Requests.tsx`, `routes.ts`, `web/src/app/routes.ts`, `layout.tsx`, `copy.ts`, `web/src/api/types/matching.ts` — button, bar, Requests page, top-bar link. Wording only from `copy.ts`. If the progress or eligibility read fails after a send or a 409, leave the Course page up and keep the 409 message under that Mentor, with the row divider after the message. Ignore a progress response that started before the latest read. On Requests, disable every Accept button until that Accept and its list refresh finish, and ignore a list response that started earlier.
 - [ ] `e2e/tests/request-and-accept.spec.ts`, `e2e/tests/course-mentors.spec.ts` — Priya requests Rafi, Rafi Accepts, the bar changes, and Rafi Accepts a second Learner. Mentors spec allows the button and still shows no route.
 
 **Acceptance Criteria:**
@@ -92,6 +92,11 @@ See the Plan Change Log. Do not repeat the known-bad state.
 - Known-bad state avoided: an accepted Request reappears, and Accepting it again shows "Something went wrong. Try again." after the Match already exists.
 - KEEP: everything in the loop 1 entry, plus owner-query locks, no `open_course_id`, eligibility and progress as their own reads, and a failed Course-page refresh keeping the page and the 409 message.
 
+- Trigger: review loop 3. The first Course-page progress read can finish after Send and clear the bar. The 409 message sits under the row divider. `GroupAssignment` has no factory.
+- Amended: Code Map and the web and factory tasks. Only the latest progress read is applied. The divider follows the 409 message. `GroupAssignment` gets a factory.
+- Known-bad state avoided: a grey "Not yet started" bar disappearing after a successful Request, and a refusal that looks like it belongs to the next Mentor.
+- KEEP: everything in the loop 2 entry, plus one Accept at a time and ignoring an earlier Requests list.
+
 ## Review Triage Log
 
 - medium — `open_course_id` is a stored copy of open state. Accept writes it null in the same save as `accepted_at`, so the 409-versus-button drift does not happen on this path. The column still breaks the rule that request state is derived. bad_plan. The tasks listed the columns and left MySQL uniqueness unspecified.
@@ -100,6 +105,9 @@ See the Plan Change Log. Do not repeat the known-bad state.
 - low — `Request` and `MentorMatch` have no factories. `api/AGENTS.md` says a new model gets one, and the other models have one. patch. Moot: this loop re-derives the code. The change log tells the next build to add the factories.
 - medium — `Requests.tsx` `accept` disables only the clicked row, then replaces the whole list with that call's `listRequests()` result. Two Accept clicks overlap, and the earlier reload can finish last and put an already-accepted request back. A click on that row is a 404 and the page shows the generic error. The Course page's read counter does not cover this list. patch.
 - medium — `Requests.tsx` `accept` disables only the clicked button, then `setState` with whichever `listRequests()` returns last. A slower refresh from the first Accept can put an already-accepted Request back. The next Accept is the 404 path and shows the generic error, while the Match already exists. bad_plan. The task said to list and Accept, and did not say an earlier refresh must not win.
+- medium — `CoursePage` starts a progress read when the page is ready and `refreshProgress` does not cancel it. A response that still says `null` can call `setProgress` after Send has set `not_yet_started`, and the bar is removed. bad_plan. The task said a failed refresh keeps the page, and did not say an earlier progress response must not win.
+- low — The 409 alert is a sibling after `.list-row`, and `.list > li > .list-row` draws the hairline under the name. On a Course with another Mentor the message sits against the next name. patch. Moot: this loop re-derives the code. The web task now puts the divider after the message.
+- low — `GroupAssignment` is a new model with no factory. `api/AGENTS.md` says a new model gets one, and the test builds the row with `new GroupAssignment`. patch. Moot: this loop re-derives the code. The factory task now includes `GroupAssignmentFactory`.
 
 ## Design Notes
 

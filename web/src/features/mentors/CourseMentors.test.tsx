@@ -113,7 +113,7 @@ it('keeps the API message and the Course page when the refresh after a 409 fails
     if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya Nair', email: 'priya@example.com', is_admin: false } })
     if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
     if (url === '/api/v1/courses/3') return jsonResponse(200, { data: course })
-    if (url === '/api/v1/courses/3/mentors') return jsonResponse(200, { data: [{ id: 8, name: 'Rafi Haddad' }] })
+    if (url === '/api/v1/courses/3/mentors') return jsonResponse(200, { data: [{ id: 8, name: 'Rafi Haddad' }, { id: 4, name: 'Imani Okafor' }] })
     if (method === 'POST' && url === '/api/v1/courses/3/requests') {
       posted = true
       return jsonResponse(409, { message: 'You already have an open request for this course.', code: 'MATCHING_REQUEST_ALREADY_OPEN' })
@@ -126,10 +126,52 @@ it('keeps the API message and the Course page when the refresh after a 409 fails
   render(<App />)
 
   const card = await mentorsCard()
-  fireEvent.click(await within(card).findByRole('button', { name: 'Request' }))
+  const request = await within(card).findAllByRole('button', { name: 'Request' })
+  fireEvent.click(request[0])
 
-  expect((await within(card).findByRole('alert')).textContent).toBe('You already have an open request for this course.')
+  const rows = within(card).getAllByRole('listitem')
+  expect((await within(rows[0]).findByRole('alert')).textContent).toBe('You already have an open request for this course.')
+  expect(within(rows[1]).queryByRole('alert')).toBeNull()
   expect(screen.getByRole('heading', { level: 1, name: 'Python Basics' })).toBeTruthy()
   expect(screen.getByText('Variables and functions.')).toBeTruthy()
   expect(screen.queryByText('Something went wrong. Try again.')).toBeNull()
+})
+
+it('keeps Not yet started when an earlier progress read finishes after the Request', async () => {
+  sent.current = false
+  window.history.replaceState(null, '', '/courses/3')
+  let releaseFirst: (response: Response) => void = () => {}
+  let progressReads = 0
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = String(input)
+    const method = init?.method ?? 'GET'
+    if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 2, name: 'Priya Nair', email: 'priya@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
+    if (url === '/api/v1/courses/3') return jsonResponse(200, { data: course })
+    if (url === '/api/v1/courses/3/mentors') return jsonResponse(200, { data: [{ id: 8, name: 'Rafi Haddad' }] })
+    if (url === '/api/v1/courses/3/request-eligibility') return jsonResponse(200, { data: { can_request: !sent.current } })
+    if (url === '/api/v1/courses/3/progress') {
+      progressReads += 1
+      if (progressReads === 1) {
+        return new Promise<Response>((resolve) => {
+          releaseFirst = resolve
+        })
+      }
+      return jsonResponse(200, { data: { status: sent.current ? 'not_yet_started' : null } })
+    }
+    if (method === 'POST' && url === '/api/v1/courses/3/requests') {
+      sent.current = true
+      return jsonResponse(201, { data: { id: 1, course_id: 3, mentor_id: 8, sent_at: '2026-11-15T08:30:00.000000Z' } })
+    }
+    return jsonResponse(404, { message: 'Not Found' })
+  }))
+  render(<App />)
+
+  const card = await mentorsCard()
+  fireEvent.click(await within(card).findByRole('button', { name: 'Request' }))
+
+  const bar = await screen.findByRole('img', { name: 'Progress: Not yet started' })
+  releaseFirst(jsonResponse(200, { data: { status: null } }))
+  await waitFor(() => expect(screen.getByRole('img', { name: 'Progress: Not yet started' }).textContent).toBe('Not yet started'))
+  expect(bar.isConnected).toBe(true)
 })

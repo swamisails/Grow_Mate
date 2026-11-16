@@ -63,6 +63,16 @@ export const copy = {
       approved: (course: string) => `You can now mentor ${course}.`,
       refused: (course: string) => `You weren't approved to mentor ${course}.`,
     },
+    /** Day 3, one sentence per party. `person` is the other person; the Course title is text. */
+    requestReminderDay3: {
+      mentor: (learner: string, course: string) => `Reminder: ${learner} requested you to guide them with ${course}.`,
+      learner: (mentor: string, course: string) => `Your request to ${mentor} for ${course} is still waiting.`,
+    },
+    /** Day 6, one sentence per party. `person` is the other person; the Course title is text. */
+    requestCancelledDay6: {
+      learner: (mentor: string, course: string) => `Your request to ${mentor} for ${course} was cancelled. You can request a mentor again.`,
+      mentor: (learner: string, course: string) => `${learner}'s request for ${course} was cancelled.`,
+    },
   },
   /** A timestamp the API returns, as its UTC calendar date (AD-5): "16 Nov 2026". */
   date: (iso: string) => {

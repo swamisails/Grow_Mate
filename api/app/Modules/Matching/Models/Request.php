@@ -11,8 +11,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * A Learner's ask to one Mentor for one Course (AD-4). Open and accepted are derived from
- * `accepted_at`; nothing here stores a status. Written by `SendRequest` and `AcceptRequest`.
+ * A Learner's ask to one Mentor for one Course (AD-4). Pending, reminded, cancelled and accepted
+ * are derived from `sent_at`, `accepted_at`, and `now()`; nothing here stores a status. Written
+ * by `SendRequest` and `AcceptRequest`.
  *
  * @property int $id
  * @property int $learner_id

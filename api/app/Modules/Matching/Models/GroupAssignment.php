@@ -2,6 +2,9 @@
 
 namespace App\Modules\Matching\Models;
 
+use Database\Factories\GroupAssignmentFactory;
+use Illuminate\Database\Eloquent\Attributes\UseFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -9,7 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @property int $id
  */
+#[UseFactory(GroupAssignmentFactory::class)]
 class GroupAssignment extends Model
 {
+    /** @use HasFactory<GroupAssignmentFactory> */
+    use HasFactory;
+
     public $timestamps = false;
 }

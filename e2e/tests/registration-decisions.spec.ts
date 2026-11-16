@@ -96,7 +96,7 @@ test('Admin approves one named Course and refuses another; only the approved one
     await expect(demo.page.getByRole('heading', { level: 1 })).toHaveText(title)
     const card = demo.page.getByRole('region', { name: 'Mentors' })
     if (listed) {
-      await expect(card.getByRole('listitem')).toHaveText([sam.name])
+      await expect(card.getByRole('listitem').filter({ hasText: sam.name })).toHaveCount(1)
     } else {
       await expect(card).toContainText('No mentors for this course yet.')
       await expect(card.getByText(sam.name)).toHaveCount(0)

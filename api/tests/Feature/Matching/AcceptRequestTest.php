@@ -92,8 +92,7 @@ class AcceptRequestTest extends MatchingTestCase
         $rafi = $this->employee('Rafi Haddad');
         $this->grant($rafi, $course, Route::GroupAssignmentAccepted);
 
-        $group = new GroupAssignment;
-        $group->save();
+        $group = GroupAssignment::factory()->create();
         $grouped = Request::factory()->create([
             'learner_id' => $priya->id,
             'mentor_id' => $rafi->id,
