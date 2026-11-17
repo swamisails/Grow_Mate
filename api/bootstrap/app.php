@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // AD-9: Sanctum first-party SPA cookie sessions on the shared origin.
         $middleware->statefulApi();
+        // AD-1/AD-17: `api` is reachable only through the `web` nginx proxy on the private Compose
+        // network, and `web` sets X-Forwarded-For to the browser's address (never appending a
+        // client's own). Trusting private addresses (not '*', which trusts every address) makes
+        // `$request->ip()` the browser's address, which the sign-in and sign-up rate limits key on.
+        $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.1', '::1']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

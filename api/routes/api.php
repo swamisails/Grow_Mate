@@ -25,9 +25,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
     // AD-9: Sanctum SPA cookie session; the SPA calls GET /sanctum/csrf-cookie first.
-    Route::post('login', SignInController::class);
-    // Sign up creates an Employee only, never an Admin (C2).
-    Route::post('register', SignUpController::class);
+    // Refused attempts are throttled per email and IP (AccountsServiceProvider).
+    Route::post('login', SignInController::class)->middleware('throttle:sign-in');
+    // Sign up creates an Employee only, never an Admin (C2). Refused attempts are throttled per IP.
+    Route::post('register', SignUpController::class)->middleware('throttle:sign-up');
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', SignOutController::class);
