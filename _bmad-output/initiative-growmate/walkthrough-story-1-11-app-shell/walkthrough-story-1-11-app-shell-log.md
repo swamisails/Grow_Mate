@@ -81,3 +81,19 @@ Timestamp: 2026-11-17T11:40:24+05:30
 - Action: Reviewer marked block 7 done; block 8 presented.
 - Result: Block 7 accepted. Block 8 links re-pointed (copy.ts theme strings now line 18, states line 22; styles.css header focus ring now line 108); tokens.css unchanged since f86e381.
 - Evidence: reviewer said "done"; grep of web/src/app/copy.ts and styles.css on main.
+
+## 11 — block 8 Periphery — accepted
+
+Timestamp: 2026-11-17T11:42:17+05:30
+
+- Action: Reviewer marked block 8 done.
+- Result: Block 8 accepted.
+- Evidence: reviewer said "done".
+
+## 12 — whole target — wrap-up
+
+Timestamp: 2026-11-17T11:42:18+05:30
+
+- Action: Review finished; all 8 blocks accepted by the reviewer.
+- Result: Story 1.11 (commit f86e381, merged via PR #1 and #4) reviewed against current main; no defects found; narrative links re-pointed to current main where later Epic 1 stories moved code. Follow-through agreed with reviewer: open a docs PR from branch docs/1-11-walkthrough with the walkthrough notes only (api/.env.example excluded).
+- Evidence: reviewer said "done" on every block.

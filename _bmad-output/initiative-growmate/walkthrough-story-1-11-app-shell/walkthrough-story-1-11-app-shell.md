@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **8 — Periphery**
+Current block: **Review complete** — all blocks accepted 2026-11-17.
 
 ## Blocks
 
@@ -75,7 +75,7 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [e2e/tests/admin-sign-in.spec.ts:33](../../../e2e/tests/admin-sign-in.spec.ts#L33) and [e2e/tests/admin-sign-in.spec.ts:43](../../../e2e/tests/admin-sign-in.spec.ts#L43) — the two changed assertions.
 - Later stories added [web/src/app/roles.test.tsx](../../../web/src/app/roles.test.tsx) and [web/src/app/router.test.ts](../../../web/src/app/router.test.ts) beside these; they are not part of 1.11.
 
-### [ ] 8 — Periphery (in progress)
+### [x] 8 — Periphery (done)
 
 - [web/package.json:11](../../../web/package.json#L11) — `npm test`, plus the four dev dependencies (Vitest 4, pinned for Node 20).
 - [web/vite.config.ts:19](../../../web/vite.config.ts#L19) — the Vitest settings.
