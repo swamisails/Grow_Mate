@@ -65,3 +65,11 @@ Timestamp: 2026-11-17T11:36:13+05:30
 - Action: Reviewer marked block 5 done; block 6 presented.
 - Result: Block 5 accepted. Block 6 links re-pointed; narrative's "No page sends a 409-producing request yet" was stale and replaced (useConflict now used by RegistrationDecisions, MentorCheck, CourseEditor; focusFirstInvalid gained fieldset/group-key handling in later stories).
 - Evidence: reviewer said "done"; `git diff f86e381c HEAD -- web/src/app/forms.ts`; grep of web/src for useConflict.
+
+## 9 — block 6 Form errors: 422 and 409 — accepted
+
+Timestamp: 2026-11-17T11:39:45+05:30
+
+- Action: Reviewer marked block 6 done; block 7 presented.
+- Result: Block 6 accepted. Block 7 links re-pointed (admin-sign-in.spec.ts changed assertions now at lines 33 and 43); ticket verify items map to app-shell.spec.ts tests at lines 5, 18, 69, 105, 126.
+- Evidence: reviewer said "done"; grep of e2e/tests/app-shell.spec.ts and admin-sign-in.spec.ts on main.

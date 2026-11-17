@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **6 — Form errors: 422 and 409**
+Current block: **7 — Tests**
 
 ## Blocks
 
@@ -55,7 +55,7 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/api/client.ts:80](../../../web/src/api/client.ts#L80) — which 401s fire the listener; [web/src/app/SessionProvider.tsx:36](../../../web/src/app/SessionProvider.tsx#L36) — the listener clears the user.
 - [web/src/app/Router.tsx:77](../../../web/src/app/Router.tsx#L77) — `Navigate` now skips a redirect once the browser has left the page it was rendered for, so Sign out isn't overtaken by a stale redirect.
 
-### [ ] 6 — Form errors: 422 and 409 (in progress)
+### [x] 6 — Form errors: 422 and 409 (done)
 
 `fieldErrors` keeps the first API message per field of a 422; the form shows each one under its field, links it with `aria-describedby` and `aria-invalid`, and `focusFirstInvalid` moves focus to the first. If that field already has focus, it is blurred and refocused so screen readers read the new message (a review fix). `useConflict` handles a 409 by keeping the API message and re-fetching; `ConflictMessage` is an always-present polite live region. Since 1.11, Registration decisions, the Mentor check and the Course editor use `useConflict`; story 1.2 taught `focusFirstInvalid` to focus the first enabled control of a `<fieldset>` named by a group-level error key.
 
@@ -63,7 +63,7 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/app/forms.ts:66](../../../web/src/app/forms.ts#L66) — `useConflict`; [web/src/app/forms.ts:90](../../../web/src/app/forms.ts#L90) — `ConflictMessage`.
 - [web/src/features/accounts/SignIn.tsx:35](../../../web/src/features/accounts/SignIn.tsx#L35) — Sign in using them; other errors still show in one alert line.
 
-### [ ] 7 — Tests (not visited)
+### [ ] 7 — Tests (in progress)
 
 `web/` now has Vitest with jsdom and Testing Library (dev only) for the logic the browser suite can't reach. The new Playwright spec covers every edge-case row a browser can reach. Two assertions in the existing sign-in spec changed because the behaviour changed: the post-sign-out redirect now carries `?return=`, and the wrong-password message is now the Email field's description rather than an alert (same text).
 
@@ -71,8 +71,9 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/app/forms.test.tsx](../../../web/src/app/forms.test.tsx) — 422 field errors and focus, 409 message and re-fetch.
 - [web/src/app/session.test.ts](../../../web/src/app/session.test.ts) — `returnPath` rejections and the 401 listener.
 - [web/src/app/theme.test.ts](../../../web/src/app/theme.test.ts) — toggle and blocked storage.
-- [e2e/tests/app-shell.spec.ts](../../../e2e/tests/app-shell.spec.ts) — theme, titles, Loading, Not found, return path, wrong password.
-- [e2e/tests/admin-sign-in.spec.ts:46](../../../e2e/tests/admin-sign-in.spec.ts#L46) and [e2e/tests/admin-sign-in.spec.ts:56](../../../e2e/tests/admin-sign-in.spec.ts#L56) — the two changed assertions.
+- [e2e/tests/app-shell.spec.ts:4](../../../e2e/tests/app-shell.spec.ts#L4) — theme, titles, Loading, Not found, return path, wrong password.
+- [e2e/tests/admin-sign-in.spec.ts:33](../../../e2e/tests/admin-sign-in.spec.ts#L33) and [e2e/tests/admin-sign-in.spec.ts:43](../../../e2e/tests/admin-sign-in.spec.ts#L43) — the two changed assertions.
+- Later stories added [web/src/app/roles.test.tsx](../../../web/src/app/roles.test.tsx) and [web/src/app/router.test.ts](../../../web/src/app/router.test.ts) beside these; they are not part of 1.11.
 
 ### [ ] 8 — Periphery (not visited)
 
