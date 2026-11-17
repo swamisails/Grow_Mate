@@ -74,16 +74,43 @@ test('Priya requests Rafi, Rafi Accepts, and Request stays hidden for a live Mat
   await expectBar(page, 'Not yet started')
   await expect(mentors.getByRole('button', { name: 'Request' })).toHaveCount(0)
 
+  const learnerBefore = page.waitForResponse((response) => response.url().endsWith('/api/v1/notices') && response.request().method() === 'GET')
+  await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
+  const learnerBeforeBody = await (await learnerBefore).json()
+  hidesSecrets(learnerBeforeBody)
+  expect(learnerBeforeBody.data).toEqual([])
+  await expect(page.getByText('No notices.')).toBeVisible()
+
   await signOut(page)
   await signIn(page, rafi.email)
   const incoming = page.waitForResponse((response) => response.url().endsWith('/api/v1/requests') && response.request().method() === 'GET')
   await page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
   hidesSecrets(await (await incoming).json())
   const priyaRow = page.getByRole('listitem').filter({ hasText: `${priya.name} requested you to guide them with Python Basics` })
+  await expect(priyaRow).toBeVisible()
+
+  const mentorNotices = page.waitForResponse((response) => response.url().endsWith('/api/v1/notices') && response.request().method() === 'GET')
+  await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
+  const mentorBody = await (await mentorNotices).json()
+  hidesSecrets(mentorBody)
+  expect(mentorBody.data).toEqual([
+    expect.objectContaining({ type: 'request_sent', person_name: priya.name, course_title: 'Python Basics' }),
+  ])
+  expect(Object.keys(mentorBody.data[0])).toEqual(['id', 'type', 'occurred_at', 'person_name', 'course_title'])
+  await expect(page.locator('.notice-row__sentence')).toHaveText([`${priya.name} requested you to guide them with Python Basics`])
+
+  await page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
   const accepted = page.waitForResponse((response) => /\/api\/v1\/requests\/\d+\/accept$/.test(response.url()))
-  await priyaRow.getByRole('button', { name: 'Accept' }).click()
+  await page.getByRole('listitem').filter({ hasText: `${priya.name} requested you to guide them with Python Basics` }).getByRole('button', { name: 'Accept' }).click()
   hidesSecrets(await (await accepted).json())
   await expect(page.getByText('No requests.')).toBeVisible()
+
+  const mentorAfter = page.waitForResponse((response) => response.url().endsWith('/api/v1/notices') && response.request().method() === 'GET')
+  await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
+  const mentorAfterBody = await (await mentorAfter).json()
+  hidesSecrets(mentorAfterBody)
+  expect(mentorAfterBody.data.map((notice: { type: string }) => notice.type)).toEqual(['request_sent'])
+  await expect(page.getByText(`${rafi.name} is your mentor for Python Basics.`)).toHaveCount(0)
 
   await signOut(page)
   await signIn(page, priya.email)
@@ -97,6 +124,15 @@ test('Priya requests Rafi, Rafi Accepts, and Request stays hidden for a live Mat
   await expectBar(page, 'In progress')
   await expect(mentors.getByRole('listitem').filter({ hasText: rafi.name })).toBeVisible()
   await expect(mentors.getByRole('button', { name: 'Request' })).toHaveCount(0)
+  const learnerNotices = page.waitForResponse((response) => response.url().endsWith('/api/v1/notices') && response.request().method() === 'GET')
+  await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
+  const learnerBody = await (await learnerNotices).json()
+  hidesSecrets(learnerBody)
+  expect(learnerBody.data).toEqual([
+    expect.objectContaining({ type: 'request_accepted', person_name: rafi.name, course_title: 'Python Basics' }),
+  ])
+  expect(Object.keys(learnerBody.data[0])).toEqual(['id', 'type', 'occurred_at', 'person_name', 'course_title'])
+  await expect(page.locator('.notice-row__sentence')).toHaveText([`${rafi.name} is your mentor for Python Basics.`])
 
   await signOut(page)
   await signIn(page, imani.email)

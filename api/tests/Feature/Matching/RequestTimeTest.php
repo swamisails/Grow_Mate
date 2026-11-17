@@ -160,19 +160,28 @@ class RequestTimeTest extends MatchingTestCase
         $sent = $this->at('2026-11-15 00:00:00');
         [$course, $priya, $rafi, $request] = $this->openRequest($sent);
 
-        $this->travelTo($sent->copy()->addHour());
+        $acceptedAt = $sent->copy()->addHour();
+        $this->travelTo($acceptedAt);
         $this->actingAs($rafi)->postJson("/api/v1/requests/{$request->id}/accept")->assertCreated();
 
         foreach ([$sent->copy()->addHours(144), $sent->copy()->addDays(60)] as $later) {
             $this->travelTo($later);
             $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
                 ->assertExactJson(['data' => ['status' => 'in_progress']]);
-            $this->actingAs($priya)->getJson('/api/v1/notices')->assertExactJson(['data' => []]);
+            $learner = $this->actingAs($priya)->getJson('/api/v1/notices');
+            $learner->assertOk()->assertExactJson(['data' => [[
+                'id' => $learner->json('data.0.id'),
+                'type' => 'request_accepted',
+                'occurred_at' => $acceptedAt->utc()->toIso8601ZuluString(),
+                'person_name' => 'Rafi Haddad',
+                'course_title' => 'Python Basics',
+            ]]]);
+            $this->assertHidesRouteAndGroup($learner);
             $this->actingAs($rafi)->getJson('/api/v1/notices')->assertExactJson(['data' => []]);
         }
 
         $this->assertSame(1, MentorMatch::query()->count());
-        $this->assertDatabaseCount('notifications', 0);
+        $this->assertDatabaseCount('notifications', 1);
     }
 
     public function test_a_request_accepted_after_the_reminder_keeps_the_day_3_notice(): void
@@ -180,7 +189,8 @@ class RequestTimeTest extends MatchingTestCase
         $sent = $this->at('2026-11-15 00:00:00');
         [$course, $priya, $rafi, $request] = $this->openRequest($sent);
 
-        $this->travelTo($sent->copy()->addHours(80));
+        $acceptedAt = $sent->copy()->addHours(80);
+        $this->travelTo($acceptedAt);
         $this->actingAs($rafi)->postJson("/api/v1/requests/{$request->id}/accept")->assertCreated();
 
         $this->travelTo($sent->copy()->addHours(144));
@@ -188,6 +198,13 @@ class RequestTimeTest extends MatchingTestCase
         $occurredAt = $sent->copy()->addHours(72)->utc()->toIso8601ZuluString();
         $learner = $this->actingAs($priya)->getJson('/api/v1/notices');
         $learner->assertOk()->assertExactJson(['data' => [
+            [
+                'id' => $learner->json('data.0.id'),
+                'type' => 'request_accepted',
+                'occurred_at' => $acceptedAt->utc()->toIso8601ZuluString(),
+                'person_name' => 'Rafi Haddad',
+                'course_title' => 'Python Basics',
+            ],
             $this->notice('request_reminder_day3', $request->id, $occurredAt, 'learner', 'Rafi Haddad', 'Python Basics'),
         ]]);
         $this->assertHidesRouteAndGroup($learner);
@@ -197,7 +214,7 @@ class RequestTimeTest extends MatchingTestCase
         $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
             ->assertExactJson(['data' => ['status' => 'in_progress']]);
         $this->assertSame(1, MentorMatch::query()->count());
-        $this->assertDatabaseCount('notifications', 0);
+        $this->assertDatabaseCount('notifications', 1);
     }
 
     public function test_a_guest_is_unauthorized_and_admin_gets_no_notice(): void

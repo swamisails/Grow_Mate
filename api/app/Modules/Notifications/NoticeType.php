@@ -12,6 +12,12 @@ enum NoticeType: string
     /** Admin's Registration decision on a Course the Employee named in their Mentor check (R3). */
     case RegistrationDecision = 'registration_decision';
 
+    /** A Learner requested this Mentor for a Course. Stored for the Mentor, after the Request commits. */
+    case RequestSent = 'request_sent';
+
+    /** The Mentor accepted. Stored for the Learner, after the Match commits. */
+    case RequestAccepted = 'request_accepted';
+
     /** Day 3: the Request was still open at `sent_at` + 72 hours. One row per party, never stored. */
     case RequestReminderDay3 = 'request_reminder_day3';
 
@@ -28,6 +34,7 @@ enum NoticeType: string
     {
         return match ($this) {
             self::RegistrationDecision => ['course_title', 'outcome'],
+            self::RequestSent, self::RequestAccepted => ['person_name', 'course_title'],
             self::RequestReminderDay3, self::RequestCancelledDay6 => ['party', 'person_name', 'course_title'],
         };
     }

@@ -20,6 +20,10 @@ function sentence(notice: Notice): string {
       return notice.party === 'learner'
         ? copy.notices.requestCancelledDay6.learner(notice.person_name, notice.course_title)
         : copy.notices.requestCancelledDay6.mentor(notice.person_name, notice.course_title)
+    case 'request_sent':
+      return copy.requests.sentence(notice.person_name, notice.course_title)
+    case 'request_accepted':
+      return copy.notices.requestAccepted(notice.person_name, notice.course_title)
   }
 }
 
