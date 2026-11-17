@@ -49,3 +49,11 @@ Timestamp: 2026-11-17T11:33:40+05:30
 - Action: Reviewer marked block 3 done; block 4 presented.
 - Result: Block 3 accepted. Block 4 links re-pointed to current main; all 10 Epic 1 pages (SignIn, SignUp, MentorCheck, Home, EmployeeCourses, CoursePage, Notices, AdminCourses, CourseEditor, RegistrationDecisions) use PageHeader; PageStates.tsx and documentTitle.ts unchanged since f86e381.
 - Evidence: reviewer said "done"; grep of web/src/features for PageHeader; `git diff --stat f86e381c HEAD -- web/src/app/PageStates.tsx web/src/app/documentTitle.ts` empty.
+
+## 7 — block 4 Page header and page states — accepted
+
+Timestamp: 2026-11-17T11:34:48+05:30
+
+- Action: Reviewer marked block 4 done; block 5 presented.
+- Result: Block 4 accepted. Block 5 links re-pointed to current main; CurrentPage's 1.11 check order (loading, `/`, not found, signed out → sign-in with return, guest page when signed in) intact; story 1.6 inserted the Mentor-check redirect (pending check wins over return path; final gate sends Employee pages to the step).
+- Evidence: reviewer said "done"; web/src/app/App.tsx:17-74 on main.

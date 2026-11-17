@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **4 — Page header and page states**
+Current block: **5 — Routing, 401 and the return path**
 
 ## Blocks
 
@@ -35,7 +35,7 @@ The theme is a `data-theme` attribute on `<html>`; the existing tokens already s
 - [web/src/app/ThemeToggle.tsx:6](../../../web/src/app/ThemeToggle.tsx#L6) — sun/moon `<button>` named "Switch to dark mode" / "Switch to light mode".
 - [web/src/app/layout.tsx:16](../../../web/src/app/layout.tsx#L16) — the toggle in the signed-out bar; [web/src/app/layout.tsx:52](../../../web/src/app/layout.tsx#L52) — the shared signed-in bar (Admin and Employee) that later stories factored out.
 
-### [ ] 4 — Page header and page states (in progress)
+### [x] 4 — Page header and page states (done)
 
 Every page now starts with `PageHeader`, which also sets `<title>` to "{page} · GrowMate". `Loading` and `NotFound` are the shared states; Not found links to the user's home, or to Sign in when signed out. Sign in and Admin Courses moved their `<h1>` out of the card into the header.
 
@@ -44,16 +44,16 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/app/PageStates.tsx:9](../../../web/src/app/PageStates.tsx#L9) — `Loading`; [web/src/app/PageStates.tsx:18](../../../web/src/app/PageStates.tsx#L18) — `NotFound` (403 and 404 look the same).
 - [web/src/features/courses/AdminCourses.tsx:29](../../../web/src/features/courses/AdminCourses.tsx#L29) — the simplest page using the header.
 
-### [ ] 5 — Routing, 401 and the return path (not visited)
+### [ ] 5 — Routing, 401 and the return path (in progress)
 
-`CurrentPage` checks in order: still loading → Loading; `/` → home; unknown path or wrong role → Not found; signed out on an admin page → `/sign-in?return=<path>`; signed in on Sign in → the return path, or home. A 401 from any call except the boot-time `/me` clears the user, so the same rule sends them to Sign in. The return path is accepted only if it is a same-origin path, and only if it leads somewhere other than the current page.
+`CurrentPage` checks in order: still loading → Loading; `/` → home; unknown path or wrong role → Not found; signed out on an admin page → `/sign-in?return=<path>`; signed in on Sign in → the return path, or home. A 401 from any call except the boot-time `/me` clears the user, so the same rule sends them to Sign in. The return path is accepted only if it is a same-origin path, and only if it leads somewhere other than the current page. Story 1.6 later added the pending Mentor check to this chain: it wins over the return path after sign-in, and holds every Employee page until it is done.
 
-- [web/src/app/App.tsx:31](../../../web/src/app/App.tsx#L31) — Not found for unknown and forbidden.
-- [web/src/app/App.tsx:39](../../../web/src/app/App.tsx#L39) — signed out → Sign in with the return path.
-- [web/src/app/App.tsx:42](../../../web/src/app/App.tsx#L42) — after sign-in; the same-page guard is a review fix.
-- [web/src/app/session.ts:34](../../../web/src/app/session.ts#L34) — `returnPath`: rejects `//`, `/\`, absolute URLs and anything not starting with `/`.
-- [web/src/api/client.ts:80](../../../web/src/api/client.ts#L80) — which 401s fire the listener; [web/src/app/SessionProvider.tsx:12](../../../web/src/app/SessionProvider.tsx#L12) — the listener clears the user.
-- [web/src/app/Router.tsx:76](../../../web/src/app/Router.tsx#L76) — `Navigate` now skips a redirect once the browser has left the page it was rendered for, so Sign out isn't overtaken by a stale redirect.
+- [web/src/app/App.tsx:47](../../../web/src/app/App.tsx#L47) — Not found for unknown and forbidden.
+- [web/src/app/App.tsx:57](../../../web/src/app/App.tsx#L57) — signed out → Sign in with the return path.
+- [web/src/app/App.tsx:61](../../../web/src/app/App.tsx#L61) — after sign-in; the same-page guard is a review fix.
+- [web/src/app/session.ts:57](../../../web/src/app/session.ts#L57) — `returnPath`: rejects `//`, `/\`, absolute URLs and anything not starting with `/`.
+- [web/src/api/client.ts:80](../../../web/src/api/client.ts#L80) — which 401s fire the listener; [web/src/app/SessionProvider.tsx:36](../../../web/src/app/SessionProvider.tsx#L36) — the listener clears the user.
+- [web/src/app/Router.tsx:77](../../../web/src/app/Router.tsx#L77) — `Navigate` now skips a redirect once the browser has left the page it was rendered for, so Sign out isn't overtaken by a stale redirect.
 
 ### [ ] 6 — Form errors: 422 and 409 (not visited)
 
