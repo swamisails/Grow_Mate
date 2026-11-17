@@ -3,7 +3,7 @@ title: 'Admin drafts a Course with three Stage Assessments'
 type: 'feature'
 ticket: '2'
 created: '2026-11-12'
-status: 'built'
+status: done
 baseline_revision: 'f86e381cb8dfbe597247d34bb02562e4278195c8'
 route: 'full'
 route_source: 'auto'
