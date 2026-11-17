@@ -33,3 +33,11 @@ Timestamp: 2026-11-17T11:25:35+05:30
 - Action: Reviewer marked block 1 done.
 - Result: Intent accepted as stated in the plan. Block 2 entry-point links re-pointed to current main lines (App.tsx CurrentPage now line 17, PageHeader line 19); index.html:8, client.ts:38, forms.ts:12 unchanged.
 - Evidence: reviewer said "done".
+
+## 5 — block 2 Broad strokes — accepted
+
+Timestamp: 2026-11-17T11:32:46+05:30
+
+- Action: Reviewer marked block 2 done; block 3 presented.
+- Result: Block 2 accepted. Block 3 links re-pointed to current main; theme.ts, ThemeToggle.tsx and index.html unchanged since f86e381; layout.tsx:52 is now the shared signed-in bar used by both Admin and Employee layouts (factored after 1.11).
+- Evidence: reviewer said "done"; `git diff --stat f86e381c HEAD -- web/src/app/theme.ts web/src/app/ThemeToggle.tsx web/index.html` empty.

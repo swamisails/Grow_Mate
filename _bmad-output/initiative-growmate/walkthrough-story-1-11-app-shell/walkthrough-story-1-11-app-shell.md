@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **2 — Broad strokes**
+Current block: **3 — Theme: first visit, toggle and memory**
 
 ## Blocks
 
@@ -16,7 +16,7 @@ From the story's plan file, [story-the-app-shell-theme-page-header-and-page-stat
 
 Decisions made while planning (2026-11-12): the toggle also sits on the signed-out bar; `web/` gets Vitest for unit tests; the plan was kept whole.
 
-### [ ] 2 — Broad strokes (in progress)
+### [x] 2 — Broad strokes (done)
 
 All of this is front-end only; the API is unchanged. One component decides what each URL shows, and a handful of small shared pieces supply the states and controls every page reuses. Open these in order:
 
@@ -26,14 +26,14 @@ All of this is front-end only; the API is unchanged. One component decides what 
 - [web/src/api/client.ts:38](../../../web/src/api/client.ts#L38) — `onUnauthorized`: how a 401 from any call reaches the session.
 - [web/src/app/forms.ts:12](../../../web/src/app/forms.ts#L12) — the 422 and 409 helpers that forms reuse.
 
-### [ ] 3 — Theme: first visit, toggle and memory (not visited)
+### [ ] 3 — Theme: first visit, toggle and memory (in progress)
 
 The theme is a `data-theme` attribute on `<html>`; the existing tokens already switch on it. An inline script in `index.html` sets it before first paint, from the stored choice or, on a first visit, the OS setting, so there is no flash. The toggle flips the attribute and stores the choice under one `localStorage` key, `growmate-theme`; if storage is blocked it still works for the current page view.
 
 - [web/index.html:8](../../../web/index.html#L8) — pre-paint script; keeps working when storage throws.
-- [web/src/app/theme.ts:30](../../../web/src/app/theme.ts#L30) — `useTheme`; `THEME_KEY` must stay in step with the script.
-- [web/src/app/ThemeToggle.tsx](../../../web/src/app/ThemeToggle.tsx) — sun/moon `<button>` named "Switch to dark mode" / "Switch to light mode".
-- [web/src/app/layout.tsx:16](../../../web/src/app/layout.tsx#L16) and [web/src/app/layout.tsx:50](../../../web/src/app/layout.tsx#L50) — the toggle in the signed-out bar and in the Admin bar.
+- [web/src/app/theme.ts:30](../../../web/src/app/theme.ts#L30) — `useTheme`; [`THEME_KEY`](../../../web/src/app/theme.ts#L10) must stay in step with the script ([web/index.html:13](../../../web/index.html#L13)).
+- [web/src/app/ThemeToggle.tsx:6](../../../web/src/app/ThemeToggle.tsx#L6) — sun/moon `<button>` named "Switch to dark mode" / "Switch to light mode".
+- [web/src/app/layout.tsx:16](../../../web/src/app/layout.tsx#L16) — the toggle in the signed-out bar; [web/src/app/layout.tsx:52](../../../web/src/app/layout.tsx#L52) — the shared signed-in bar (Admin and Employee) that later stories factored out.
 
 ### [ ] 4 — Page header and page states (not visited)
 
