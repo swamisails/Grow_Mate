@@ -1,5 +1,5 @@
 import { api, type Resource } from './client'
-import type { IncomingRequest, RequestEligibility } from './types/matching'
+import type { HomeScreen, IncomingRequest, MatchScreen, RequestEligibility } from './types/matching'
 
 /** Whether the signed-in Learner may send a Request on this Course. */
 export async function getRequestEligibility(courseId: number): Promise<RequestEligibility> {
@@ -21,4 +21,16 @@ export async function listRequests(): Promise<IncomingRequest[]> {
 /** Accepts one Request. A 404 means it can no longer be Accepted. */
 export async function acceptRequest(requestId: number): Promise<void> {
   await api.post(`/api/v1/requests/${requestId}/accept`)
+}
+
+/** Home's Learning and Mentoring lists for the signed-in Employee. */
+export async function getHome(): Promise<HomeScreen> {
+  const { data } = await api.get<Resource<HomeScreen>>('/api/v1/home')
+  return data
+}
+
+/** One Match for a party. A 404 means it is missing or the viewer is neither party. */
+export async function getMatch(id: number): Promise<MatchScreen> {
+  const { data } = await api.get<Resource<MatchScreen>>(`/api/v1/matches/${id}`)
+  return data
 }

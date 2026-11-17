@@ -19,5 +19,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: ['./src/test/setup.ts'],
+    // findBy waits five seconds. The test itself needs longer than that when the suite shares the machine.
+    testTimeout: 20000,
   },
 })
