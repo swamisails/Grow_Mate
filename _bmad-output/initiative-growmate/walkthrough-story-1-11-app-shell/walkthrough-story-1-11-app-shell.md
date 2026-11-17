@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **5 — Routing, 401 and the return path**
+Current block: **6 — Form errors: 422 and 409**
 
 ## Blocks
 
@@ -44,7 +44,7 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/app/PageStates.tsx:9](../../../web/src/app/PageStates.tsx#L9) — `Loading`; [web/src/app/PageStates.tsx:18](../../../web/src/app/PageStates.tsx#L18) — `NotFound` (403 and 404 look the same).
 - [web/src/features/courses/AdminCourses.tsx:29](../../../web/src/features/courses/AdminCourses.tsx#L29) — the simplest page using the header.
 
-### [ ] 5 — Routing, 401 and the return path (in progress)
+### [x] 5 — Routing, 401 and the return path (done)
 
 `CurrentPage` checks in order: still loading → Loading; `/` → home; unknown path or wrong role → Not found; signed out on an admin page → `/sign-in?return=<path>`; signed in on Sign in → the return path, or home. A 401 from any call except the boot-time `/me` clears the user, so the same rule sends them to Sign in. The return path is accepted only if it is a same-origin path, and only if it leads somewhere other than the current page. Story 1.6 later added the pending Mentor check to this chain: it wins over the return path after sign-in, and holds every Employee page until it is done.
 
@@ -55,13 +55,13 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/api/client.ts:80](../../../web/src/api/client.ts#L80) — which 401s fire the listener; [web/src/app/SessionProvider.tsx:36](../../../web/src/app/SessionProvider.tsx#L36) — the listener clears the user.
 - [web/src/app/Router.tsx:77](../../../web/src/app/Router.tsx#L77) — `Navigate` now skips a redirect once the browser has left the page it was rendered for, so Sign out isn't overtaken by a stale redirect.
 
-### [ ] 6 — Form errors: 422 and 409 (not visited)
+### [ ] 6 — Form errors: 422 and 409 (in progress)
 
-`fieldErrors` keeps the first API message per field of a 422; the form shows each one under its field, links it with `aria-describedby` and `aria-invalid`, and `focusFirstInvalid` moves focus to the first. If that field already has focus, it is blurred and refocused so screen readers read the new message (a review fix). `useConflict` handles a 409 by keeping the API message and re-fetching; `ConflictMessage` is an always-present polite live region. No page sends a 409-producing request yet.
+`fieldErrors` keeps the first API message per field of a 422; the form shows each one under its field, links it with `aria-describedby` and `aria-invalid`, and `focusFirstInvalid` moves focus to the first. If that field already has focus, it is blurred and refocused so screen readers read the new message (a review fix). `useConflict` handles a 409 by keeping the API message and re-fetching; `ConflictMessage` is an always-present polite live region. Since 1.11, Registration decisions, the Mentor check and the Course editor use `useConflict`; story 1.2 taught `focusFirstInvalid` to focus the first enabled control of a `<fieldset>` named by a group-level error key.
 
-- [web/src/app/forms.ts:12](../../../web/src/app/forms.ts#L12) — `fieldErrors`; [web/src/app/forms.ts:26](../../../web/src/app/forms.ts#L26) — `focusFirstInvalid`.
-- [web/src/app/forms.ts:47](../../../web/src/app/forms.ts#L47) — `useConflict`; [web/src/app/forms.ts:71](../../../web/src/app/forms.ts#L71) — `ConflictMessage`.
-- [web/src/features/accounts/SignIn.tsx:34](../../../web/src/features/accounts/SignIn.tsx#L34) — Sign in using them; other errors still show in one alert line.
+- [web/src/app/forms.ts:12](../../../web/src/app/forms.ts#L12) — `fieldErrors`; [web/src/app/forms.ts:40](../../../web/src/app/forms.ts#L40) — `focusFirstInvalid`.
+- [web/src/app/forms.ts:66](../../../web/src/app/forms.ts#L66) — `useConflict`; [web/src/app/forms.ts:90](../../../web/src/app/forms.ts#L90) — `ConflictMessage`.
+- [web/src/features/accounts/SignIn.tsx:35](../../../web/src/features/accounts/SignIn.tsx#L35) — Sign in using them; other errors still show in one alert line.
 
 ### [ ] 7 — Tests (not visited)
 

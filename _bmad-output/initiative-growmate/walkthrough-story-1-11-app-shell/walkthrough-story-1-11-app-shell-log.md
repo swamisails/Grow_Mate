@@ -57,3 +57,11 @@ Timestamp: 2026-11-17T11:34:48+05:30
 - Action: Reviewer marked block 4 done; block 5 presented.
 - Result: Block 4 accepted. Block 5 links re-pointed to current main; CurrentPage's 1.11 check order (loading, `/`, not found, signed out → sign-in with return, guest page when signed in) intact; story 1.6 inserted the Mentor-check redirect (pending check wins over return path; final gate sends Employee pages to the step).
 - Evidence: reviewer said "done"; web/src/app/App.tsx:17-74 on main.
+
+## 8 — block 5 Routing, 401 and the return path — accepted
+
+Timestamp: 2026-11-17T11:36:13+05:30
+
+- Action: Reviewer marked block 5 done; block 6 presented.
+- Result: Block 5 accepted. Block 6 links re-pointed; narrative's "No page sends a 409-producing request yet" was stale and replaced (useConflict now used by RegistrationDecisions, MentorCheck, CourseEditor; focusFirstInvalid gained fieldset/group-key handling in later stories).
+- Evidence: reviewer said "done"; `git diff f86e381c HEAD -- web/src/app/forms.ts`; grep of web/src for useConflict.
