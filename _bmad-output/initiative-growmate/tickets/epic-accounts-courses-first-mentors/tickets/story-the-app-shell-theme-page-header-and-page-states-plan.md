@@ -3,7 +3,7 @@ title: 'The app shell: theme, page header and page states'
 type: 'feature'
 ticket: '11'
 created: '2026-11-12'
-status: 'built'
+status: done
 baseline_revision: '1a15865d203ddba626c43335c8d1aa7644e7a357'
 route: 'full'
 route_source: 'auto'

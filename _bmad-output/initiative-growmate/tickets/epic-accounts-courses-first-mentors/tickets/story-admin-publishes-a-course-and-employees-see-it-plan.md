@@ -3,7 +3,7 @@ title: 'Admin publishes a Course and Employees see it'
 type: 'feature'
 ticket: '4'
 created: '2026-11-12'
-status: 'built'
+status: done
 baseline_revision: 'cad084687d81fc75014d0060289356ddd1447089'
 route: 'full'
 route_source: 'auto'
