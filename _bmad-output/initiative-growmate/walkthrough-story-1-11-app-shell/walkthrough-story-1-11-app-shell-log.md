@@ -41,3 +41,11 @@ Timestamp: 2026-11-17T11:32:46+05:30
 - Action: Reviewer marked block 2 done; block 3 presented.
 - Result: Block 2 accepted. Block 3 links re-pointed to current main; theme.ts, ThemeToggle.tsx and index.html unchanged since f86e381; layout.tsx:52 is now the shared signed-in bar used by both Admin and Employee layouts (factored after 1.11).
 - Evidence: reviewer said "done"; `git diff --stat f86e381c HEAD -- web/src/app/theme.ts web/src/app/ThemeToggle.tsx web/index.html` empty.
+
+## 6 — block 3 Theme — accepted
+
+Timestamp: 2026-11-17T11:33:40+05:30
+
+- Action: Reviewer marked block 3 done; block 4 presented.
+- Result: Block 3 accepted. Block 4 links re-pointed to current main; all 10 Epic 1 pages (SignIn, SignUp, MentorCheck, Home, EmployeeCourses, CoursePage, Notices, AdminCourses, CourseEditor, RegistrationDecisions) use PageHeader; PageStates.tsx and documentTitle.ts unchanged since f86e381.
+- Evidence: reviewer said "done"; grep of web/src/features for PageHeader; `git diff --stat f86e381c HEAD -- web/src/app/PageStates.tsx web/src/app/documentTitle.ts` empty.
