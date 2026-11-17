@@ -3,7 +3,7 @@ title: 'UJ-3 and Course publishing pass end to end'
 type: 'chore'
 ticket: '10'
 created: '2026-11-16'
-status: 'built'
+status: done
 baseline_revision: '7efed6446b823d50b351b7e267ba4d5679e313f5'
 route: 'full'
 route_source: 'auto'

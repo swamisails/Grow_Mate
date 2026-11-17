@@ -3,7 +3,7 @@ title: 'Employees see their Registration-decision notices and lists'
 type: 'feature'
 ticket: '8'
 created: '2026-11-16'
-status: 'built'
+status: done
 baseline_revision: 'f2d71b01ee2ed2dd133662e208475e0b17febb84'
 route: 'full'
 route_source: 'auto'

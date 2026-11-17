@@ -29,24 +29,24 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-10-2026 16:57
-last_updated: 11-17-2026 11:59
+last_updated: 11-17-2026 12:08
 project: GROW_MATE
 project_key: NOKEY
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 development_status:
-  epic-1: backlog
-  1-1-admin-signs-in-on-the-deployed-stack: backlog
-  1-11-the-app-shell-theme-page-header-and-page-states: backlog
-  1-2-admin-drafts-a-course-with-three-stage-assessments: backlog
-  1-3-employees-sign-up-sign-in-and-sign-out: backlog
-  1-4-admin-publishes-a-course-and-employees-see-it: backlog
-  1-5-each-course-lists-its-mentors: backlog
-  1-6-employees-name-courses-in-the-mentor-check: backlog
-  1-7-admin-decides-each-mentor-check-course: backlog
-  1-8-employees-see-their-registration-decision-notices-and-lists: backlog
-  1-9-refactor-sweep: backlog
-  1-10-uj-3-and-course-publishing-pass-end-to-end: backlog
+  epic-1: done
+  1-1-admin-signs-in-on-the-deployed-stack: done
+  1-11-the-app-shell-theme-page-header-and-page-states: done
+  1-2-admin-drafts-a-course-with-three-stage-assessments: done
+  1-3-employees-sign-up-sign-in-and-sign-out: done
+  1-4-admin-publishes-a-course-and-employees-see-it: done
+  1-5-each-course-lists-its-mentors: done
+  1-6-employees-name-courses-in-the-mentor-check: done
+  1-7-admin-decides-each-mentor-check-course: done
+  1-8-employees-see-their-registration-decision-notices-and-lists: done
+  1-9-refactor-sweep: done
+  1-10-uj-3-and-course-publishing-pass-end-to-end: done
   epic-1-retrospective: done
 
   epic-2: backlog
@@ -152,5 +152,5 @@ action_items:
     action: "Sync sprint-status.yaml with the ticket tree or choose one source of
       truth for story state (L5)."
     owner: "Swami"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"

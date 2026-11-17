@@ -3,7 +3,7 @@ title: 'Employees sign up, sign in and sign out'
 type: 'feature'
 ticket: '3'
 created: '2026-11-12'
-status: 'built'
+status: done
 baseline_revision: '139858643d2c04ad7cc304f8ce149ddef3e694e2'
 route: 'full'
 route_source: 'auto'

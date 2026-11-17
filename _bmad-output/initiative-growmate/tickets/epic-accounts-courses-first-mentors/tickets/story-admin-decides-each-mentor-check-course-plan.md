@@ -3,7 +3,7 @@ title: 'Admin decides each Mentor-check Course'
 type: 'feature'
 ticket: '7'
 created: '2026-11-16'
-status: 'built'
+status: done
 baseline_revision: '06a0d057d34695d84c59ee1b116bbd688dadf5b6'
 route: 'full'
 route_source: 'auto'
