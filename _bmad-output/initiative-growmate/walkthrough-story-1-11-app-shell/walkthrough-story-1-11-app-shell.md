@@ -2,7 +2,7 @@
 
 Target: commit `f86e381` on branch `story/1-11-app-shell` — the implementation of story 1.11, including the three review fixes. It builds on story 1.1 (`a22a86c`) and the dev proxy commit (`1a15865`), which are not walked through.
 
-Current block: **7 — Tests**
+Current block: **8 — Periphery**
 
 ## Blocks
 
@@ -63,7 +63,7 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [web/src/app/forms.ts:66](../../../web/src/app/forms.ts#L66) — `useConflict`; [web/src/app/forms.ts:90](../../../web/src/app/forms.ts#L90) — `ConflictMessage`.
 - [web/src/features/accounts/SignIn.tsx:35](../../../web/src/features/accounts/SignIn.tsx#L35) — Sign in using them; other errors still show in one alert line.
 
-### [ ] 7 — Tests (in progress)
+### [x] 7 — Tests (done)
 
 `web/` now has Vitest with jsdom and Testing Library (dev only) for the logic the browser suite can't reach. The new Playwright spec covers every edge-case row a browser can reach. Two assertions in the existing sign-in spec changed because the behaviour changed: the post-sign-out redirect now carries `?return=`, and the wrong-password message is now the Email field's description rather than an alert (same text).
 
@@ -75,11 +75,11 @@ Every page now starts with `PageHeader`, which also sets `<title>` to "{page} ·
 - [e2e/tests/admin-sign-in.spec.ts:33](../../../e2e/tests/admin-sign-in.spec.ts#L33) and [e2e/tests/admin-sign-in.spec.ts:43](../../../e2e/tests/admin-sign-in.spec.ts#L43) — the two changed assertions.
 - Later stories added [web/src/app/roles.test.tsx](../../../web/src/app/roles.test.tsx) and [web/src/app/router.test.ts](../../../web/src/app/router.test.ts) beside these; they are not part of 1.11.
 
-### [ ] 8 — Periphery (not visited)
+### [ ] 8 — Periphery (in progress)
 
 - [web/package.json:11](../../../web/package.json#L11) — `npm test`, plus the four dev dependencies (Vitest 4, pinned for Node 20).
 - [web/vite.config.ts:19](../../../web/vite.config.ts#L19) — the Vitest settings.
-- [web/src/app/copy.ts:12](../../../web/src/app/copy.ts#L12) — new strings for the toggle and the page states.
+- [web/src/app/copy.ts:18](../../../web/src/app/copy.ts#L18) — new strings for the toggle and the page states.
 - [web/src/app/icons.tsx](../../../web/src/app/icons.tsx) — shared inline Material Symbols.
-- [web/src/app/styles.css:103](../../../web/src/app/styles.css#L103) — header focus ring, toggle, page header and `.meta` styles.
+- [web/src/app/styles.css:108](../../../web/src/app/styles.css#L108) — header focus ring, toggle, page header and `.meta` styles.
 - [web/src/app/tokens.css](../../../web/src/app/tokens.css) — comment update only.

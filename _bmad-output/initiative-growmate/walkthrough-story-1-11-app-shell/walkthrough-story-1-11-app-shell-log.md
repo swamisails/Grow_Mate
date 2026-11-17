@@ -73,3 +73,11 @@ Timestamp: 2026-11-17T11:39:45+05:30
 - Action: Reviewer marked block 6 done; block 7 presented.
 - Result: Block 6 accepted. Block 7 links re-pointed (admin-sign-in.spec.ts changed assertions now at lines 33 and 43); ticket verify items map to app-shell.spec.ts tests at lines 5, 18, 69, 105, 126.
 - Evidence: reviewer said "done"; grep of e2e/tests/app-shell.spec.ts and admin-sign-in.spec.ts on main.
+
+## 10 — block 7 Tests — accepted
+
+Timestamp: 2026-11-17T11:40:24+05:30
+
+- Action: Reviewer marked block 7 done; block 8 presented.
+- Result: Block 7 accepted. Block 8 links re-pointed (copy.ts theme strings now line 18, states line 22; styles.css header focus ring now line 108); tokens.css unchanged since f86e381.
+- Evidence: reviewer said "done"; grep of web/src/app/copy.ts and styles.css on main.
