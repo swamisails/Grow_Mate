@@ -757,8 +757,10 @@ a.button {
   gap: var(--space-6);
 }
 
+/* Empty until an assignment is created. It stays in the accessibility tree so the card is
+   announced when it appears; the negative margin cancels the flex gap it would otherwise add. */
 .group-assignment > [role='status']:empty {
-  display: none;
+  margin-bottom: calc(-1 * var(--space-6));
 }
 
 .group-assignment__fields {
