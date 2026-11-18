@@ -17,7 +17,10 @@ const employees: Employee[] = [
   { id: 11, name: 'Asha Rao' },
   { id: 12, name: 'Ben Carter' },
   { id: 13, name: 'Imani Okafor' },
+  { id: 14, name: 'Sam Lindqvist' },
 ]
+
+const refusedPath = (courseId: number) => `/api/v1/admin/courses/${courseId}/refused-employees`
 
 const created = {
   course_title: 'SQL Fundamentals',
@@ -91,14 +94,24 @@ describe('Group assignment', () => {
     const course = screen.getByLabelText('Course')
     expect(within(course).getAllByRole('option').map((option) => option.textContent)).toEqual(['', 'SQL Fundamentals', 'Python Basics'])
     const mentor = screen.getByLabelText('Chosen Employee')
-    expect(within(mentor).getAllByRole('option').map((option) => option.textContent)).toEqual(['', 'Asha Rao', 'Ben Carter', 'Imani Okafor'])
+    expect(within(mentor).getAllByRole('option').map((option) => option.textContent)).toEqual([
+      '',
+      'Asha Rao',
+      'Ben Carter',
+      'Imani Okafor',
+      'Sam Lindqvist',
+    ])
 
     expect(screen.queryByRole('group', { name: 'Learners' })).toBeNull()
     expect(assignButton().disabled).toBe(true)
 
     choose('Chosen Employee', 'Imani Okafor')
     const learners = screen.getByRole('group', { name: 'Learners' })
-    expect(within(learners).getAllByRole('checkbox').map((box) => box.parentElement?.textContent)).toEqual(['Asha Rao', 'Ben Carter'])
+    expect(within(learners).getAllByRole('checkbox').map((box) => box.parentElement?.textContent)).toEqual([
+      'Asha Rao',
+      'Ben Carter',
+      'Sam Lindqvist',
+    ])
     expect(assignButton().disabled).toBe(true)
 
     fireEvent.click(within(learners).getByRole('checkbox', { name: 'Asha Rao' }))
@@ -172,5 +185,85 @@ describe('Group assignment', () => {
     await waitFor(() =>
       expect(fetchMock.mock.calls.filter(([input]) => String(input) === '/api/v1/admin/courses')).toHaveLength(2),
     )
+  })
+
+  it('drops an Employee refused the Course from the Chosen Employee list and clears them once chosen', async () => {
+    const fetchMock = await open(undefined, {
+      [`GET ${refusedPath(1)}`]: () => jsonResponse(200, { data: [{ id: 14 }] }),
+      [`GET ${refusedPath(3)}`]: () => jsonResponse(200, { data: [] }),
+    })
+    const mentorOptions = () => within(screen.getByLabelText('Chosen Employee')).getAllByRole('option').map((option) => option.textContent)
+
+    choose('Chosen Employee', 'Sam Lindqvist')
+    choose('Course', 'SQL Fundamentals')
+
+    await waitFor(() => expect(mentorOptions()).toEqual(['', 'Asha Rao', 'Ben Carter', 'Imani Okafor']))
+    expect((screen.getByLabelText('Chosen Employee') as HTMLSelectElement).value).toBe('')
+    expect(fetchMock.mock.calls.some(([input]) => String(input) === refusedPath(1))).toBe(true)
+    // Sam may still be a Learner: the refusal is about guiding the Course only.
+    choose('Chosen Employee', 'Imani Okafor')
+    expect(within(screen.getByRole('group', { name: 'Learners' })).getByRole('checkbox', { name: 'Sam Lindqvist' })).toBeTruthy()
+
+    choose('Course', 'Python Basics')
+    await waitFor(() => expect(mentorOptions()).toContain('Sam Lindqvist'))
+    expect((screen.getByLabelText('Chosen Employee') as HTMLSelectElement).value).toBe('13')
+  })
+
+  it('on a Learner 409 shows the summary at the top of the card and marks each refused Learner', async () => {
+    const message = "Nothing was assigned. Some learners can't be assigned to this course."
+    const mark = "This learner can't be assigned to this course."
+    const fetchMock = await open(() =>
+      jsonResponse(409, { message, code: 'MATCHING_LEARNER_NOT_ASSIGNABLE', errors: { 'learner_ids.1': [mark] } }),
+    )
+    fill()
+
+    await assign()
+
+    expect(posted(fetchMock)).toEqual([{ course_id: 1, mentor_id: 13, learner_ids: [11, 12] }])
+    const form = screen.getByRole('region', { name: 'Assign learners' })
+    const summary = await within(form).findByRole('status')
+    expect(summary.textContent).toBe(message)
+    expect(summary.compareDocumentPosition(screen.getByLabelText('Course')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+
+    const learners = screen.getByRole('group', { name: 'Learners' })
+    const ben = within(learners).getByRole('checkbox', { name: 'Ben Carter' })
+    expect(ben.getAttribute('aria-invalid')).toBe('true')
+    expect(document.getElementById(ben.getAttribute('aria-describedby') ?? '')?.textContent).toBe(mark)
+    const asha = within(learners).getByRole('checkbox', { name: 'Asha Rao' })
+    expect(asha.getAttribute('aria-invalid')).toBeNull()
+    expect(asha.getAttribute('aria-describedby')).toBeNull()
+    expect(within(learners).getAllByText(mark)).toHaveLength(1)
+
+    // Nothing next to Assign, the form is kept, and nothing was created.
+    expect(within(form).getAllByText(message)).toHaveLength(1)
+    expect(screen.queryByRole('region', { name: 'Assignment created' })).toBeNull()
+    expect((asha as HTMLInputElement).checked).toBe(true)
+    expect(assignButton().disabled).toBe(false)
+  })
+
+  it('on a chosen-Employee 409 shows it under the select and re-reads the refused list', async () => {
+    let refused: { id: number }[] = []
+    const message = "This employee can't be chosen for this course."
+    const fetchMock = await open(
+      () => jsonResponse(409, { message, code: 'MATCHING_MENTOR_NOT_ELIGIBLE', errors: { mentor_id: [message] } }),
+      { [`GET ${refusedPath(1)}`]: () => jsonResponse(200, { data: refused }) },
+    )
+    fill()
+    await waitFor(() => expect(fetchMock.mock.calls.filter(([input]) => String(input) === refusedPath(1))).toHaveLength(1))
+    refused = [{ id: 13 }]
+
+    await assign()
+
+    const mentor = screen.getByLabelText('Chosen Employee') as HTMLSelectElement
+    await waitFor(() => expect(mentor.value).toBe(''))
+    expect(fetchMock.mock.calls.filter(([input]) => String(input) === refusedPath(1))).toHaveLength(2)
+    expect(within(mentor).queryByRole('option', { name: 'Imani Okafor' })).toBeNull()
+    expect(mentor.getAttribute('aria-invalid')).toBe('true')
+    expect(document.getElementById(mentor.getAttribute('aria-describedby') ?? '')?.textContent).toBe(message)
+    expect(screen.queryByRole('region', { name: 'Assignment created' })).toBeNull()
+
+    choose('Chosen Employee', 'Ben Carter')
+    expect(screen.queryByText(message)).toBeNull()
+    expect(mentor.getAttribute('aria-invalid')).toBeNull()
   })
 })

@@ -15,3 +15,11 @@
 - source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-one-accept-starts-every-match-in-the-group-plan.md`
   summary: The uncommitted `api/.env.example` edit (`APP_ENV=e2e` after `APP_ENV=local`, blank DB keys) is still in the working tree during story 4.2.
   evidence: The 4.2 quick review flagged it again; a later duplicate key wins in phpdotenv, as verified under 4.1. It is epic 1 retro item 8.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-group-assignment-refusals-plan.md`
+  summary: Story 4.1's "Assignment created" live region is hidden by `.group-assignment > [role='status']:empty { display: none }`, so screen readers may not announce the created card when it appears.
+  evidence: The region joins the accessibility tree with its content already in place; `ConflictMessage` (`web/src/app/forms.ts` L87) keeps its live region always rendered for this reason. The 4.3 review fixed the same pattern on the refusal summary.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-group-assignment-refusals-plan.md`
+  summary: The uncommitted `api/.env.example` edit (`APP_ENV=e2e` after `APP_ENV=local`) is still in the working tree during story 4.3.
+  evidence: The 4.3 quick review flagged it a third time. It is epic 1 retro item 8.
