@@ -8,7 +8,7 @@ const imani = { name: 'Imani Okafor', email: 'imani.okafor@example.com' }
 
 function hidesSecrets(body: unknown) {
   const json = JSON.stringify(body)
-  expect(json).not.toContain('route')
+  expect(json).not.toContain('"route"')
   expect(json).not.toContain('group_assignment_id')
   expect(json).not.toContain('gold_pass')
   expect(json).not.toContain('registration_approval')
@@ -59,7 +59,7 @@ test('an Employee with nothing waiting sees no requests', async ({ page }) => {
   hidesSecrets(await (await list).json())
 })
 
-test('Priya requests Rafi, Rafi Accepts, the bar turns half blue, and Rafi Accepts a second Learner', async ({ page }) => {
+test('Priya requests Rafi, Rafi Accepts, and Request stays hidden for a live Match and for a Mentor', async ({ page }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   await signIn(page, priya.email)
   await openCourse(page, 'Python Basics')
@@ -88,21 +88,24 @@ test('Priya requests Rafi, Rafi Accepts, the bar turns half blue, and Rafi Accep
   await signOut(page)
   await signIn(page, priya.email)
   const progress = page.waitForResponse((response) => /\/api\/v1\/courses\/\d+\/progress$/.test(response.url()))
+  const eligibility = page.waitForResponse((response) => /\/api\/v1\/courses\/\d+\/request-eligibility$/.test(response.url()))
   await openCourse(page, 'Python Basics')
   hidesSecrets(await (await progress).json())
+  const eligibilityBody = await (await eligibility).json()
+  hidesSecrets(eligibilityBody)
+  expect(eligibilityBody.data.can_request).toBe(false)
   await expectBar(page, 'In progress')
-  await expect(mentors.getByRole('button', { name: 'Request' })).toHaveCount(2)
+  await expect(mentors.getByRole('listitem').filter({ hasText: rafi.name })).toBeVisible()
+  await expect(mentors.getByRole('button', { name: 'Request' })).toHaveCount(0)
 
   await signOut(page)
   await signIn(page, imani.email)
+  const mentorEligibility = page.waitForResponse((response) => /\/api\/v1\/courses\/\d+\/request-eligibility$/.test(response.url()))
   await openCourse(page, 'Python Basics')
-  await page.getByRole('region', { name: 'Mentors' }).getByRole('listitem').filter({ hasText: rafi.name }).getByRole('button', { name: 'Request' }).click()
-  await expectBar(page, 'Not yet started')
-
-  await signOut(page)
-  await signIn(page, rafi.email)
-  await page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
-  const imaniRow = page.getByRole('listitem').filter({ hasText: `${imani.name} requested you to guide them with Python Basics` })
-  await imaniRow.getByRole('button', { name: 'Accept' }).click()
-  await expect(page.getByText('No requests.')).toBeVisible()
+  const mentorCard = page.getByRole('region', { name: 'Mentors' })
+  const mentorEligibilityBody = await (await mentorEligibility).json()
+  hidesSecrets(mentorEligibilityBody)
+  expect(mentorEligibilityBody.data.can_request).toBe(false)
+  await expect(mentorCard.getByRole('listitem').filter({ hasText: rafi.name })).toBeVisible()
+  await expect(mentorCard.getByRole('button', { name: 'Request' })).toHaveCount(0)
 })

@@ -253,12 +253,16 @@ a {
   border-bottom: 0;
 }
 
-/* A Mentor row wraps its name and an optional message, so the divider follows the card's last row. */
-.list > li > .list-row {
+/* A refusal sits under the name, so the hairline follows the message, not the name. */
+.list > li:not(.list-row) {
   border-bottom: 1px solid var(--color-border);
 }
 
-.list > li:last-child > .list-row {
+.list > li:not(.list-row):last-child {
+  border-bottom: 0;
+}
+
+.list > li:not(.list-row) > .list-row {
   border-bottom: 0;
 }
 

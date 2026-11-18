@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { ApiError } from '../../api/client'
 import { getPublishedCourse } from '../../api/courses'
 import type { PublishedCourse } from '../../api/types/courses'
@@ -25,14 +25,21 @@ export function CoursePage() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [progress, setProgress] = useState<CourseProgress['status']>(null)
   const descriptionId = useId()
+  // Only the latest progress read is applied, so an earlier null cannot clear the bar.
+  const progressRead = useRef(0)
 
-  const refreshProgress = useCallback(async () => {
-    try {
-      const next = await getCourseProgress(id)
-      setProgress(next.status)
-    } catch {
-      // A failed refresh keeps the page, the bar it already has, and any 409 message.
-    }
+  const readProgress = useCallback(() => {
+    const read = ++progressRead.current
+    getCourseProgress(id).then(
+      (next) => {
+        if (read === progressRead.current) {
+          setProgress(next.status)
+        }
+      },
+      () => {
+        // A failed refresh keeps the page, the bar it already has, and any 409 message.
+      },
+    )
   }, [id])
 
   useEffect(() => {
@@ -60,18 +67,17 @@ export function CoursePage() {
     if (!valid || state.status !== 'ready') {
       return
     }
-    let current = true
+    const read = ++progressRead.current
     getCourseProgress(id).then(
       (next) => {
-        if (current) setProgress(next.status)
+        if (read === progressRead.current) {
+          setProgress(next.status)
+        }
       },
       () => {
         // A failed read keeps the page and the bar it already has.
       },
     )
-    return () => {
-      current = false
-    }
   }, [id, state.status, valid])
 
   if (!valid || state.status === 'notFound') {
@@ -101,7 +107,7 @@ export function CoursePage() {
             </section>
           )}
           {!state.course.description && progress && <ProgressBar status={progress} />}
-          <CourseMentors key={state.course.id} courseId={state.course.id} onRequested={refreshProgress} />
+          <CourseMentors key={state.course.id} courseId={state.course.id} onRequested={readProgress} />
         </div>
       )}
     </>

@@ -48,13 +48,27 @@ class AcceptRequestTest extends MatchingTestCase
         $this->assertNotNull($first->fresh()->accepted_at);
         $this->assertSame(1, MentorMatch::query()->count());
         $this->assertSame(1, MentorRoute::query()->count());
+        $match = MentorMatch::query()->where('request_id', $first->id)->first();
+        $this->assertNotNull($match);
+        $this->assertNull($match->ended_at);
+        $this->assertNull($match->end_reason);
 
         $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
             ->assertOk()
             ->assertExactJson(['data' => ['status' => 'in_progress']]);
-        $this->getJson("/api/v1/courses/{$course->id}/request-eligibility")
-            ->assertOk()
-            ->assertExactJson(['data' => ['can_request' => true]]);
+        $eligibility = $this->getJson("/api/v1/courses/{$course->id}/request-eligibility");
+        $eligibility->assertOk()->assertExactJson(['data' => ['can_request' => false]]);
+        $this->assertHidesRouteAndGroup($eligibility);
+
+        $again = $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $rafi->id]);
+        $again->assertConflict()->assertExactJson([
+            'message' => 'You already have a match for this course.',
+            'code' => 'MATCHING_MATCH_LIVE',
+        ]);
+        $this->assertHidesRouteAndGroup($again);
+        $this->assertSame(2, Request::query()->count());
+        $this->getJson("/api/v1/courses/{$course->id}/progress")
+            ->assertExactJson(['data' => ['status' => 'in_progress']]);
 
         $this->actingAs($rafi)->postJson("/api/v1/requests/{$second->id}/accept")->assertCreated();
         $this->assertSame(2, MentorMatch::query()->count());
@@ -92,8 +106,7 @@ class AcceptRequestTest extends MatchingTestCase
         $rafi = $this->employee('Rafi Haddad');
         $this->grant($rafi, $course, Route::GroupAssignmentAccepted);
 
-        $group = new GroupAssignment;
-        $group->save();
+        $group = GroupAssignment::factory()->create();
         $grouped = Request::factory()->create([
             'learner_id' => $priya->id,
             'mentor_id' => $rafi->id,

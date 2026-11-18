@@ -59,7 +59,7 @@ describe('Sign up', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Sign up' })).toBeTruthy()
-    expect(document.title).toBe('Sign up · GrowMate')
+    await waitFor(() => expect(document.title).toBe('Sign up · GrowMate'))
     expect(screen.getByLabelText('Name').getAttribute('autocomplete')).toBe('name')
     expect(screen.getByLabelText('Email').getAttribute('type')).toBe('email')
     expect(screen.getByLabelText('Password').getAttribute('autocomplete')).toBe('new-password')

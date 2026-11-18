@@ -7,11 +7,19 @@ import { Loading } from '../../app/PageStates'
 
 type ListState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; notices: Notice[] }
 
-/** The notice's sentence; the Course title is user text, rendered as text (AD-9). */
+/** The notice's sentence. Names and the Course title are user text, rendered as text (AD-9). */
 function sentence(notice: Notice): string {
   switch (notice.type) {
     case 'registration_decision':
       return copy.notices.registrationDecision[notice.outcome](notice.course_title)
+    case 'request_reminder_day3':
+      return notice.party === 'mentor'
+        ? copy.notices.requestReminderDay3.mentor(notice.person_name, notice.course_title)
+        : copy.notices.requestReminderDay3.learner(notice.person_name, notice.course_title)
+    case 'request_cancelled_day6':
+      return notice.party === 'learner'
+        ? copy.notices.requestCancelledDay6.learner(notice.person_name, notice.course_title)
+        : copy.notices.requestCancelledDay6.mentor(notice.person_name, notice.course_title)
   }
 }
 

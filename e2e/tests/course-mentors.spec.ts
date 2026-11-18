@@ -18,7 +18,7 @@ test('a demo Mentor sees every other Mentor of Python Basics, never themselves o
 
   const card = page.getByRole('region', { name: 'Mentors' })
   await expect(card.getByRole('listitem')).toContainText('Imani Okafor')
-  await expect(card.getByRole('button', { name: 'Request' })).toHaveCount(1)
+  await expect(card.getByRole('button', { name: 'Request' })).toHaveCount(0)
   await expect(card.getByText(rafi.name)).toHaveCount(0)
   await expect(page.getByText(/registration|approval|gold pass|group assignment/i)).toHaveCount(0)
 

@@ -64,6 +64,30 @@ it('lists each notice in the API order as its sentence, then its UTC date, as te
   expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Notices' }).getAttribute('aria-current')).toBe('page')
 })
 
+it('picks the day-3 and day-6 sentence from the type and the party, as text', async () => {
+  open(() =>
+    jsonResponse(200, {
+      data: [
+        { id: 'request_cancelled_day6:4', type: 'request_cancelled_day6', occurred_at: '2026-11-21T00:00:00Z', party: 'learner', person_name: '<b>Rafi</b>', course_title: 'Python Basics' },
+        { id: 'request_cancelled_day6:4m', type: 'request_cancelled_day6', occurred_at: '2026-11-21T00:00:00Z', party: 'mentor', person_name: 'Priya Nair', course_title: '<i>Python</i>' },
+        { id: 'request_reminder_day3:4', type: 'request_reminder_day3', occurred_at: '2026-11-18T00:00:00Z', party: 'learner', person_name: 'Rafi Haddad', course_title: 'Python Basics' },
+        { id: 'request_reminder_day3:4m', type: 'request_reminder_day3', occurred_at: '2026-11-18T00:00:00Z', party: 'mentor', person_name: 'Priya Nair', course_title: 'Python Basics' },
+      ],
+    }),
+  )
+
+  const card = await screen.findByRole('region', { name: 'Notices' })
+  const rows = within(card).getAllByRole('listitem')
+  expect(rows.map((row) => row.querySelector('.notice-row__sentence')?.textContent)).toEqual([
+    'Your request to <b>Rafi</b> for Python Basics was cancelled. You can request a mentor again.',
+    "Priya Nair's request for <i>Python</i> was cancelled.",
+    'Your request to Rafi Haddad for Python Basics is still waiting.',
+    'Reminder: Priya Nair requested you to guide them with Python Basics.',
+  ])
+  expect(card.querySelector('b')).toBeNull()
+  expect(card.querySelector('i')).toBeNull()
+})
+
 it('shows the empty state when there are no notices', async () => {
   open(() => jsonResponse(200, { data: [] }))
   const card = await screen.findByRole('region', { name: 'Notices' })

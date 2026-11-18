@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ApplyTestClock;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,11 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // AD-9: Sanctum first-party SPA cookie sessions on the shared origin.
         $middleware->statefulApi();
-        // AD-1/AD-17: `api` is reachable only through the `web` nginx proxy on the private Compose
-        // network, and `web` sets X-Forwarded-For to the browser's address (never appending a
-        // client's own). Trusting private addresses (not '*', which trusts every address) makes
-        // `$request->ip()` the browser's address, which the sign-in and sign-up rate limits key on.
-        $middleware->trustProxies(at: ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.1', '::1']);
+
+        // AD-6: local, production, and testing register neither the clock route nor this middleware.
+        // The kernel is resolved before the container's env binding exists, so this reads the process env.
+        // Global, and first: Sanctum's csrf route and the session both have to see the same instant,
+        // or a jump past the session lifetime makes the next sign-in a CSRF mismatch.
+        $appEnv = $_SERVER['APP_ENV'] ?? $_ENV['APP_ENV'] ?? getenv('APP_ENV');
+        if ($appEnv === 'e2e') {
+            $middleware->prepend(ApplyTestClock::class);
+        }
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\DeleteTestRequestController;
+use App\Http\Controllers\SetTestClockController;
 use App\Modules\Accounts\Http\Controllers\AdminPingController;
 use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SignInController;
@@ -29,6 +31,13 @@ use App\Modules\Progress\Http\Controllers\CourseProgressController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    // AD-6: outside the employee group, and absent unless APP_ENV is e2e.
+    if (app()->environment('e2e')) {
+        Route::post('testing/clock', SetTestClockController::class);
+        Route::delete('testing/clock', [SetTestClockController::class, 'clear']);
+        Route::delete('testing/requests/{id}', DeleteTestRequestController::class)->where('id', '[0-9]{1,18}');
+    }
+
     // AD-9: Sanctum SPA cookie session; the SPA calls GET /sanctum/csrf-cookie first.
     // Refused attempts are throttled per email and IP (AccountsServiceProvider).
     Route::post('login', SignInController::class)->middleware('throttle:sign-in');
