@@ -128,10 +128,14 @@ test('when the session expires on Home, Sign in returns to it', async ({ page, c
   const priya = newEmployee('expired', { first: 'Priya' })
   await page.goto('/sign-up')
   await signUp(page, priya, { goto: false })
-  const homeRead = decisionsRead(page)
+  const decisions = decisionsRead(page)
+  const home = page.waitForResponse(
+    (response) => response.request().method() === 'GET' && new URL(response.url()).pathname === '/api/v1/home',
+  )
   await skipMentorCheck(page)
-  // Home's own read answers first: its Set-Cookie would otherwise restore the session cleared below.
-  await homeRead
+  // Home's own reads answer first: a late Set-Cookie would otherwise restore the session cleared below.
+  await decisions
+  await home
 
   await context.clearCookies()
   await page.reload()

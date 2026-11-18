@@ -16,9 +16,11 @@ use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
 use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Http\Controllers\AcceptRequestController;
+use App\Modules\Matching\Http\Controllers\HomeController;
 use App\Modules\Matching\Http\Controllers\ListRequestsController;
 use App\Modules\Matching\Http\Controllers\RequestEligibilityController;
 use App\Modules\Matching\Http\Controllers\SendRequestController;
+use App\Modules\Matching\Http\Controllers\ShowMatchController;
 use App\Modules\Mentors\Http\Controllers\ApproveRegistrationController;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
 use App\Modules\Mentors\Http\Controllers\EmployeeRegistrationDecisionsController;
@@ -61,6 +63,9 @@ Route::prefix('v1')->group(function () {
             Route::get('courses/{course}/progress', CourseProgressController::class)->where('course', '[0-9]{1,18}');
             Route::get('requests', ListRequestsController::class);
             Route::post('requests/{request}/accept', AcceptRequestController::class)->where('request', '[0-9]{1,18}');
+            // Home's Learning and Mentoring, and the Match either party opens. Admin stays outside this group.
+            Route::get('home', HomeController::class);
+            Route::get('matches/{match}', ShowMatchController::class)->where('match', '[0-9]{1,18}');
             // The Employee's one Mentor check (R2, AD-15): its status, then one submission or skip.
             Route::get('mentor-check', MentorCheckController::class);
             Route::post('mentor-check', SubmitMentorCheckController::class);

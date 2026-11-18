@@ -32,6 +32,9 @@ function stubSession(me: User | null, check: MentorCheck = done) {
       if (path === '/api/v1/registration-decisions') {
         return jsonResponse(200, { data: { named: false, approved: [], refused: [] } })
       }
+      if (path === '/api/v1/home') {
+        return jsonResponse(200, { data: { learning: [], mentoring: [] } })
+      }
       if (path === '/api/v1/logout' || path === '/sanctum/csrf-cookie') {
         return new Response(null, { status: 204 })
       }
@@ -88,7 +91,7 @@ describe('Employee routing', () => {
     expect(within(banner).getByText('Priya')).toBeTruthy()
 
     const learning = screen.getByRole('region', { name: 'Learning' })
-    expect(within(learning).getByText("You aren't learning a course yet.")).toBeTruthy()
+    expect(await within(learning).findByText("You aren't learning a course yet.")).toBeTruthy()
     expect(within(learning).getByRole('link', { name: 'Courses' }).getAttribute('href')).toBe('/courses')
     // Home is a two-column card grid; with nothing named, Learning stands alone.
     expect(learning.parentElement?.className).toBe('card-grid')

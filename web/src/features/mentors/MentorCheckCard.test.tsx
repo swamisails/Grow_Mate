@@ -12,6 +12,7 @@ function open(decisions: () => Response | Promise<Response>) {
     if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 4, name: 'Sam Lindqvist', email: 'sam@example.com', is_admin: false } })
     if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
     if (url === '/api/v1/registration-decisions') return decisions()
+    if (url === '/api/v1/home') return jsonResponse(200, { data: { learning: [], mentoring: [] } })
     return jsonResponse(404, { message: 'Not Found' })
   })
   vi.stubGlobal('fetch', fetchMock)
@@ -104,7 +105,6 @@ it('renders nothing while loading or after a failed read, and keeps Learning', a
 
   expect(await screen.findByRole('region', { name: 'Learning' })).toBeTruthy()
   expect(screen.queryByRole('region', { name: 'Mentor check' })).toBeNull()
-  expect(screen.queryByRole('status')).toBeNull()
 
   reply(jsonResponse(500, { message: 'Server Error' }))
   await new Promise((resolve) => setTimeout(resolve, 0))

@@ -9,10 +9,9 @@ use App\Modules\Matching\Models\Request;
 use App\Modules\Mentors\Queries\IsCourseMentor;
 
 /**
- * The only eligibility check for a Learner sending a Request (R7). The first hit is the only
- * refusal: an unexpired open Request, then a live Match, then Course Completed, then the Learner
- * already mentoring the Course. A cancelled Request, and an ended Match that is not Course
- * Completed, do not block.
+ * The only eligibility check this entry owns: an open Request already exists for the Learner and
+ * Course. Open is `accepted_at` null and still before `sent_at` + 144 hours (AD-4). A cancelled
+ * row does not block a new Request. Later entries add the rest of the check.
  */
 class LearnerEligibility
 {
@@ -65,24 +64,7 @@ class LearnerEligibility
 
         // `exists()` wraps the select, and MySQL rejects FOR UPDATE in that subquery.
         if ($lock) {
-            return $query->lockForUpdate()->first(['id']) !== null;
-        }
-
-        return $query->exists();
-    }
-
-    /**
-     * A live Match has no end. Course Completed is a Match whose end reason is `course_completed`.
-     */
-    private function hasMatch(int $learnerId, int $courseId, bool $live): bool
-    {
-        $query = MentorMatch::query()
-            ->join('requests', 'requests.id', '=', 'matches.request_id')
-            ->where('requests.learner_id', $learnerId)
-            ->where('requests.course_id', $courseId);
-
-        if ($live) {
-            return $query->whereNull('matches.ended_at')->exists();
+            return $query->lockForUpdate()->first(['id']) === null;
         }
 
         return $query->where('matches.end_reason', MatchEndReason::CourseCompleted->value)->exists();

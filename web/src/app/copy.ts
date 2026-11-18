@@ -48,6 +48,9 @@ export const copy = {
     title: 'Home',
     learning: 'Learning',
     learningEmpty: "You aren't learning a course yet.",
+    mentoring: 'Mentoring',
+    /** One live Match on the Mentoring card: the Learner's name, then the Course. */
+    mentoringRow: (person: string, course: string) => `${person} — ${course}`,
     /** The Mentor check card: the Employee's own Registration decisions (R3). */
     mentorCheck: 'Mentor check',
     approved: 'Approved',
@@ -102,6 +105,10 @@ export const copy = {
     title: 'Mentors',
     empty: 'No mentors for this course yet.',
     request: 'Request',
+  },
+  match: {
+    /** The page name while the Match loads, before its Course title is known. */
+    pageName: 'Match',
   },
   requests: {
     title: 'Requests',

@@ -15,8 +15,8 @@ export default defineConfig({
     baseURL: process.env.E2E_BASE_URL ?? 'http://web',
     trace: 'retain-on-failure',
   },
-  // The clock spec runs first. Cancelling a Request is derived from the clock, and a live Match
-  // blocks another Request, so the spec deletes that Request before wall time returns.
+  // The clock spec runs first. Cancelling a Request is derived from the clock, so the spec
+  // accepts that Request before wall time returns; a later spec can then Request Rafi again.
   projects: [
     { name: 'clock', testMatch: /request-clock\.spec\.ts/, use: browser },
     { name: 'chromium', dependencies: ['clock'], testIgnore: /request-clock\.spec\.ts/, use: browser },
