@@ -123,7 +123,7 @@ test('an unanswered request is reminded at 72 hours and cancelled at 144 hours',
   await page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
   await expect(page.getByText(`${priya.name} requested you to guide them with Python Basics`)).toBeVisible()
   await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
-  await expect(page.getByText('No notices.')).toBeVisible()
+  await expect(page.locator('.notice-row__sentence')).toHaveText([`${priya.name} requested you to guide them with Python Basics`])
 
   hidesSecrets(await setClock(page, plus(sentAt, 72)))
   await signIn(page, rafi.email)
@@ -175,10 +175,11 @@ test('an unanswered request is reminded at 72 hours and cancelled at 144 hours',
   await expect(page.getByText('No requests.')).toBeVisible()
   await page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
   const mentorRows = page.getByRole('region', { name: 'Notices' }).getByRole('listitem')
-  await expect(mentorRows).toHaveCount(2)
+  await expect(mentorRows).toHaveCount(3)
   await expect(mentorRows.nth(0)).toContainText(mentorDay6)
   await expect(mentorRows.nth(0)).toContainText(utcDate(plus(sentAt, 144)))
   await expect(mentorRows.nth(1)).toContainText(mentorDay3)
+  await expect(mentorRows.nth(2)).toContainText(`${priya.name} requested you to guide them with Python Basics`)
 })
 
 test('a request accepted after one hour is still a match at 144 hours', async ({ page }) => {
