@@ -78,15 +78,16 @@ it('disables every Accept button until the refresh finishes, and the accepted Re
   expect((within(card).getByRole('button', { name: 'Accept' }) as HTMLButtonElement).disabled).toBe(false)
 })
 
-it('shows a group assignment as one sentence naming its Learners, with one Accept for its first Request', async () => {
+it('shows a group assignment as one sentence naming its Learners, and one Accept takes the whole row away', async () => {
   const group: IncomingRequest = {
     id: 3,
     learner_names: ['Asha Rao', 'Ben Carter', 'Chloe Dubois', 'Dev Patel', 'Elena Ruiz'],
     course_title: 'SQL Fundamentals',
   }
+  const lists = [[priya, group], [priya]]
   const fetchMock = open(
-    () => jsonResponse(200, { data: [priya, group] }),
-    () => jsonResponse(404, { message: 'Not found.' }),
+    () => jsonResponse(200, { data: lists.shift() ?? [] }),
+    () => jsonResponse(201, { data: { id: 9, request_id: 3, started_at: '2026-11-18T09:00:00.000000Z' } }),
   )
   const card = await screen.findByRole('region', { name: 'Requests' })
   const rows = await within(card).findAllByRole('listitem')
@@ -98,10 +99,14 @@ it('shows a group assignment as one sentence naming its Learners, with one Accep
 
   fireEvent.click(within(rows[1]).getByRole('button', { name: 'Accept' }))
 
-  expect(await within(card).findByRole('alert')).toHaveProperty('textContent', 'Something went wrong. Try again.')
+  await waitFor(() => expect(within(card).queryByText(/^Asha Rao, Ben Carter/)).toBeNull())
   const posts = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST')
   expect(posts.map(([input]) => String(input))).toEqual(['/api/v1/requests/3/accept'])
-  expect(within(card).getByText(/^Asha Rao, Ben Carter/)).toBeTruthy()
+  expect(within(card).getAllByRole('listitem').map((row) => row.textContent)).toEqual([
+    'Priya Nair requested you to guide them with Python BasicsAccept',
+  ])
+  expect(within(card).queryByRole('alert')).toBeNull()
+  expect((within(card).getByRole('button', { name: 'Accept' }) as HTMLButtonElement).disabled).toBe(false)
 })
 
 it('joins two names with "and" and one name alone', async () => {

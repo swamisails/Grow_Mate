@@ -9,8 +9,9 @@ type LoadState = { status: 'loading' } | { status: 'error' } | { status: 'ready'
 
 /**
  * Requests addressed to the signed-in Employee. A group assignment's Requests are one row naming
- * its Learners, with one Accept for the group's first Request. One Accept at a time: every button
- * stays disabled until that Accept and its list refresh finish, and a list that started earlier is
+ * its Learners, with one Accept posted for the group's first Request; the server accepts the whole
+ * group, and the refreshed list no longer has the row. One Accept at a time: every button stays
+ * disabled until that Accept and its list refresh finish, and a list that started earlier is
  * ignored.
  */
 export function Requests() {
