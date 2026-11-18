@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DeleteTestRequestController;
 use App\Http\Controllers\SetTestClockController;
 use App\Modules\Accounts\Http\Controllers\AdminPingController;
 use App\Modules\Accounts\Http\Controllers\MeController;
@@ -34,6 +35,7 @@ Route::prefix('v1')->group(function () {
     if (app()->environment('e2e')) {
         Route::post('testing/clock', SetTestClockController::class);
         Route::delete('testing/clock', [SetTestClockController::class, 'clear']);
+        Route::delete('testing/requests/{id}', DeleteTestRequestController::class)->where('id', '[0-9]{1,18}');
     }
 
     // AD-9: Sanctum SPA cookie session; the SPA calls GET /sanctum/csrf-cookie first.

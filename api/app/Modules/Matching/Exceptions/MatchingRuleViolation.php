@@ -18,6 +18,9 @@ class MatchingRuleViolation extends RuntimeException implements ShouldntReport
     {
         parent::__construct(match ($errorCode) {
             ErrorCode::RequestAlreadyOpen => 'You already have an open request for this course.',
+            ErrorCode::MatchLive => 'You already have a match for this course.',
+            ErrorCode::CourseAlreadyCompleted => 'Course Completed was already clicked for you on this course.',
+            ErrorCode::AlreadyMentor => 'You are already a mentor for this course.',
         });
     }
 

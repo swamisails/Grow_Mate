@@ -4,6 +4,8 @@ namespace Tests\Feature\Matching;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Courses\Models\Course;
+use App\Modules\Matching\Models\MatchEndReason;
+use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
 use App\Modules\Mentors\Models\Route;
 
@@ -65,10 +67,11 @@ class SendRequestTest extends MatchingTestCase
             'message' => 'You already have an open request for this course.',
             'code' => 'MATCHING_REQUEST_ALREADY_OPEN',
         ]);
+        $this->assertHidesRouteAndGroup($again);
         $this->assertSame(1, Request::query()->count());
-        $this->getJson("/api/v1/courses/{$course->id}/request-eligibility")
-            ->assertOk()
-            ->assertExactJson(['data' => ['can_request' => false]]);
+        $eligibility = $this->getJson("/api/v1/courses/{$course->id}/request-eligibility");
+        $eligibility->assertOk()->assertExactJson(['data' => ['can_request' => false]]);
+        $this->assertHidesRouteAndGroup($eligibility);
     }
 
     public function test_a_person_who_is_not_a_mentor_of_the_published_course_is_rejected(): void
@@ -81,8 +84,12 @@ class SendRequestTest extends MatchingTestCase
         $this->grant($mentorElsewhere, $other);
         $this->actingAs($priya);
 
-        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $stranger->id])->assertUnprocessable();
-        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $mentorElsewhere->id])->assertUnprocessable();
+        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $stranger->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('mentor_id');
+        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $mentorElsewhere->id])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('mentor_id');
         $this->assertSame(0, Request::query()->count());
     }
 
@@ -118,5 +125,89 @@ class SendRequestTest extends MatchingTestCase
         // The role check runs before the lookup, so Admin can't tell a missing Course from a real one.
         $this->getJson('/api/v1/courses/999999/progress')->assertForbidden();
         $this->assertSame(0, Request::query()->count());
+    }
+
+    public function test_a_course_completed_match_refuses_another_request(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course);
+        $request = Request::factory()->create([
+            'learner_id' => $priya->id,
+            'mentor_id' => $rafi->id,
+            'course_id' => $course->id,
+            'sent_at' => now(),
+            'accepted_at' => now(),
+            'group_assignment_id' => null,
+        ]);
+        MentorMatch::factory()->courseCompleted()->create(['request_id' => $request->id]);
+        $this->actingAs($priya);
+
+        $eligibility = $this->getJson("/api/v1/courses/{$course->id}/request-eligibility");
+        $eligibility->assertOk()->assertExactJson(['data' => ['can_request' => false]]);
+        $this->assertHidesRouteAndGroup($eligibility);
+
+        $again = $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $rafi->id]);
+        $again->assertConflict()->assertExactJson([
+            'message' => 'Course Completed was already clicked for you on this course.',
+            'code' => 'MATCHING_COURSE_ALREADY_COMPLETED',
+        ]);
+        $this->assertHidesRouteAndGroup($again);
+        $this->assertSame(1, Request::query()->count());
+    }
+
+    public function test_a_learner_who_mentors_the_course_may_not_request(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($priya, $course);
+        $this->grant($rafi, $course);
+        $this->actingAs($priya);
+
+        $eligibility = $this->getJson("/api/v1/courses/{$course->id}/request-eligibility");
+        $eligibility->assertOk()->assertExactJson(['data' => ['can_request' => false]]);
+        $this->assertHidesRouteAndGroup($eligibility);
+
+        $again = $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $rafi->id]);
+        $again->assertConflict()->assertExactJson([
+            'message' => 'You are already a mentor for this course.',
+            'code' => 'MATCHING_ALREADY_MENTOR',
+        ]);
+        $this->assertHidesRouteAndGroup($again);
+        $this->assertSame(0, Request::query()->count());
+    }
+
+    public function test_a_match_ended_for_another_reason_still_allows_a_request(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course);
+        $request = Request::factory()->create([
+            'learner_id' => $priya->id,
+            'mentor_id' => $rafi->id,
+            'course_id' => $course->id,
+            'sent_at' => now()->subDay(),
+            'accepted_at' => now()->subDay(),
+            'group_assignment_id' => null,
+        ]);
+        MentorMatch::factory()->create([
+            'request_id' => $request->id,
+            'started_at' => now()->subDay(),
+            'ended_at' => now()->subHour(),
+            'end_reason' => MatchEndReason::Quit,
+        ]);
+        $this->actingAs($priya);
+
+        $this->getJson("/api/v1/courses/{$course->id}/request-eligibility")
+            ->assertOk()
+            ->assertExactJson(['data' => ['can_request' => true]]);
+
+        $again = $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $rafi->id]);
+        $again->assertCreated();
+        $this->assertHidesRouteAndGroup($again);
+        $this->assertSame(2, Request::query()->count());
     }
 }

@@ -10,14 +10,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 /**
- * The live pairing created by Accept (AD-4). The glossary name is Match; the class is `MentorMatch`.
- * One row per Request. This entry records only `started_at`.
+ * The pairing created by Accept (AD-4). The glossary name is Match; the class is `MentorMatch`.
+ * One row per Request. Accept records only `started_at`. `ended_at` null is a live Match.
  *
  * @property int $id
  * @property int $request_id
  * @property Carbon $started_at
+ * @property Carbon|null $ended_at
+ * @property MatchEndReason|null $end_reason
  */
-#[Fillable(['request_id', 'started_at'])]
+#[Fillable(['request_id', 'started_at', 'ended_at', 'end_reason'])]
 #[UseFactory(MentorMatchFactory::class)]
 class MentorMatch extends Model
 {
@@ -35,6 +37,8 @@ class MentorMatch extends Model
     {
         return [
             'started_at' => 'datetime',
+            'ended_at' => 'datetime',
+            'end_reason' => MatchEndReason::class,
         ];
     }
 }
