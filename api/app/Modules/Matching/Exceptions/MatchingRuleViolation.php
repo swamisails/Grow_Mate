@@ -21,6 +21,7 @@ class MatchingRuleViolation extends RuntimeException implements ShouldntReport
             ErrorCode::MatchLive => 'You already have a match for this course.',
             ErrorCode::CourseAlreadyCompleted => 'Course Completed was already clicked for you on this course.',
             ErrorCode::AlreadyMentor => 'You are already a mentor for this course.',
+            ErrorCode::CourseNotPublished => "This course isn't published.",
         });
     }
 

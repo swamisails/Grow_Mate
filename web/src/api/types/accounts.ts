@@ -8,6 +8,12 @@ export type User = {
   is_admin: boolean
 }
 
+/** App\Modules\Accounts\Http\Resources\EmployeeResource: one Employee in Admin's pickers. */
+export type Employee = {
+  id: number
+  name: string
+}
+
 export type SignInRequest = {
   email: string
   password: string

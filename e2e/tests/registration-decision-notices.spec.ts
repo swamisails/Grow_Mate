@@ -96,7 +96,7 @@ test('an Employee sees one notice per decision, newest first, and the two lists 
   expect((await apiRequest(page, 'GET', '/api/v1/notices')).body.data).toHaveLength(2)
 
   // Admin has no Notices link, no Notices page and no notices.
-  await expect(admin.page.getByRole('navigation').getByRole('link')).toHaveText(['Courses', 'Registration decisions'])
+  await expect(admin.page.getByRole('navigation').getByRole('link')).toHaveText(['Courses', 'Registration decisions', 'Group assignment'])
   expect((await apiRequest(admin.page, 'GET', '/api/v1/notices')).status).toBe(403)
   expect((await apiRequest(admin.page, 'GET', '/api/v1/registration-decisions')).status).toBe(403)
   await admin.page.goto('/notices')

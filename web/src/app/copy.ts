@@ -11,6 +11,7 @@ export const copy = {
     home: 'Home',
     courses: 'Courses',
     registrationDecisions: 'Registration decisions',
+    groupAssignment: 'Group assignment',
     requests: 'Requests',
     notices: 'Notices',
     signOut: 'Sign out',
@@ -79,6 +80,9 @@ export const copy = {
     /** The Accept notice. `mentor` is the Mentor's account name; the period is part of the sentence. */
     requestAccepted: (mentor: string, course: string) => `${mentor} is your mentor for ${course}.`,
   },
+  /** People's names in a sentence: "A", "A and B", "A, B and C". No count. */
+  names: (list: readonly string[]) =>
+    list.length <= 1 ? (list[0] ?? '') : `${list.slice(0, -1).join(', ')} and ${list[list.length - 1]}`,
   /** A timestamp the API returns, as its UTC calendar date (AD-5): "16 Nov 2026". */
   date: (iso: string) => {
     const date = new Date(iso)
@@ -116,6 +120,7 @@ export const copy = {
     title: 'Requests',
     empty: 'No requests.',
     accept: 'Accept',
+    /** `name` is one name, or a group's names joined with `copy.names`. */
     sentence: (name: string, course: string) => `${name} requested you to guide them with ${course}`,
   },
   progress: {
@@ -177,6 +182,18 @@ export const copy = {
     refuse: 'Refuse',
     /** The confirmation dialog's message for either decision. */
     final: 'This decision is final.',
+  },
+  groupAssignment: {
+    /** Admin's Group assignment (UJ-4). */
+    title: 'Group assignment',
+    form: 'Assign learners',
+    course: 'Course',
+    chosenEmployee: 'Chosen Employee',
+    learners: 'Learners',
+    assign: 'Assign',
+    /** The card showing the assignment just created; it never says whether it was accepted. */
+    created: 'Assignment created',
+    createdAt: 'Created',
   },
   /** The tag for each Registration decision `outcome` the API returns. */
   registrationOutcome: {

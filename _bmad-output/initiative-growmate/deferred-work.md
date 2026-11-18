@@ -7,3 +7,7 @@
 - source_plan: `_bmad-output/initiative-growmate/plan-retro-1-auth-rate-limit.md`
   summary: If the stack is ever placed behind another load balancer, `web/nginx.conf`'s `X-Forwarded-For $remote_addr` will key every user's rate limit on that balancer's address; the deploy would then need `real_ip` handling in `web`.
   evidence: AD-17 publishes `web` directly on any Docker host today, so this cannot happen in the current deployment; recorded so a future hosting change does not silently turn the per-IP limits into site-wide ones.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-admin-assigns-a-group-and-the-chosen-employee-sees-it-plan.md`
+  summary: The uncommitted `api/.env.example` edit appends a second block (`APP_ENV=e2e`, blank `APP_KEY`/DB keys) that overrides the file's own `APP_ENV=local`, so a `.env` copied from it runs with the AD-6 testing routes.
+  evidence: Loading a two-line `.env` (`APP_ENV=local`, then `APP_ENV=e2e`) with the vendored `Dotenv::createImmutable` gives `APP_ENV=e2e`. The keys look like the root `.env.example` pasted into the Laravel one. Ties to epic 1 retro item 8.

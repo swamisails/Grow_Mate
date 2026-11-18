@@ -3,6 +3,7 @@
 use App\Http\Controllers\DeleteTestRequestController;
 use App\Http\Controllers\SetTestClockController;
 use App\Modules\Accounts\Http\Controllers\AdminPingController;
+use App\Modules\Accounts\Http\Controllers\EmployeesController;
 use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SignInController;
 use App\Modules\Accounts\Http\Controllers\SignOutController;
@@ -16,6 +17,7 @@ use App\Modules\Courses\Http\Controllers\SaveCourseDraftController;
 use App\Modules\Courses\Http\Controllers\ShowCourseController;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Http\Controllers\AcceptRequestController;
+use App\Modules\Matching\Http\Controllers\AssignGroupController;
 use App\Modules\Matching\Http\Controllers\HomeController;
 use App\Modules\Matching\Http\Controllers\ListRequestsController;
 use App\Modules\Matching\Http\Controllers\RequestEligibilityController;
@@ -90,6 +92,11 @@ Route::prefix('v1')->group(function () {
             Route::get('registration-decisions', RegistrationDecisionsController::class);
             Route::post('registration-decisions/{id}/approve', ApproveRegistrationController::class)->where('id', '[0-9]{1,18}');
             Route::post('registration-decisions/{id}/refuse', RefuseRegistrationController::class)->where('id', '[0-9]{1,18}');
+
+            // Group assignment (UJ-4): the Employees to pick from, then one write-only Assign. Admin
+            // never reads an assignment back, and nothing here returns Request or Match state (AD-8).
+            Route::get('employees', EmployeesController::class);
+            Route::post('group-assignments', AssignGroupController::class);
         });
     });
 });

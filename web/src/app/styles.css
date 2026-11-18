@@ -720,3 +720,130 @@ a.button {
 .decided-list__none {
   padding: 0 var(--space-5) var(--space-4);
 }
+
+/* Select: the text input's outlined box with a caret; its label always sits in the top border */
+.field--select::after {
+  position: absolute;
+  top: calc(var(--input-height) / 2);
+  right: var(--space-4);
+  border-top: 6px solid var(--color-ink-secondary);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  content: '';
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.field__select {
+  padding-right: calc(var(--space-4) * 2 + 10px);
+  appearance: none;
+  cursor: pointer;
+}
+
+.field__select:focus {
+  padding-right: calc(var(--space-4) * 2 + 10px - 1px);
+}
+
+.field__select + .field__label {
+  top: 0;
+  font-size: var(--type-meta-size);
+  font-weight: 600;
+}
+
+/* Group assignment: the created assignment's card, then the form's card; no history */
+.group-assignment {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.group-assignment > [role='status']:empty {
+  display: none;
+}
+
+.group-assignment__fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  max-width: 900px;
+}
+
+.group-assignment__learners {
+  min-width: 0;
+  max-width: 900px;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.group-assignment__legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  color: var(--color-ink-primary);
+  font-size: var(--type-label-size);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.group-assignment__checks {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-1) var(--space-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.group-assignment__checks > li {
+  padding: var(--space-2) 0;
+}
+
+.group-assignment__learners .field-error {
+  margin-top: var(--space-2);
+}
+
+.group-assignment__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-4);
+  max-width: 900px;
+  margin-top: var(--space-6);
+}
+
+.group-assignment__actions .button {
+  align-self: auto;
+}
+
+/* Summary: label/value rows inside a card, hairline dividers */
+.summary {
+  margin: 0;
+}
+
+.summary__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: var(--space-3) var(--space-5);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary__row:last-child {
+  border-bottom: 0;
+}
+
+.summary__row dd {
+  margin: 0;
+}
+
+.summary__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 640px) {
+  .group-assignment__fields,
+  .group-assignment__checks {
+    grid-template-columns: 1fr;
+  }
+}

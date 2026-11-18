@@ -18,4 +18,7 @@ enum ErrorCode: string
 
     /** The Learner is already a Mentor of this Course. */
     case AlreadyMentor = 'MATCHING_ALREADY_MENTOR';
+
+    /** Admin assigned a group on a draft Course. */
+    case CourseNotPublished = 'MATCHING_COURSE_NOT_PUBLISHED';
 }

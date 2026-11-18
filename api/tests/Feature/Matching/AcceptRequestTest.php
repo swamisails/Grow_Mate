@@ -127,8 +127,10 @@ class AcceptRequestTest extends MatchingTestCase
         $this->postJson("/api/v1/requests/{$accepted->id}/accept")->assertNotFound();
         $this->assertSame(1, MentorMatch::query()->count());
         $this->assertNull($grouped->fresh()->accepted_at);
-        $this->assertHidesRouteAndGroup($this->getJson('/api/v1/requests')->assertOk());
-        $this->assertSame([], $this->getJson('/api/v1/requests')->json('data'));
+        // The group stays on the list as its own row until a group Accept exists.
+        $list = $this->getJson('/api/v1/requests')->assertOk();
+        $this->assertHidesRouteAndGroup($list);
+        $this->assertSame([['id' => $grouped->id, 'learner_names' => ['Priya Nair'], 'course_title' => 'Python Basics']], $list->json('data'));
     }
 
     public function test_a_guest_is_unauthorized_and_an_admin_is_forbidden(): void
