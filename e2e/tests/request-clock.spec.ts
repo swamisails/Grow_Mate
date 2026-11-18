@@ -101,6 +101,17 @@ async function acceptLeftover(page: Page, requestId: number, sentAt: string) {
   const body = await (await list).json()
   const ids = (body.data as { id: number }[]).map((row) => row.id)
   expect(ids).not.toContain(requestId)
+async function releaseLeftover(page: Page, requestId: number) {
+  await page.goto('about:blank')
+  await page.context().clearCookies()
+  const response = await page.request.delete(`/api/v1/testing/requests/${requestId}`, {
+    headers: { Accept: 'application/json' },
+  })
+  const body: unknown = await response.json()
+  if (response.status() !== 200) {
+    throw new Error(`cleanup delete failed (${response.status()}): ${JSON.stringify(body)}`)
+  }
+  hidesSecrets(body)
 }
 
 test.afterEach(async ({ page }) => {
@@ -109,6 +120,7 @@ test.afterEach(async ({ page }) => {
   try {
     if (leftover) {
       await acceptLeftover(page, leftover.requestId, leftover.sentAt)
+      await releaseLeftover(page, leftover.requestId)
     }
   } finally {
     await clearClock(page)

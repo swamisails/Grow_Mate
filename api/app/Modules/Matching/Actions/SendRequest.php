@@ -4,7 +4,6 @@ namespace App\Modules\Matching\Actions;
 
 use App\Modules\Accounts\Queries\LockUser;
 use App\Modules\Courses\Queries\LockCourse;
-use App\Modules\Matching\ErrorCode;
 use App\Modules\Matching\Exceptions\MatchingRuleViolation;
 use App\Modules\Matching\Models\Request;
 use App\Modules\Matching\Queries\LearnerEligibility;
@@ -14,8 +13,8 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Records one open Request. The Learner and Course rows are locked, in that order, and the open
- * check runs under those locks so two sends cannot both commit (AD-3, AD-12).
+ * Records one open Request. The Learner and Course rows are locked, in that order, and the
+ * eligibility check runs under those locks so two sends cannot both commit (AD-3, AD-12).
  */
 class SendRequest
 {
@@ -29,7 +28,7 @@ class SendRequest
     /**
      * @throws NotFoundHttpException when the Course is missing or not published
      * @throws ValidationException when `mentor_id` is not a Mentor of that Course
-     * @throws MatchingRuleViolation when an open Request already exists
+     * @throws MatchingRuleViolation when the Learner may not request this Course
      */
     public function handle(int $learnerId, int $courseId, int $mentorId): Request
     {
@@ -46,8 +45,10 @@ class SendRequest
                 ]);
             }
 
-            if (! $this->learnerEligibility->allows($learnerId, $courseId, lock: true)) {
-                throw new MatchingRuleViolation(ErrorCode::RequestAlreadyOpen);
+            $refusal = $this->learnerEligibility->refusal($learnerId, $courseId, lock: true);
+
+            if ($refusal !== null) {
+                throw new MatchingRuleViolation($refusal);
             }
 
             return Request::query()->create([
