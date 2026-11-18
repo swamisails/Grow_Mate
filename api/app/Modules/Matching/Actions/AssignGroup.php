@@ -11,6 +11,8 @@ use App\Modules\Matching\ErrorCode;
 use App\Modules\Matching\Exceptions\MatchingRuleViolation;
 use App\Modules\Matching\Models\GroupAssignment;
 use App\Modules\Matching\Models\Request;
+use App\Modules\Matching\Queries\LearnerEligibility;
+use App\Modules\Mentors\Queries\RefusedForCourse;
 use App\Modules\Notifications\Actions\SendNotice;
 use App\Modules\Notifications\NoticeType;
 use Illuminate\Support\Carbon;
@@ -21,6 +23,10 @@ use Illuminate\Validation\ValidationException;
  * Admin assigns a group (UJ-4): one assignment and one pending Request per Learner to the chosen
  * Employee, all with one sent time. A refusal creates nothing. Once it commits, the chosen
  * Employee gets the ordinary new-Request notice for each Request; Learners get none.
+ *
+ * Checked in order: the Employees (422), a draft Course, a chosen Employee refused the Course at
+ * registration, then every Learner against R7 (409s). A Learner refusal marks each failing Learner
+ * by its index in the submitted list and never says why (AD-12).
  */
 class AssignGroup
 {
@@ -31,6 +37,8 @@ class AssignGroup
         private readonly UserNames $userNames,
         private readonly CourseTitles $courseTitles,
         private readonly SendNotice $sendNotice,
+        private readonly RefusedForCourse $refusedForCourse,
+        private readonly LearnerEligibility $learnerEligibility,
     ) {}
 
     /**
@@ -38,7 +46,7 @@ class AssignGroup
      * @return array{course_title: string, mentor_name: string, learner_names: list<string>, created_at: Carbon}
      *
      * @throws ValidationException when the Course, the chosen Employee or a Learner is unknown, or a person is Admin
-     * @throws MatchingRuleViolation when the Course is a draft
+     * @throws MatchingRuleViolation when the Course is a draft, the chosen Employee was refused it, or a Learner can't be assigned
      */
     public function handle(int $courseId, int $mentorId, array $learnerIds): array
     {
@@ -70,6 +78,23 @@ class AssignGroup
 
             if (! $this->lockCourse->handle($courseId)) {
                 throw new MatchingRuleViolation(ErrorCode::CourseNotPublished);
+            }
+
+            if (in_array($mentorId, $this->refusedForCourse->handle($courseId), true)) {
+                throw new MatchingRuleViolation(ErrorCode::MentorNotEligible, [
+                    'mentor_id' => ["This employee can't be chosen for this course."],
+                ]);
+            }
+
+            // Every Learner is checked, so Admin sees each one that fails; the R7 reason stays hidden.
+            $notAssignable = [];
+            foreach ($learnerIds as $index => $learnerId) {
+                if ($this->learnerEligibility->refusal($learnerId, $courseId, lock: true) !== null) {
+                    $notAssignable["learner_ids.{$index}"] = ["This learner can't be assigned to this course."];
+                }
+            }
+            if ($notAssignable !== []) {
+                throw new MatchingRuleViolation(ErrorCode::LearnerNotAssignable, $notAssignable);
             }
 
             $sentAt = now();
