@@ -88,6 +88,42 @@ it('picks the day-3 and day-6 sentence from the type and the party, as text', as
   expect(card.querySelector('i')).toBeNull()
 })
 
+it('shows the request and accept sentences from the stored name and title, as text', async () => {
+  open(() =>
+    jsonResponse(200, {
+      data: [
+        {
+          id: '0193b0c2-0002-7000-8000-000000000002',
+          type: 'request_accepted',
+          occurred_at: '2026-11-15T09:00:00Z',
+          person_name: 'Rafi Haddad',
+          course_title: 'Python Basics',
+          route: 'gold_pass',
+          group_assignment_id: 9,
+        },
+        {
+          id: '0193b0c2-0001-7000-8000-000000000001',
+          type: 'request_sent',
+          occurred_at: '2026-11-15T08:30:00Z',
+          person_name: '<b>Priya</b> Nair',
+          course_title: '<i>Python</i> Basics',
+        },
+      ],
+    }),
+  )
+
+  const card = await screen.findByRole('region', { name: 'Notices' })
+  const rows = within(card).getAllByRole('listitem')
+  expect(rows.map((row) => row.querySelector('.notice-row__sentence')?.textContent)).toEqual([
+    'Rafi Haddad is your mentor for Python Basics.',
+    '<b>Priya</b> Nair requested you to guide them with <i>Python</i> Basics',
+  ])
+  expect(card.querySelector('b')).toBeNull()
+  expect(card.querySelector('i')).toBeNull()
+  expect(card.textContent).not.toContain('gold_pass')
+  expect(card.textContent).not.toContain('group_assignment_id')
+})
+
 it('shows the empty state when there are no notices', async () => {
   open(() => jsonResponse(200, { data: [] }))
   const card = await screen.findByRole('region', { name: 'Notices' })

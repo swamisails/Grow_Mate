@@ -8,6 +8,7 @@ use App\Modules\Matching\Models\MatchEndReason;
 use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
 use App\Modules\Mentors\Models\Route;
+use Illuminate\Support\Facades\DB;
 
 class SendRequestTest extends MatchingTestCase
 {
@@ -209,5 +210,63 @@ class SendRequestTest extends MatchingTestCase
         $again->assertCreated();
         $this->assertHidesRouteAndGroup($again);
         $this->assertSame(2, Request::query()->count());
+    }
+
+    public function test_a_sent_request_stores_one_notice_for_the_mentor(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course);
+
+        $this->actingAs($priya)->postJson("/api/v1/courses/{$course->id}/requests", [
+            'mentor_id' => $rafi->id,
+        ])->assertCreated();
+
+        $mentor = $this->actingAs($rafi)->getJson('/api/v1/notices');
+        $mentor->assertOk()->assertJsonCount(1, 'data');
+        $this->assertSame(
+            ['id', 'type', 'occurred_at', 'person_name', 'course_title'],
+            array_keys($mentor->json('data.0')),
+        );
+        $this->assertSame('request_sent', $mentor->json('data.0.type'));
+        $this->assertSame('Priya Nair', $mentor->json('data.0.person_name'));
+        $this->assertSame('Python Basics', $mentor->json('data.0.course_title'));
+        $this->assertHidesRouteAndGroup($mentor);
+        $this->assertSame(
+            ['person_name' => 'Priya Nair', 'course_title' => 'Python Basics'],
+            json_decode((string) DB::table('notifications')->value('data'), true),
+        );
+
+        $this->actingAs($priya)->getJson('/api/v1/notices')->assertOk()->assertExactJson(['data' => []]);
+        $this->assertDatabaseCount('notifications', 1);
+        $this->assertSame($rafi->id, (int) DB::table('notifications')->value('notifiable_id'));
+    }
+
+    public function test_a_refused_send_stores_nothing_new(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $imani = $this->employee('Imani Okafor');
+        $stranger = $this->employee('Sam Lindqvist');
+        $this->grant($rafi, $course);
+        $this->grant($imani, $course);
+        $this->actingAs($priya);
+
+        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $stranger->id])
+            ->assertUnprocessable();
+        $this->assertDatabaseCount('notifications', 0);
+
+        $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $rafi->id])->assertCreated();
+        $this->assertDatabaseCount('notifications', 1);
+
+        $again = $this->postJson("/api/v1/courses/{$course->id}/requests", ['mentor_id' => $imani->id]);
+        $again->assertConflict();
+        $this->assertHidesRouteAndGroup($again);
+        $this->assertDatabaseCount('notifications', 1);
+        $this->assertSame(1, Request::query()->count());
+        $this->actingAs($imani)->getJson('/api/v1/notices')->assertOk()->assertExactJson(['data' => []]);
+        $this->actingAs($stranger)->getJson('/api/v1/notices')->assertOk()->assertExactJson(['data' => []]);
     }
 }

@@ -3,7 +3,12 @@
 import type { Outcome } from './mentors'
 
 /** The closed set of notice types (AD-11). Day-3 and day-6 rows are derived, never stored. */
-export type NoticeType = 'registration_decision' | 'request_reminder_day3' | 'request_cancelled_day6'
+export type NoticeType =
+  | 'registration_decision'
+  | 'request_sent'
+  | 'request_accepted'
+  | 'request_reminder_day3'
+  | 'request_cancelled_day6'
 
 /** Which sentence a derived Request notice uses. `person_name` is the other person. */
 export type NoticeParty = 'learner' | 'mentor'
@@ -30,7 +35,17 @@ export type RequestTimeNotice = NoticeBase & {
 }
 
 /**
+ * A stored Request notice. `person_name` is the other person's account name. No route (AD-8).
+ * `request_sent` is the Mentor's; `request_accepted` is the Learner's.
+ */
+export type RequestEventNotice = NoticeBase & {
+  type: 'request_sent' | 'request_accepted'
+  person_name: string
+  course_title: string
+}
+
+/**
  * App\Modules\Notifications\Http\Resources\NoticeResource: GET /api/v1/notices, newest first.
  * No read state, count or link.
  */
-export type Notice = RegistrationDecisionNotice | RequestTimeNotice
+export type Notice = RegistrationDecisionNotice | RequestTimeNotice | RequestEventNotice

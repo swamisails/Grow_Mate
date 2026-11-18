@@ -76,6 +76,8 @@ export const copy = {
       learner: (mentor: string, course: string) => `Your request to ${mentor} for ${course} was cancelled. You can request a mentor again.`,
       mentor: (learner: string, course: string) => `${learner}'s request for ${course} was cancelled.`,
     },
+    /** The Accept notice. `mentor` is the Mentor's account name; the period is part of the sentence. */
+    requestAccepted: (mentor: string, course: string) => `${mentor} is your mentor for ${course}.`,
   },
   /** A timestamp the API returns, as its UTC calendar date (AD-5): "16 Nov 2026". */
   date: (iso: string) => {
