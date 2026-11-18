@@ -1,20 +1,9 @@
-import { expect, test, type Locator, type Page } from '@playwright/test'
-import { adminSignIn, apiRequest, newEmployee, newPage, publishCourse, signIn, signUp } from './support/helpers'
+import { expect, test } from '@playwright/test'
+import { adminSignIn, apiRequest, decide, newEmployee, newPage, publishCourse, signIn, signUp } from './support/helpers'
 
 // Admin decides each Course an Employee named in the Mentor check (R3). The spec publishes its own two
 // Courses, so the demo Courses' Mentor lists stay as seeded. Priya (seeded) is the demo Employee.
 const priya = { email: 'priya.nair@example.com', password: 'demo-password' }
-
-async function decide(admin: Page, row: Locator, action: 'Approve' | 'Refuse', tag: string) {
-  await row.getByRole('button', { name: action }).click()
-  const dialog = admin.getByRole('dialog', { name: action })
-  await expect(dialog).toContainText('This decision is final.')
-  await expect(dialog.getByRole('button')).toHaveText(['Cancel', action])
-  await dialog.getByRole('button', { name: action }).click()
-  await expect(dialog).toHaveCount(0)
-  await expect(row.locator('.tag')).toHaveText(tag)
-  await expect(row.getByRole('button')).toHaveCount(0)
-}
 
 test('Admin approves one named Course and refuses another; only the approved one lists the Employee', async ({ page, browser }) => {
   const sam = newEmployee('decisions', { nameWithId: true })

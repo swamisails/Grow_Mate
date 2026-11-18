@@ -3,7 +3,7 @@ title: 'Admin signs in on the deployed stack'
 type: 'feature'
 ticket: '1'
 created: '2026-11-10'
-status: 'built'
+status: done
 baseline_revision: 'cc4e8f3d454abdbe13f5fb1f49cd84173ff3d020'
 route: 'full'
 route_source: 'auto'
