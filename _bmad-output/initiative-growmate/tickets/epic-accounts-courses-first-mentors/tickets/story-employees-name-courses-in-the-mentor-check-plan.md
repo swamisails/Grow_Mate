@@ -3,7 +3,7 @@ title: 'Employees name Courses in the Mentor check'
 type: 'feature'
 ticket: '6'
 created: '2026-11-13'
-status: 'built'
+status: done
 baseline_revision: '33bcb850243a4cb301bcd51ab0c621e8bb2af3b0'
 route: 'full'
 route_source: 'auto'

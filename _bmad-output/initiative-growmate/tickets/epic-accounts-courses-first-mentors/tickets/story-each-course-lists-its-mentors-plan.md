@@ -3,7 +3,7 @@ title: 'Each Course lists its Mentors'
 type: 'feature'
 ticket: '5'
 created: '2026-11-13'
-status: 'built'
+status: done
 baseline_revision: '0240fc7ee9b8c6d0695ee7fff995fc1e57dbaf7a'
 route: 'full'
 route_source: 'auto'

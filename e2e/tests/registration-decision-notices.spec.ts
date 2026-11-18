@@ -1,16 +1,14 @@
 import { expect, test, type Page } from '@playwright/test'
-import { adminSignIn, apiRequest, decisionsRead, newEmployee, newPage, publishCourse, signUp } from './support/helpers'
+import { adminSignIn, apiRequest, decide, decisionsRead, newEmployee, newPage, publishCourse, signUp } from './support/helpers'
 
 // An Employee sees Admin's Registration decisions (R3): one notice per decision on Notices, newest
 // first, and the approved and refused Courses as separate lists on Home (AD-8, AD-11). The spec
 // publishes its own three Courses, so the demo Courses stay as seeded.
 
 /** Admin decides the Employee's row for `title` on the Registration decisions page, confirming it. */
-async function decide(admin: Page, employeeName: string, title: string, action: 'Approve' | 'Refuse') {
+async function decideFor(admin: Page, employeeName: string, title: string, action: 'Approve' | 'Refuse') {
   const row = admin.getByRole('row').filter({ hasText: employeeName }).filter({ hasText: title })
-  await row.getByRole('button', { name: action }).click()
-  await admin.getByRole('dialog', { name: action }).getByRole('button', { name: action }).click()
-  await expect(row.getByRole('button')).toHaveCount(0)
+  await decide(admin, row, action, action === 'Approve' ? 'Approved' : 'Refused')
 }
 
 /** A timestamp the API returned, as the SPA shows its UTC calendar date: "16 Nov 2026". */
@@ -56,8 +54,8 @@ test('an Employee sees one notice per decision, newest first, and the two lists 
 
   // Admin approves one, then refuses another, and leaves the third.
   await admin.page.goto('/admin/registration-decisions')
-  await decide(admin.page, sam.name, approved, 'Approve')
-  await decide(admin.page, sam.name, refused, 'Refuse')
+  await decideFor(admin.page, sam.name, approved, 'Approve')
+  await decideFor(admin.page, sam.name, refused, 'Refuse')
 
   // Notices: two, newest first, each a sentence and its date, with no link, button or route.
   await page.reload()
