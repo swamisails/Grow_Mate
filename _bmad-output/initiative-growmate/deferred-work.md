@@ -11,3 +11,7 @@
 - source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-admin-assigns-a-group-and-the-chosen-employee-sees-it-plan.md`
   summary: The uncommitted `api/.env.example` edit appends a second block (`APP_ENV=e2e`, blank `APP_KEY`/DB keys) that overrides the file's own `APP_ENV=local`, so a `.env` copied from it runs with the AD-6 testing routes.
   evidence: Loading a two-line `.env` (`APP_ENV=local`, then `APP_ENV=e2e`) with the vendored `Dotenv::createImmutable` gives `APP_ENV=e2e`. The keys look like the root `.env.example` pasted into the Laravel one. Ties to epic 1 retro item 8.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-one-accept-starts-every-match-in-the-group-plan.md`
+  summary: The uncommitted `api/.env.example` edit (`APP_ENV=e2e` after `APP_ENV=local`, blank DB keys) is still in the working tree during story 4.2.
+  evidence: The 4.2 quick review flagged it again; a later duplicate key wins in phpdotenv, as verified under 4.1. It is epic 1 retro item 8.

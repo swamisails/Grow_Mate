@@ -1,8 +1,9 @@
 import { expect, test, type Browser, type Page } from '@playwright/test'
 import { adminSignIn, newEmployee, newPage, publishCourse, signUp } from './support/helpers'
 
-// Admin assigns a group (UJ-4, story 4.1). The spec publishes its own Course and signs up its own
-// chosen Employee and Learners: the seed has only three Employees, and their Requests stay as seeded.
+// Admin assigns a group and the chosen Employee Accepts it (UJ-4, stories 4.1 and 4.2). The spec
+// publishes its own Course and signs up its own chosen Employee and Learners: the seed has only
+// three Employees, and their Requests stay as seeded.
 
 function hidesSecrets(body: unknown) {
   const json = JSON.stringify(body)
@@ -28,7 +29,7 @@ function waitForGet(page: Page, path: RegExp) {
   return page.waitForResponse((response) => response.request().method() === 'GET' && path.test(new URL(response.url()).pathname))
 }
 
-test('Admin assigns three Learners to a chosen Employee, who sees them as one Request', async ({ page, browser }) => {
+test('Admin assigns three Learners to a chosen Employee, who sees them as one Request and Accepts them all at once', async ({ page, browser }) => {
   await page.emulateMedia({ colorScheme: 'light' })
   const label = `group-${Date.now()}`
   const course = `Group course ${label}`
@@ -99,15 +100,7 @@ test('Admin assigns three Learners to a chosen Employee, who sees them as one Re
   expect(noticesBody.data.map((notice: { type: string }) => notice.type)).toEqual(['request_sent', 'request_sent', 'request_sent'])
   expect(noticesBody.data.map((notice: { person_name: string }) => notice.person_name).sort()).toEqual([...learnerNames].sort())
 
-  // Until whole-group Accept exists, Accept is refused and the row stays.
-  await chosen.page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
-  const accepted = chosen.page.waitForResponse((response) => /\/api\/v1\/requests\/\d+\/accept$/.test(response.url()))
-  await chosen.page.getByRole('listitem').filter({ hasText: sentence }).getByRole('button', { name: 'Accept' }).click()
-  expect((await accepted).status()).toBe(404)
-  await expect(chosen.page.getByRole('alert')).toHaveText('Something went wrong. Try again.')
-  await expect(chosen.page.getByRole('listitem').filter({ hasText: sentence })).toHaveCount(1)
-
-  // A Learner: no notice, and Home and the Course stay generic, with no Request button.
+  // Before Accept, a Learner: no notice, and Home and the Course stay generic, with no Request button.
   const learner = learners[0]
   const learnerNotices = waitForGet(learner.page, /^\/api\/v1\/notices$/)
   await learner.page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
@@ -132,6 +125,55 @@ test('Admin assigns three Learners to a chosen Employee, who sees them as one Re
   expect(eligibilityBody.data.can_request).toBe(false)
   await expect(learner.page.getByRole('img', { name: 'Progress: Not yet started' })).toBeVisible()
   await expect(learner.page.getByRole('button', { name: 'Request' })).toHaveCount(0)
+
+  // One Accept on the row accepts the whole group: the response is one ordinary Match, and the row goes.
+  const refreshed = waitForGet(chosen.page, /^\/api\/v1\/requests$/)
+  await chosen.page.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
+  hidesSecrets(await (await refreshed).json())
+  const accepted = chosen.page.waitForResponse((response) => /\/api\/v1\/requests\/\d+\/accept$/.test(response.url()))
+  const afterAccept = waitForGet(chosen.page, /^\/api\/v1\/requests$/)
+  await chosen.page.getByRole('listitem').filter({ hasText: sentence }).getByRole('button', { name: 'Accept' }).click()
+  const acceptResponse = await accepted
+  expect(acceptResponse.status()).toBe(201)
+  const acceptBody = await acceptResponse.json()
+  hidesSecrets(acceptBody)
+  expect(Object.keys(acceptBody.data)).toEqual(['id', 'request_id', 'started_at'])
+  expect(acceptBody.data.request_id).toBe(incomingBody.data.find((row: { learner_names?: string[] }) => row.learner_names !== undefined).id)
+  const afterAcceptBody = await (await afterAccept).json()
+  hidesSecrets(afterAcceptBody)
+  expect(afterAcceptBody.data).toEqual([])
+  await expect(chosen.page.getByRole('listitem').filter({ hasText: sentence })).toHaveCount(0)
+  await expect(chosen.page.getByRole('alert')).toHaveCount(0)
+  await expect(chosen.page.getByText('No requests.')).toBeVisible()
+
+  // Each Learner: the ordinary Accept notice and an in-progress Match on Home, shaped like a one-to-one Match.
+  for (const each of learners) {
+    const eachNotices = waitForGet(each.page, /^\/api\/v1\/notices$/)
+    await each.page.getByRole('navigation').getByRole('link', { name: 'Notices' }).click()
+    const eachNoticesBody = await (await eachNotices).json()
+    hidesSecrets(eachNoticesBody)
+    expect(eachNoticesBody.data).toEqual([
+      expect.objectContaining({ type: 'request_accepted', person_name: chosen.name, course_title: course }),
+    ])
+    expect(Object.keys(eachNoticesBody.data[0])).toEqual(['id', 'type', 'occurred_at', 'person_name', 'course_title'])
+    await expect(each.page.locator('.notice-row__sentence')).toHaveText([`${chosen.name} is your mentor for ${course}.`])
+
+    const eachHome = waitForGet(each.page, /^\/api\/v1\/home$/)
+    await each.page.getByRole('navigation').getByRole('link', { name: 'Home' }).click()
+    const eachHomeBody = await (await eachHome).json()
+    hidesSecrets(eachHomeBody)
+    expect(eachHomeBody.data.learning).toEqual([
+      { course_id: courseId, course_title: course, status: 'in_progress', match_id: expect.any(Number) },
+    ])
+  }
+
+  // The chosen Employee is now in the Course's Mentors list.
+  const mentorsList = waitForGet(learner.page, /^\/api\/v1\/courses\/\d+\/mentors$/)
+  await learner.page.goto(`/courses/${courseId}`)
+  const mentorsBody = await (await mentorsList).json()
+  hidesSecrets(mentorsBody)
+  expect(mentorsBody.data.map((mentor: { name: string }) => mentor.name)).toEqual([chosen.name])
+  await expect(learner.page.getByRole('region', { name: 'Mentors' }).getByRole('listitem').filter({ hasText: chosen.name })).toBeVisible()
 
   for (const session of [chosen, ...learners]) {
     await session.close()
