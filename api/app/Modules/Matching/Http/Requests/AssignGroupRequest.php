@@ -3,11 +3,12 @@
 namespace App\Modules\Matching\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 /**
  * A group assignment: `{course_id: int, mentor_id: int, learner_ids: [int, …]}`, one or more
- * distinct Learners. Whether those ids are Employees, and whether the Course is published, is the
- * Action's to check.
+ * distinct Learners, none of them the chosen Employee. Whether those ids are Employees, and whether
+ * the Course is published, is the Action's to check.
  */
 class AssignGroupRequest extends FormRequest
 {
@@ -29,6 +30,24 @@ class AssignGroupRequest extends FormRequest
             'mentor_id' => ['required', 'integer:strict'],
             'learner_ids' => ['required', 'array', 'list', 'min:1'],
             'learner_ids.*' => ['integer:strict', 'distinct:strict'],
+        ];
+    }
+
+    /**
+     * The chosen Employee can't also be one of the Learners; checked alongside the shape rules.
+     *
+     * @return array<int, callable(Validator): void>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $mentorId = $this->input('mentor_id');
+                $learnerIds = $this->input('learner_ids');
+                if (is_int($mentorId) && is_array($learnerIds) && in_array($mentorId, $learnerIds, true)) {
+                    $validator->errors()->add('learner_ids', "The chosen employee can't also be a learner.");
+                }
+            },
         ];
     }
 

@@ -9,6 +9,14 @@ export type CourseMentor = {
   name: string
 }
 
+/**
+ * App\Modules\Mentors\Http\Resources\RefusedEmployeeResource: GET /api/v1/admin/courses/{id}/refused-employees.
+ * An Employee refused the Course at registration, by id only: never the decision or its reason (AD-8).
+ */
+export type RefusedEmployee = {
+  id: number
+}
+
 /** A Course the Employee may name in the Mentor check: published before their account was created. */
 export type MentorCheckCourse = {
   id: number

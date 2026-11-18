@@ -55,7 +55,9 @@ class AcceptRequest
                 $request = Request::query()->lockForUpdate()->find($requestId);
                 $this->guard($request, $mentorId);
 
-                return $this->accept($request, $mentorId);
+                [$mentorName, $courseTitle] = $this->noticeFields($mentorId, (int) $request->course_id);
+
+                return $this->accept($request, $mentorName, $courseTitle);
             }
 
             // The chosen Employee, then the Course, then every sibling in id order, before anything
@@ -74,12 +76,13 @@ class AcceptRequest
             $posted = $group->firstWhere('id', $requestId);
             $this->guard($posted, $mentorId);
 
+            [$mentorName, $courseTitle] = $this->noticeFields($mentorId, (int) $posted->course_id);
             $matches = [];
             foreach ($group as $request) {
                 if ($request->mentor_id !== $mentorId || $request->accepted_at !== null || $this->requestState->isCancelled($request)) {
                     continue;
                 }
-                $matches[$request->id] = $this->accept($request, $mentorId);
+                $matches[$request->id] = $this->accept($request, $mentorName, $courseTitle);
             }
 
             $this->grantMentor->handle($mentorId, $posted->course_id, Route::GroupAssignmentAccepted);
@@ -103,7 +106,21 @@ class AcceptRequest
         }
     }
 
-    private function accept(Request $request, int $mentorId): MentorMatch
+    /**
+     * The Accept notice's fields, the Mentor's account name and the Course title (AD-8). Read once
+     * per Accept: a group has one Mentor and one Course, so every Learner's notice shares them.
+     *
+     * @return array{0: string, 1: string}
+     */
+    private function noticeFields(int $mentorId, int $courseId): array
+    {
+        return [
+            $this->userNames->handle([$mentorId])[$mentorId] ?? '',
+            $this->courseTitles->handle([$courseId])[$courseId] ?? '',
+        ];
+    }
+
+    private function accept(Request $request, string $mentorName, string $courseTitle): MentorMatch
     {
         $request->accepted_at = now();
         $request->save();
@@ -117,8 +134,8 @@ class AcceptRequest
         // Course title, and nothing else: no route, no group (AD-8). A throw anywhere in the
         // transaction stores nothing.
         $this->sendNotice->handle($request->learner_id, NoticeType::RequestAccepted, [
-            'person_name' => $this->userNames->handle([$mentorId])[$mentorId] ?? '',
-            'course_title' => $this->courseTitles->handle([$request->course_id])[$request->course_id] ?? '',
+            'person_name' => $mentorName,
+            'course_title' => $courseTitle,
         ]);
 
         return $match;

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { listEmployees } from '../../api/accounts'
+import { ApiError } from '../../api/client'
 import { listCourses } from '../../api/courses'
 import { assignGroup } from '../../api/matching'
+import { listRefusedEmployees } from '../../api/mentors'
 import type { Employee } from '../../api/types/accounts'
 import type { CourseListItem } from '../../api/types/courses'
 import type { GroupAssignment as CreatedAssignment } from '../../api/types/matching'
@@ -29,6 +31,21 @@ function formErrors(errors: FieldErrors): FieldErrors {
   }
   return folded
 }
+
+/** Which Learner each `learner_ids.N` key of a Learner 409 marks, by the list that was sent. */
+function learnerMarks(errors: Record<string, string[]>, sent: number[]): ReadonlyMap<number, string> {
+  const marks = new Map<number, string>()
+  for (const [key, messages] of Object.entries(errors)) {
+    const index = /^learner_ids\.(\d+)$/.exec(key)?.[1]
+    const learnerId = index === undefined ? undefined : sent[Number(index)]
+    if (learnerId !== undefined && messages.length > 0) {
+      marks.set(learnerId, messages[0])
+    }
+  }
+  return marks
+}
+
+const none: ReadonlySet<number> = new Set()
 
 type SelectFieldProps = {
   label: string
@@ -79,6 +96,9 @@ function SelectField({ label, name, value, options, onChange, error }: SelectFie
  * Admin's Group assignment (UJ-4): a published Course, the chosen Employee, and the Learners (every
  * Employee but the chosen one). Assign is final, with no confirmation. The page then shows only the
  * assignment just created, never whether it was accepted, and the form starts again. No history.
+ * An Employee refused the Course at registration isn't offered as the chosen Employee. A refused
+ * Assign creates nothing: the API's summary shows at the top of the card and each Learner it marks
+ * gets its message under the checkbox, with no reason (AD-12).
  */
 export function GroupAssignment() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
@@ -89,11 +109,17 @@ export function GroupAssignment() {
   const [errors, setErrors] = useState<FieldErrors>({})
   const [failure, setFailure] = useState<string | null>(null)
   const [created, setCreated] = useState<CreatedAssignment | null>(null)
+  // The refused list belongs to the Course it was read for, so a stale one never filters another.
+  const [refused, setRefused] = useState<{ courseId: string; ids: ReadonlySet<number> } | null>(null)
+  const [refusedReads, setRefusedReads] = useState(0)
+  const [summary, setSummary] = useState<string | null>(null)
+  const [marks, setMarks] = useState<ReadonlyMap<number, string>>(new Map())
   const submittingRef = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const formHeadingId = useId()
   const createdHeadingId = useId()
   const learnersErrorId = useId()
+  const markIdPrefix = useId()
 
   // After a 409 the choices are re-read (a Course may have changed); if that fails, the shown ones stay.
   const refetch = useCallback(() => loadChoices().then((choices) => setState({ status: 'ready', choices }), () => undefined), [])
@@ -117,10 +143,47 @@ export function GroupAssignment() {
     }
   }, [])
 
+  // Once a Course is picked, its refused Employees are dropped from the choice, and a chosen one is
+  // cleared. If the read fails the list stays whole: the API still refuses them.
+  useEffect(() => {
+    if (courseId === '') {
+      return
+    }
+    let current = true
+    listRefusedEmployees(Number(courseId)).then(
+      (rows) => {
+        if (!current) {
+          return
+        }
+        const ids = new Set(rows.map((row) => row.id))
+        setRefused({ courseId, ids })
+        setMentorId((chosenId) => (chosenId !== '' && ids.has(Number(chosenId)) ? '' : chosenId))
+      },
+      () => undefined,
+    )
+    return () => {
+      current = false
+    }
+  }, [courseId, refusedReads])
+
   const employees = state.status === 'ready' ? state.choices.employees : []
+  const refusedIds = refused !== null && refused.courseId === courseId ? refused.ids : none
+  const mentors = employees.filter((employee) => !refusedIds.has(employee.id))
   const learners = mentorId === '' ? [] : employees.filter((employee) => String(employee.id) !== mentorId)
   // Only Learners still listed count: choosing a ticked Learner as the chosen Employee drops them.
   const chosen = learners.filter((learner) => ticked.has(learner.id)).map((learner) => learner.id)
+
+  // A chosen-Employee refusal describes the earlier choice, so a new Course or Employee drops it.
+  function clearMentorError() {
+    setErrors((current) => {
+      if (!('mentor_id' in current)) {
+        return current
+      }
+      const rest = { ...current }
+      delete rest.mentor_id
+      return rest
+    })
+  }
 
   function toggle(learnerId: number, checked: boolean) {
     setTicked((current) => {
@@ -144,12 +207,15 @@ export function GroupAssignment() {
     setErrors({})
     setFailure(null)
     setCreated(null)
+    setSummary(null)
+    setMarks(new Map())
     conflict.clear()
+    const sent = chosen
     try {
       const assignment = await assignGroup({
         course_id: courseId === '' ? null : Number(courseId),
         mentor_id: Number(mentorId),
-        learner_ids: chosen,
+        learner_ids: sent,
       })
       setCreated(assignment)
       setCourseId('')
@@ -157,8 +223,16 @@ export function GroupAssignment() {
       setTicked(new Set())
     } catch (caught) {
       const invalid = fieldErrors(caught)
+      const code = caught instanceof ApiError && caught.status === 409 ? caught.code : undefined
       if (invalid) {
         setErrors(formErrors(invalid))
+      } else if (caught instanceof ApiError && code === 'MATCHING_LEARNER_NOT_ASSIGNABLE') {
+        setSummary(caught.message)
+        setMarks(learnerMarks(caught.errors ?? {}, sent))
+      } else if (caught instanceof ApiError && code === 'MATCHING_MENTOR_NOT_ELIGIBLE') {
+        // Under the Chosen Employee select; the refused list is re-read, which clears the choice.
+        setErrors({ mentor_id: caught.errors?.mentor_id?.[0] ?? caught.message })
+        setRefusedReads((reads) => reads + 1)
       } else if (!conflict.handle(caught)) {
         setFailure(copy.errors.generic)
       }
@@ -219,21 +293,32 @@ export function GroupAssignment() {
               {text.form}
             </h2>
             <form className="card__body" ref={formRef} onSubmit={handleSubmit} noValidate>
+              <p className="field-error group-assignment__summary" role="status">
+                {summary}
+              </p>
               <div className="group-assignment__fields">
                 <SelectField
                   label={text.course}
                   name="course_id"
                   value={courseId}
                   options={state.choices.courses.map((course) => ({ id: course.id, label: course.title }))}
-                  onChange={setCourseId}
+                  onChange={(value) => {
+                    setCourseId(value)
+                    setSummary(null)
+                    setMarks(new Map())
+                    clearMentorError()
+                  }}
                   error={errors.course_id}
                 />
                 <SelectField
                   label={text.chosenEmployee}
                   name="mentor_id"
                   value={mentorId}
-                  options={employees.map((employee) => ({ id: employee.id, label: employee.name }))}
-                  onChange={setMentorId}
+                  options={mentors.map((employee) => ({ id: employee.id, label: employee.name }))}
+                  onChange={(value) => {
+                    setMentorId(value)
+                    clearMentorError()
+                  }}
                   error={errors.mentor_id}
                 />
               </div>
@@ -245,18 +330,29 @@ export function GroupAssignment() {
                 >
                   <legend className="group-assignment__legend">{text.learners}</legend>
                   <ul className="group-assignment__checks">
-                    {learners.map((learner) => (
-                      <li key={learner.id}>
-                        <label className="checkbox-row">
-                          <input
-                            type="checkbox"
-                            checked={ticked.has(learner.id)}
-                            onChange={(event) => toggle(learner.id, event.target.checked)}
-                          />
-                          {learner.name}
-                        </label>
-                      </li>
-                    ))}
+                    {learners.map((learner) => {
+                      const mark = marks.get(learner.id)
+                      const markId = `${markIdPrefix}-${learner.id}`
+                      return (
+                        <li key={learner.id}>
+                          <label className="checkbox-row">
+                            <input
+                              type="checkbox"
+                              checked={ticked.has(learner.id)}
+                              onChange={(event) => toggle(learner.id, event.target.checked)}
+                              aria-describedby={mark ? markId : undefined}
+                              aria-invalid={mark ? true : undefined}
+                            />
+                            {learner.name}
+                          </label>
+                          {mark && (
+                            <p className="field-error group-assignment__mark" id={markId}>
+                              {mark}
+                            </p>
+                          )}
+                        </li>
+                      )
+                    })}
                   </ul>
                   {errors.learner_ids && (
                     <p className="field-error" id={learnersErrorId}>
