@@ -29,7 +29,7 @@ test('Admin approves one named Course and refuses another; only the approved one
   // Admin opens Registration decisions from the top bar, after Courses.
   await admin.page.reload()
   const nav = admin.page.getByRole('navigation')
-  await expect(nav.getByRole('link')).toHaveText(['Courses', 'Registration decisions'])
+  await expect(nav.getByRole('link')).toHaveText(['Courses', 'Registration decisions', 'Group assignment'])
   await nav.getByRole('link', { name: 'Registration decisions' }).click()
   await expect(admin.page).toHaveURL(/\/admin\/registration-decisions$/)
   await expect(admin.page.getByRole('heading', { level: 1 })).toHaveText('Registration decisions')

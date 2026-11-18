@@ -75,6 +75,7 @@ describe('Registration decisions', () => {
     expect(within(nav).getAllByRole('link').map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
       ['Courses', '/admin/courses'],
       ['Registration decisions', '/admin/registration-decisions'],
+      ['Group assignment', '/admin/group-assignments'],
     ])
   })
 

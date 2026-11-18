@@ -1,5 +1,5 @@
 import { api, ApiError, fetchCsrfCookie, type Resource } from './client'
-import type { SignInRequest, SignUpRequest, User } from './types/accounts'
+import type { Employee, SignInRequest, SignUpRequest, User } from './types/accounts'
 
 /** The signed-in user, or null when there is no session (401). */
 export async function getMe(): Promise<User | null> {
@@ -29,4 +29,10 @@ export async function signUp(details: SignUpRequest): Promise<User> {
 
 export async function signOut(): Promise<void> {
   await api.post<void>('/api/v1/logout')
+}
+
+/** Admin: every Employee by name, never Admin. */
+export async function listEmployees(): Promise<Employee[]> {
+  const { data } = await api.get<Resource<Employee[]>>('/api/v1/admin/employees')
+  return data
 }

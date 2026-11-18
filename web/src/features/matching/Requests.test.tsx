@@ -77,3 +77,43 @@ it('disables every Accept button until the refresh finishes, and the accepted Re
   expect(within(card).getByText('Leo Martins requested you to guide them with Python Basics')).toBeTruthy()
   expect((within(card).getByRole('button', { name: 'Accept' }) as HTMLButtonElement).disabled).toBe(false)
 })
+
+it('shows a group assignment as one sentence naming its Learners, with one Accept for its first Request', async () => {
+  const group: IncomingRequest = {
+    id: 3,
+    learner_names: ['Asha Rao', 'Ben Carter', 'Chloe Dubois', 'Dev Patel', 'Elena Ruiz'],
+    course_title: 'SQL Fundamentals',
+  }
+  const fetchMock = open(
+    () => jsonResponse(200, { data: [priya, group] }),
+    () => jsonResponse(404, { message: 'Not found.' }),
+  )
+  const card = await screen.findByRole('region', { name: 'Requests' })
+  const rows = await within(card).findAllByRole('listitem')
+  expect(rows.map((row) => row.textContent)).toEqual([
+    'Priya Nair requested you to guide them with Python BasicsAccept',
+    'Asha Rao, Ben Carter, Chloe Dubois, Dev Patel and Elena Ruiz requested you to guide them with SQL FundamentalsAccept',
+  ])
+  expect(within(rows[1]).getAllByRole('button', { name: 'Accept' })).toHaveLength(1)
+
+  fireEvent.click(within(rows[1]).getByRole('button', { name: 'Accept' }))
+
+  expect(await within(card).findByRole('alert')).toHaveProperty('textContent', 'Something went wrong. Try again.')
+  const posts = fetchMock.mock.calls.filter(([, init]) => init?.method === 'POST')
+  expect(posts.map(([input]) => String(input))).toEqual(['/api/v1/requests/3/accept'])
+  expect(within(card).getByText(/^Asha Rao, Ben Carter/)).toBeTruthy()
+})
+
+it('joins two names with "and" and one name alone', async () => {
+  open(() =>
+    jsonResponse(200, {
+      data: [
+        { id: 4, learner_names: ['Asha Rao', 'Ben Carter'], course_title: 'Git Essentials' },
+        { id: 6, learner_names: ['Chloe Dubois'], course_title: 'Algebra' },
+      ],
+    }),
+  )
+  const card = await screen.findByRole('region', { name: 'Requests' })
+  expect(await within(card).findByText('Asha Rao and Ben Carter requested you to guide them with Git Essentials')).toBeTruthy()
+  expect(within(card).getByText('Chloe Dubois requested you to guide them with Algebra')).toBeTruthy()
+})

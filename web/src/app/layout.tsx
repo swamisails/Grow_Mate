@@ -61,7 +61,7 @@ function SignedInLayout({ name, nav, children }: { name: ReactNode; nav?: ReactN
   )
 }
 
-/** Admin pages: Courses and Registration decisions are built so far. */
+/** Admin pages: Courses, Registration decisions and Group assignment. */
 export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <SignedInLayout
@@ -75,6 +75,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
           <NavLink to="/admin/registration-decisions" className="app-header__link">
             <Icon name="how_to_reg" className="app-header__icon" />
             {copy.nav.registrationDecisions}
+          </NavLink>
+          <NavLink to="/admin/group-assignments" className="app-header__link">
+            <Icon name="group_add" className="app-header__icon" />
+            {copy.nav.groupAssignment}
           </NavLink>
         </>
       }

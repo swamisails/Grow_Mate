@@ -1,5 +1,12 @@
 import { api, type Resource } from './client'
-import type { HomeScreen, IncomingRequest, MatchScreen, RequestEligibility } from './types/matching'
+import type {
+  AssignGroupRequest,
+  GroupAssignment,
+  HomeScreen,
+  IncomingRequest,
+  MatchScreen,
+  RequestEligibility,
+} from './types/matching'
 
 /** Whether the signed-in Learner may send a Request on this Course. */
 export async function getRequestEligibility(courseId: number): Promise<RequestEligibility> {
@@ -32,5 +39,11 @@ export async function getHome(): Promise<HomeScreen> {
 /** One Match for a party. A 404 means it is missing or the viewer is neither party. */
 export async function getMatch(id: number): Promise<MatchScreen> {
   const { data } = await api.get<Resource<MatchScreen>>(`/api/v1/matches/${id}`)
+  return data
+}
+
+/** Admin: assigns Learners to a chosen Employee on a Course. A 409 means the Course isn't published. */
+export async function assignGroup(assignment: AssignGroupRequest): Promise<GroupAssignment> {
+  const { data } = await api.post<Resource<GroupAssignment>>('/api/v1/admin/group-assignments', assignment)
   return data
 }

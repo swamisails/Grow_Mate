@@ -8,8 +8,10 @@ import { Loading } from '../../app/PageStates'
 type LoadState = { status: 'loading' } | { status: 'error' } | { status: 'ready'; requests: IncomingRequest[] }
 
 /**
- * Requests addressed to the signed-in Employee. One Accept at a time: every button stays disabled
- * until that Accept and its list refresh finish, and a list that started earlier is ignored.
+ * Requests addressed to the signed-in Employee. A group assignment's Requests are one row naming
+ * its Learners, with one Accept for the group's first Request. One Accept at a time: every button
+ * stays disabled until that Accept and its list refresh finish, and a list that started earlier is
+ * ignored.
  */
 export function Requests() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
@@ -101,7 +103,12 @@ export function Requests() {
             <ul className="list">
               {state.requests.map((request) => (
                 <li className="list-row" key={request.id}>
-                  <span>{copy.requests.sentence(request.learner_name, request.course_title)}</span>
+                  <span>
+                    {copy.requests.sentence(
+                      'learner_names' in request ? copy.names(request.learner_names) : request.learner_name,
+                      request.course_title,
+                    )}
+                  </span>
                   <button type="button" className="button button--primary" disabled={accepting} onClick={() => accept(request.id)}>
                     {copy.requests.accept}
                   </button>
