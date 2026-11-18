@@ -1,12 +1,15 @@
-import { useEffect, useId, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { ApiError } from '../../api/client'
 import { getPublishedCourse } from '../../api/courses'
 import type { PublishedCourse } from '../../api/types/courses'
+import type { CourseProgress } from '../../api/types/progress'
+import { getCourseProgress } from '../../api/progress'
 import { copy } from '../../app/copy'
 import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
 import { useRouter } from '../../app/router'
 import { CourseMentors } from '../mentors/CourseMentors'
+import { ProgressBar } from '../progress/ProgressBar'
 
 type LoadState = { status: 'loading' } | { status: 'notFound' } | { status: 'error' } | { status: 'ready'; course: PublishedCourse }
 
@@ -20,7 +23,17 @@ export function CoursePage() {
   const id = /^\d+$/.test(params.id ?? '') ? Number(params.id) : NaN
   const valid = Number.isSafeInteger(id)
   const [state, setState] = useState<LoadState>({ status: 'loading' })
+  const [progress, setProgress] = useState<CourseProgress['status']>(null)
   const descriptionId = useId()
+
+  const refreshProgress = useCallback(async () => {
+    try {
+      const next = await getCourseProgress(id)
+      setProgress(next.status)
+    } catch {
+      // A failed refresh keeps the page, the bar it already has, and any 409 message.
+    }
+  }, [id])
 
   useEffect(() => {
     if (!valid) {
@@ -43,6 +56,24 @@ export function CoursePage() {
     }
   }, [id, valid])
 
+  useEffect(() => {
+    if (!valid || state.status !== 'ready') {
+      return
+    }
+    let current = true
+    getCourseProgress(id).then(
+      (next) => {
+        if (current) setProgress(next.status)
+      },
+      () => {
+        // A failed read keeps the page and the bar it already has.
+      },
+    )
+    return () => {
+      current = false
+    }
+  }, [id, state.status, valid])
+
   if (!valid || state.status === 'notFound') {
     return <NotFound />
   }
@@ -63,10 +94,14 @@ export function CoursePage() {
               <h2 className="card__header" id={descriptionId}>
                 {copy.employeeCourses.description}
               </h2>
-              <div className="card__body preserve-lines">{state.course.description}</div>
+              <div className="card__body">
+                <div className="preserve-lines">{state.course.description}</div>
+                {progress && <ProgressBar status={progress} />}
+              </div>
             </section>
           )}
-          <CourseMentors key={state.course.id} courseId={state.course.id} />
+          {!state.course.description && progress && <ProgressBar status={progress} />}
+          <CourseMentors key={state.course.id} courseId={state.course.id} onRequested={refreshProgress} />
         </div>
       )}
     </>

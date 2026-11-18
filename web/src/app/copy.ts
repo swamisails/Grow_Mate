@@ -11,6 +11,7 @@ export const copy = {
     home: 'Home',
     courses: 'Courses',
     registrationDecisions: 'Registration decisions',
+    requests: 'Requests',
     notices: 'Notices',
     signOut: 'Sign out',
     primary: 'Main',
@@ -90,6 +91,18 @@ export const copy = {
     /** The Course page's Mentors card (R6). */
     title: 'Mentors',
     empty: 'No mentors for this course yet.',
+    request: 'Request',
+  },
+  requests: {
+    title: 'Requests',
+    empty: 'No requests.',
+    accept: 'Accept',
+    sentence: (name: string, course: string) => `${name} requested you to guide them with ${course}`,
+  },
+  progress: {
+    notYetStarted: 'Not yet started',
+    inProgress: 'In progress',
+    label: (word: string) => `Progress: ${word}`,
   },
   mentorCheck: {
     /** Sign-up step 2 (AD-15). */

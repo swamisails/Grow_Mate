@@ -57,7 +57,7 @@ afterEach(() => {
 })
 
 describe('Employee routing', () => {
-  it('lands on Home under a top bar of GrowMate, Home, Courses, Notices, the theme toggle, the name and Sign out only', async () => {
+  it('lands on Home under a top bar of GrowMate, Home, Courses, Requests, Notices, the theme toggle, the name and Sign out only', async () => {
     open('/', employee)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
@@ -70,6 +70,7 @@ describe('Employee routing', () => {
       ['GrowMate', '/home'],
       ['Home', '/home'],
       ['Courses', '/courses'],
+      ['Requests', '/requests'],
       ['Notices', '/notices'],
     ])
     // Every top-bar link carries its icon, and none carries a count or badge.

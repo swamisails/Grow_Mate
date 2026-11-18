@@ -1,0 +1,149 @@
+<?php
+
+namespace Tests\Feature\Matching;
+
+use App\Modules\Accounts\Models\User;
+use App\Modules\Courses\Models\Course;
+use App\Modules\Matching\Models\GroupAssignment;
+use App\Modules\Matching\Models\MentorMatch;
+use App\Modules\Matching\Models\Request;
+use App\Modules\Mentors\Models\MentorRoute;
+use App\Modules\Mentors\Models\Route;
+
+class AcceptRequestTest extends MatchingTestCase
+{
+    public function test_an_employee_with_no_requests_gets_an_empty_list(): void
+    {
+        $response = $this->actingAs($this->employee('Rafi Haddad'))->getJson('/api/v1/requests');
+
+        $response->assertOk()->assertExactJson(['data' => []]);
+        $this->assertHidesRouteAndGroup($response);
+    }
+
+    public function test_the_addressed_mentor_accepts_and_can_accept_another_learner(): void
+    {
+        $this->travelTo('2026-11-15 09:00:00');
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $leo = $this->employee('Leo Martins');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course);
+        $first = $this->openRequest($priya, $rafi, $course);
+        $second = $this->openRequest($leo, $rafi, $course);
+
+        $list = $this->actingAs($rafi)->getJson('/api/v1/requests');
+        $list->assertOk()->assertExactJson(['data' => [
+            ['id' => $first->id, 'learner_name' => 'Priya Nair', 'course_title' => 'Python Basics'],
+            ['id' => $second->id, 'learner_name' => 'Leo Martins', 'course_title' => 'Python Basics'],
+        ]]);
+        $this->assertHidesRouteAndGroup($list);
+
+        $accepted = $this->postJson("/api/v1/requests/{$first->id}/accept");
+        $accepted->assertCreated()->assertExactJson(['data' => [
+            'id' => $accepted->json('data.id'),
+            'request_id' => $first->id,
+            'started_at' => now()->utc()->toJSON(),
+        ]]);
+        $this->assertHidesRouteAndGroup($accepted);
+        $this->assertNotNull($first->fresh()->accepted_at);
+        $this->assertSame(1, MentorMatch::query()->count());
+        $this->assertSame(1, MentorRoute::query()->count());
+
+        $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
+            ->assertOk()
+            ->assertExactJson(['data' => ['status' => 'in_progress']]);
+        $this->getJson("/api/v1/courses/{$course->id}/request-eligibility")
+            ->assertOk()
+            ->assertExactJson(['data' => ['can_request' => true]]);
+
+        $this->actingAs($rafi)->postJson("/api/v1/requests/{$second->id}/accept")->assertCreated();
+        $this->assertSame(2, MentorMatch::query()->count());
+        $this->getJson('/api/v1/requests')->assertOk()->assertExactJson(['data' => []]);
+        $this->actingAs($leo)->getJson("/api/v1/courses/{$course->id}/progress")
+            ->assertExactJson(['data' => ['status' => 'in_progress']]);
+        $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
+            ->assertExactJson(['data' => ['status' => 'in_progress']]);
+    }
+
+    public function test_another_employee_accepting_leaves_no_match(): void
+    {
+        config(['app.debug' => false]);
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $stranger = $this->employee('Sam Lindqvist');
+        $this->grant($rafi, $course);
+        $request = $this->openRequest($priya, $rafi, $course);
+
+        $response = $this->actingAs($stranger)->postJson("/api/v1/requests/{$request->id}/accept");
+
+        $response->assertNotFound()->assertExactJson(['message' => 'Not found.']);
+        $this->postJson('/api/v1/requests/999999/accept')->assertNotFound();
+        $this->assertSame(0, MentorMatch::query()->count());
+        $this->assertNull($request->fresh()->accepted_at);
+    }
+
+    public function test_a_grouped_or_already_accepted_request_leaves_no_new_match(): void
+    {
+        config(['app.debug' => false]);
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $leo = $this->employee('Leo Martins');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course, Route::GroupAssignmentAccepted);
+
+        $group = new GroupAssignment;
+        $group->save();
+        $grouped = Request::factory()->create([
+            'learner_id' => $priya->id,
+            'mentor_id' => $rafi->id,
+            'course_id' => $course->id,
+            'group_assignment_id' => $group->id,
+        ]);
+        $accepted = Request::factory()->create([
+            'learner_id' => $leo->id,
+            'mentor_id' => $rafi->id,
+            'course_id' => $course->id,
+            'accepted_at' => now(),
+        ]);
+        MentorMatch::factory()->create(['request_id' => $accepted->id, 'started_at' => now()]);
+
+        $this->actingAs($rafi);
+        $this->postJson("/api/v1/requests/{$grouped->id}/accept")->assertNotFound()->assertExactJson(['message' => 'Not found.']);
+        $this->postJson("/api/v1/requests/{$accepted->id}/accept")->assertNotFound();
+        $this->assertSame(1, MentorMatch::query()->count());
+        $this->assertNull($grouped->fresh()->accepted_at);
+        $this->assertHidesRouteAndGroup($this->getJson('/api/v1/requests')->assertOk());
+        $this->assertSame([], $this->getJson('/api/v1/requests')->json('data'));
+    }
+
+    public function test_a_guest_is_unauthorized_and_an_admin_is_forbidden(): void
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee('Priya Nair');
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $course);
+        $request = $this->openRequest($priya, $rafi, $course);
+
+        $this->getJson('/api/v1/requests')->assertUnauthorized();
+        $this->postJson("/api/v1/requests/{$request->id}/accept")->assertUnauthorized();
+
+        $this->actingAs(User::factory()->admin()->create());
+        $this->getJson('/api/v1/requests')->assertForbidden();
+        $this->postJson("/api/v1/requests/{$request->id}/accept")->assertForbidden();
+        $this->postJson('/api/v1/requests/999999/accept')->assertForbidden();
+        $this->assertSame(0, MentorMatch::query()->count());
+    }
+
+    private function openRequest(User $learner, User $mentor, Course $course): Request
+    {
+        return Request::factory()->create([
+            'learner_id' => $learner->id,
+            'mentor_id' => $mentor->id,
+            'course_id' => $course->id,
+            'sent_at' => now(),
+            'accepted_at' => null,
+            'group_assignment_id' => null,
+        ]);
+    }
+}
