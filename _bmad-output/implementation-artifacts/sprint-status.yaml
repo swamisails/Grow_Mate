@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-10-2026 16:57
-last_updated: 11-17-2026 12:08
+last_updated: 11-19-2026 11:13
 project: GROW_MATE
 project_key: NOKEY
 tracking_system: file-system
@@ -71,19 +71,19 @@ development_status:
   3-6-uj-1-to-gold-the-lock-and-a-gold-mentor-s-accept-pass-end-to: backlog
   epic-3-retrospective: optional
 
-  epic-4: backlog
-  4-1-admin-assigns-a-group-and-the-chosen-employee-sees-it: backlog
-  4-2-one-accept-starts-every-match-in-the-group: backlog
-  4-3-group-assignment-refusals: backlog
-  4-4-refactor-sweep: backlog
-  4-5-uj-4-and-the-excluded-employee-pass-end-to-end: backlog
-  epic-4-retrospective: optional
+  epic-4: done
+  4-1-admin-assigns-a-group-and-the-chosen-employee-sees-it: done
+  4-2-one-accept-starts-every-match-in-the-group: done
+  4-3-group-assignment-refusals: done
+  4-4-refactor-sweep: done
+  4-5-uj-4-and-the-excluded-employee-pass-end-to-end: done
+  epic-4-retrospective: done
 action_items:
   - id: "epic-1-retro-item-1-add-rate-limiting-to-post-api-v1-login-a"
     epic: 1
     action: "Add rate limiting to POST /api/v1/login and POST /api/v1/register (F1)."
     owner: "Swami"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"
   - id: "epic-1-retro-item-2-fix-focus-return-in-the-shared-confirmat"
     epic: 1
@@ -131,7 +131,7 @@ action_items:
     action: "Commit a root .env.example with every key e2e/run.sh needs and decide
       on the pending api/.env.example change (L2)."
     owner: "Swami"
-    status: open
+    status: in-progress
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"
   - id: "epic-1-retro-item-9-make-a-skipped-e2e-run-sh-blocking-a-sto"
     epic: 1
@@ -154,3 +154,88 @@ action_items:
     owner: "Swami"
     status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"
+  - id: "epic-4-retro-item-12-harden-matching-concurrency-one-global-l"
+    epic: 4
+    action: "Harden Matching concurrency: one global lock order (lock every referenced
+      user, sorted, before the Course in AssignGroup and SendRequest); locking Match/Mentor
+      reads in LearnerEligibility under lock; group-Accept 404 before locks; fix the
+      AcceptRequest lock comment (A1, A2, A4)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-13-add-a-mysql-backed-matching-test-lane-wi"
+    epic: 4
+    action: "Add a MySQL-backed Matching test lane with a two-connection test of group
+      Accept against AssignGroup/SendRequest on the same Mentor and Course (A3)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-14-group-accept-refuses-404-nothing-granted"
+    epic: 4
+    action: "Group Accept refuses (404, nothing granted) when the chosen Employee
+      was refused the Course at registration after Assign, with a feature test (B1,
+      Q1)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-15-add-ci-on-every-pr-to-main-api-tests-web"
+    epic: 4
+    action: "Add CI on every PR to main (api tests, web lint/test/build, Playwright
+      on the Docker e2e stack) as a required check (L1, M1, M2)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-16-make-the-suites-green-home-and-match-set"
+    epic: 4
+    action: "Make the suites green: home-and-match sets up its own Match, UJ-3 Mentors
+      assertion copes with the Request button, fix the playwright.config comment,
+      fix or quarantine RateLimitTest's proxy test (M3, M4, M5, V4)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-17-close-group-assignment-test-gaps-two-gro"
+    epic: 4
+    action: "Close Group assignment test gaps: two groups plus an own Request for
+      the same Mentor and Course; out-of-order learner_ids in API and web tests (V1,
+      V2)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-18-group-assignment-form-clear-409-summary"
+    epic: 4
+    action: "Group assignment form: clear 409 summary and marks on Chosen Employee
+      change and drop the chosen from ticked; patch stale comments in web/src/api/matching.ts:45
+      and create_matching_tables.php:9-10 (B5, S3)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-19-apply-spec-reconciliations-epic-4-done-w"
+    epic: 4
+    action: "Apply spec reconciliations: epic 4 Done when wording and the C4 mark
+      exposure; AD-12 codes and 409 errors shape; architecture :42/:191; AD-3 Route
+      enum and Matching->Accounts edge (S1-S4)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-20-a-red-suite-blocks-a-story-no-built-stat"
+    epic: 4
+    action: "A red suite blocks a story: no built status with a failing test unless
+      deferred-work names it with an owner; plan Verification records observed results
+      (L2, M7)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-21-stop-stacking-story-prs-onto-story-branc"
+    epic: 4
+    action: "Stop stacking story PRs onto story branches; close PR #27 and delete
+      stranded story/4-* branches (M6)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-4-retro-item-22-update-sprint-status-yaml-and-the-ticket"
+    epic: 4
+    action: "Update sprint-status.yaml and the ticket tree when a story PR merges;
+      sync epic 2's stories now (L3)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
