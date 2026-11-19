@@ -8,6 +8,7 @@ export type NoticeType =
   | 'request_sent'
   | 'request_accepted'
   | 'match_quit'
+  | 'bronze_available'
   | 'request_reminder_day3'
   | 'request_cancelled_day6'
 
@@ -53,8 +54,14 @@ export type MatchQuitNotice = NoticeBase & {
   reason: string
 }
 
+/** Bronze is open, to the Learner, after the Mentor's Course Completed. */
+export type BronzeAvailableNotice = NoticeBase & {
+  type: 'bronze_available'
+  course_title: string
+}
+
 /**
  * App\Modules\Notifications\Http\Resources\NoticeResource: GET /api/v1/notices, newest first.
  * No read state, count or link.
  */
-export type Notice = RegistrationDecisionNotice | RequestTimeNotice | RequestEventNotice | MatchQuitNotice
+export type Notice = RegistrationDecisionNotice | RequestTimeNotice | RequestEventNotice | MatchQuitNotice | BronzeAvailableNotice
