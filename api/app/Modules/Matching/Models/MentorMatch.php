@@ -18,8 +18,10 @@ use Illuminate\Support\Carbon;
  * @property Carbon $started_at
  * @property Carbon|null $ended_at
  * @property MatchEndReason|null $end_reason
+ * @property int|null $quit_by_id
+ * @property string|null $quit_reason
  */
-#[Fillable(['request_id', 'started_at', 'ended_at', 'end_reason'])]
+#[Fillable(['request_id', 'started_at', 'ended_at', 'end_reason', 'quit_by_id', 'quit_reason'])]
 #[UseFactory(MentorMatchFactory::class)]
 class MentorMatch extends Model
 {
@@ -39,6 +41,7 @@ class MentorMatch extends Model
             'started_at' => 'datetime',
             'ended_at' => 'datetime',
             'end_reason' => MatchEndReason::class,
+            'quit_by_id' => 'integer',
         ];
     }
 }

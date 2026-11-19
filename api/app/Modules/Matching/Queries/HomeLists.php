@@ -25,7 +25,7 @@ class HomeLists
 
     /**
      * @return array{
-     *     learning: list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress', match_id: int|null}>,
+     *     learning: list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'quit', match_id: int|null}>,
      *     mentoring: list<array{id: int, person_name: string, course_title: string}>
      * }
      */
@@ -38,7 +38,7 @@ class HomeLists
     }
 
     /**
-     * @return list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress', match_id: int|null}>
+     * @return list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'quit', match_id: int|null}>
      */
     private function learning(int $learnerId): array
     {
@@ -84,6 +84,7 @@ class HomeLists
         $matches = MentorMatch::query()
             ->join('requests', 'requests.id', '=', 'matches.request_id')
             ->where('requests.mentor_id', $mentorId)
+            ->whereNull('matches.ended_at')
             ->toBase()
             ->get(['matches.id as id', 'requests.learner_id as learner_id', 'requests.course_id as course_id']);
 
@@ -118,7 +119,7 @@ class HomeLists
     private function matchIdByRequest(array $requestIds): array
     {
         $matchIdByRequest = [];
-        foreach (MentorMatch::query()->whereIn('request_id', $requestIds)->get(['id', 'request_id']) as $match) {
+        foreach (MentorMatch::query()->whereNull('ended_at')->whereIn('request_id', $requestIds)->get(['id', 'request_id']) as $match) {
             $matchIdByRequest[(int) $match->request_id] = (int) $match->id;
         }
 

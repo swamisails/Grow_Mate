@@ -79,6 +79,10 @@ export const copy = {
     },
     /** The Accept notice. `mentor` is the Mentor's account name; the period is part of the sentence. */
     requestAccepted: (mentor: string, course: string) => `${mentor} is your mentor for ${course}.`,
+    /** The Quit note's sentence; the reason is shown quoted below it. */
+    matchQuit: (person: string, course: string) => `${person} quit ${course}.`,
+    /** The quoted reason under a Quit note. */
+    quitReason: (reason: string) => `“${reason}”`,
   },
   /** People's names in a sentence: "A", "A and B", "A, B and C". No count. */
   names: (list: readonly string[]) =>
@@ -115,6 +119,11 @@ export const copy = {
   match: {
     /** The page name while the Match loads, before its Course title is known. */
     pageName: 'Match',
+    quitCourse: 'Quit Course',
+    quitDialog: {
+      title: 'Quit Course',
+      reason: 'Reason',
+    },
   },
   requests: {
     title: 'Requests',
@@ -126,6 +135,7 @@ export const copy = {
   progress: {
     notYetStarted: 'Not yet started',
     inProgress: 'In progress',
+    quit: 'Quit',
     label: (word: string) => `Progress: ${word}`,
   },
   mentorCheck: {

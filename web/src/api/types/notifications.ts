@@ -7,6 +7,7 @@ export type NoticeType =
   | 'registration_decision'
   | 'request_sent'
   | 'request_accepted'
+  | 'match_quit'
   | 'request_reminder_day3'
   | 'request_cancelled_day6'
 
@@ -44,8 +45,16 @@ export type RequestEventNotice = NoticeBase & {
   course_title: string
 }
 
+/** The Quit note, to the other party. `person_name` is who quit; `reason` is user text, rendered as text. */
+export type MatchQuitNotice = NoticeBase & {
+  type: 'match_quit'
+  person_name: string
+  course_title: string
+  reason: string
+}
+
 /**
  * App\Modules\Notifications\Http\Resources\NoticeResource: GET /api/v1/notices, newest first.
  * No read state, count or link.
  */
-export type Notice = RegistrationDecisionNotice | RequestTimeNotice | RequestEventNotice
+export type Notice = RegistrationDecisionNotice | RequestTimeNotice | RequestEventNotice | MatchQuitNotice

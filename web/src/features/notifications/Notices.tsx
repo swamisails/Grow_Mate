@@ -24,6 +24,8 @@ function sentence(notice: Notice): string {
       return copy.requests.sentence(notice.person_name, notice.course_title)
     case 'request_accepted':
       return copy.notices.requestAccepted(notice.person_name, notice.course_title)
+    case 'match_quit':
+      return copy.notices.matchQuit(notice.person_name, notice.course_title)
   }
 }
 
@@ -63,6 +65,7 @@ export function Notices() {
               {state.notices.map((notice) => (
                 <li className="list-row notice-row" key={notice.id}>
                   <p className="notice-row__sentence">{sentence(notice)}</p>
+                  {notice.type === 'match_quit' && <p className="preserve-lines">{copy.notices.quitReason(notice.reason)}</p>}
                   <p className="meta">
                     <time dateTime={notice.occurred_at}>{copy.date(notice.occurred_at)}</time>
                   </p>

@@ -18,6 +18,9 @@ enum NoticeType: string
     /** The Mentor accepted. Stored for the Learner, after the Match commits. */
     case RequestAccepted = 'request_accepted';
 
+    /** A party quit the Match. Stored for the other party, with the quitter's name and the reason. */
+    case MatchQuit = 'match_quit';
+
     /** Day 3: the Request was still open at `sent_at` + 72 hours. One row per party, never stored. */
     case RequestReminderDay3 = 'request_reminder_day3';
 
@@ -35,6 +38,7 @@ enum NoticeType: string
         return match ($this) {
             self::RegistrationDecision => ['course_title', 'outcome'],
             self::RequestSent, self::RequestAccepted => ['person_name', 'course_title'],
+            self::MatchQuit => ['person_name', 'course_title', 'reason'],
             self::RequestReminderDay3, self::RequestCancelledDay6 => ['party', 'person_name', 'course_title'],
         };
     }

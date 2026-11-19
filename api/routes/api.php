@@ -20,6 +20,7 @@ use App\Modules\Matching\Http\Controllers\AcceptRequestController;
 use App\Modules\Matching\Http\Controllers\AssignGroupController;
 use App\Modules\Matching\Http\Controllers\HomeController;
 use App\Modules\Matching\Http\Controllers\ListRequestsController;
+use App\Modules\Matching\Http\Controllers\QuitMatchController;
 use App\Modules\Matching\Http\Controllers\RequestEligibilityController;
 use App\Modules\Matching\Http\Controllers\SendRequestController;
 use App\Modules\Matching\Http\Controllers\ShowMatchController;
@@ -69,6 +70,7 @@ Route::prefix('v1')->group(function () {
             // Home's Learning and Mentoring, and the Match either party opens. Admin stays outside this group.
             Route::get('home', HomeController::class);
             Route::get('matches/{match}', ShowMatchController::class)->where('match', '[0-9]{1,18}');
+            Route::post('matches/{match}/quit', QuitMatchController::class)->where('match', '[0-9]{1,18}');
             // The Employee's one Mentor check (R2, AD-15): its status, then one submission or skip.
             Route::get('mentor-check', MentorCheckController::class);
             Route::post('mentor-check', SubmitMentorCheckController::class);
