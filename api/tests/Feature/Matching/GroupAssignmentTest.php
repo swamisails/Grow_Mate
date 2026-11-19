@@ -7,7 +7,12 @@ use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Models\GroupAssignment;
 use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
+use App\Modules\Mentors\Models\MentorRoute;
+use App\Modules\Mentors\Models\RegistrationDecision;
+use App\Modules\Mentors\Models\Route;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class GroupAssignmentTest extends MatchingTestCase
 {
@@ -127,18 +132,249 @@ class GroupAssignmentTest extends MatchingTestCase
         }
     }
 
-    public function test_accepting_the_group_is_still_refused_and_accepts_nothing(): void
+    /**
+     * Assigns the group, then Imani Accepts it through the Request id at `$position`.
+     */
+    private function acceptGroupAt(int $position): TestResponse
+    {
+        $this->assign()->assertCreated();
+        $ids = Request::query()->orderBy('id')->pluck('id')->all();
+
+        return $this->actingAs($this->imani)->postJson("/api/v1/requests/{$ids[$position]}/accept");
+    }
+
+    /**
+     * Every Learner has one accepted Request, one live Match, one Accept notice and an `in_progress`
+     * Home row, each shaped like a one-to-one Match's; the chosen Employee is the Course's Mentor.
+     */
+    private function assertWholeGroupAccepted(): void
+    {
+        $requests = Request::query()->orderBy('id')->get();
+        $this->assertCount(5, $requests);
+        $this->assertSame(0, $requests->whereNull('accepted_at')->count());
+        $this->assertSame(5, MentorMatch::query()->count());
+        $this->assertSame(5, MentorMatch::query()->whereNull('ended_at')->distinct()->count('request_id'));
+
+        foreach ($this->learners as $learner) {
+            $match = MentorMatch::query()
+                ->where('request_id', $requests->firstWhere('learner_id', $learner->id)->id)
+                ->sole();
+            $this->actingAs($learner);
+
+            $notices = $this->getJson('/api/v1/notices')->assertOk();
+            $this->assertSame(['request_accepted'], array_column($notices->json('data'), 'type'));
+            $this->assertSame(['id', 'type', 'occurred_at', 'person_name', 'course_title'], array_keys($notices->json('data.0')));
+            $this->assertSame('Imani Okafor', $notices->json('data.0.person_name'));
+            $this->assertSame('SQL Fundamentals', $notices->json('data.0.course_title'));
+
+            $home = $this->getJson('/api/v1/home')->assertOk()->assertExactJson(['data' => [
+                'learning' => [[
+                    'course_id' => $this->sql->id,
+                    'course_title' => 'SQL Fundamentals',
+                    'status' => 'in_progress',
+                    'match_id' => $match->id,
+                ]],
+                'mentoring' => [],
+            ]]);
+
+            $read = $this->getJson("/api/v1/matches/{$match->id}")->assertOk()->assertExactJson(['data' => [
+                'person_name' => 'Imani Okafor',
+                'course_title' => 'SQL Fundamentals',
+                'status' => 'in_progress',
+            ]]);
+
+            foreach ([$notices, $home, $read] as $response) {
+                $this->assertHidesRouteAndGroup($response);
+                $this->assertStringNotContainsString('learner_names', $response->getContent());
+            }
+        }
+
+        // The chosen Employee gets no Accept notice: only the five Request notices from Assign.
+        $this->actingAs($this->imani);
+        $inbox = $this->getJson('/api/v1/notices')->assertOk();
+        $this->assertSame(array_fill(0, 5, 'request_sent'), array_column($inbox->json('data'), 'type'));
+        $this->assertDatabaseCount('notifications', 10);
+
+        $this->getJson('/api/v1/requests')->assertOk()->assertExactJson(['data' => []]);
+        $mentoring = $this->getJson('/api/v1/home')->assertOk();
+        $this->assertCount(5, $mentoring->json('data.mentoring'));
+        $this->assertHidesRouteAndGroup($mentoring);
+
+        $mentors = $this->actingAs($this->learners[0])->getJson("/api/v1/courses/{$this->sql->id}/mentors");
+        $mentors->assertOk()->assertExactJson(['data' => [['id' => $this->imani->id, 'name' => 'Imani Okafor']]]);
+        $this->assertHidesRouteAndGroup($mentors);
+    }
+
+    public function test_one_accept_starts_every_match_in_the_group_and_grants_the_chosen_employee(): void
+    {
+        $response = $this->acceptGroupAt(0);
+
+        $first = Request::query()->orderBy('id')->first();
+        $response->assertCreated()->assertExactJson(['data' => [
+            'id' => MentorMatch::query()->where('request_id', $first->id)->value('id'),
+            'request_id' => $first->id,
+            'started_at' => '2026-11-18T09:00:00.000000Z',
+        ]]);
+        $this->assertHidesRouteAndGroup($response);
+        $this->assertWholeGroupAccepted();
+
+        $grant = MentorRoute::query()->sole();
+        $this->assertSame(
+            [$this->imani->id, $this->sql->id, Route::GroupAssignmentAccepted],
+            [$grant->user_id, $grant->course_id, $grant->route],
+        );
+    }
+
+    public function test_any_sibling_id_accepts_the_whole_group_and_returns_its_own_match(): void
+    {
+        $response = $this->acceptGroupAt(2);
+
+        $third = Request::query()->orderBy('id')->skip(2)->first();
+        $response->assertCreated()->assertExactJson(['data' => [
+            'id' => MentorMatch::query()->where('request_id', $third->id)->value('id'),
+            'request_id' => $third->id,
+            'started_at' => '2026-11-18T09:00:00.000000Z',
+        ]]);
+        $this->assertHidesRouteAndGroup($response);
+        $this->assertWholeGroupAccepted();
+    }
+
+    public function test_a_second_accept_on_the_group_creates_nothing(): void
+    {
+        config(['app.debug' => false]);
+        $this->acceptGroupAt(0)->assertCreated();
+
+        foreach (Request::query()->orderBy('id')->pluck('id') as $id) {
+            $this->actingAs($this->imani)->postJson("/api/v1/requests/{$id}/accept")
+                ->assertNotFound()
+                ->assertExactJson(['message' => 'Not found.']);
+        }
+
+        $this->assertWholeGroupAccepted();
+        $this->assertSame(1, MentorRoute::query()->count());
+    }
+
+    public function test_another_employee_accepting_the_group_accepts_nothing(): void
+    {
+        config(['app.debug' => false]);
+        $stranger = $this->employee('Sam Lindqvist');
+        $this->assign()->assertCreated();
+
+        foreach (Request::query()->orderBy('id')->pluck('id') as $id) {
+            $this->actingAs($stranger)->postJson("/api/v1/requests/{$id}/accept")
+                ->assertNotFound()
+                ->assertExactJson(['message' => 'Not found.']);
+        }
+
+        $this->assertSame(5, Request::query()->whereNull('accepted_at')->count());
+        $this->assertSame(0, MentorMatch::query()->count());
+        $this->assertSame(0, MentorRoute::query()->count());
+        $this->assertDatabaseCount('notifications', 5);
+        $this->assertCount(1, $this->actingAs($this->imani)->getJson('/api/v1/requests')->json('data'));
+    }
+
+    public function test_on_day_3_every_learner_and_the_chosen_employee_per_learner_are_reminded_and_the_row_stays(): void
+    {
+        $this->assign()->assertCreated();
+        $requests = Request::query()->orderBy('id')->get();
+
+        $this->travelTo(now()->addHours(72));
+
+        $occurredAt = '2026-11-21T09:00:00Z';
+        foreach ($this->learners as $learner) {
+            $request = $requests->firstWhere('learner_id', $learner->id);
+            $notices = $this->actingAs($learner)->getJson('/api/v1/notices');
+            $notices->assertOk()->assertExactJson(['data' => [[
+                'id' => 'request_reminder_day3:'.$request->id,
+                'type' => 'request_reminder_day3',
+                'occurred_at' => $occurredAt,
+                'party' => 'learner',
+                'person_name' => 'Imani Okafor',
+                'course_title' => 'SQL Fundamentals',
+            ]]]);
+            $this->assertHidesRouteAndGroup($notices);
+        }
+
+        $inbox = $this->actingAs($this->imani)->getJson('/api/v1/notices')->assertOk();
+        $this->assertHidesRouteAndGroup($inbox);
+        $reminders = array_values(array_filter($inbox->json('data'), fn (array $notice): bool => $notice['type'] === 'request_reminder_day3'));
+        $this->assertEqualsCanonicalizing(
+            $requests->map(fn (Request $request): string => 'request_reminder_day3:'.$request->id)->all(),
+            array_column($reminders, 'id'),
+        );
+        $this->assertEqualsCanonicalizing(
+            ['Asha Rao', 'Ben Carter', 'Chloe Dubois', 'Dev Patel', 'Elena Ruiz'],
+            array_column($reminders, 'person_name'),
+        );
+        $this->assertSame(array_fill(0, 5, 'mentor'), array_column($reminders, 'party'));
+
+        $this->getJson('/api/v1/requests')->assertOk()->assertExactJson(['data' => [[
+            'id' => $requests->first()->id,
+            'learner_names' => ['Asha Rao', 'Ben Carter', 'Chloe Dubois', 'Dev Patel', 'Elena Ruiz'],
+            'course_title' => 'SQL Fundamentals',
+        ]]]);
+    }
+
+    public function test_on_day_6_the_group_is_cancelled_together_and_grants_nothing(): void
     {
         config(['app.debug' => false]);
         $this->assign()->assertCreated();
-        $first = (int) Request::query()->min('id');
+        $requests = Request::query()->orderBy('id')->get();
 
-        $response = $this->actingAs($this->imani)->postJson("/api/v1/requests/{$first}/accept");
+        $this->travelTo(now()->addHours(144));
 
-        $response->assertNotFound()->assertExactJson(['message' => 'Not found.']);
-        $this->assertSame(0, MentorMatch::query()->count());
+        $occurredAt = '2026-11-24T09:00:00Z';
+        foreach ($this->learners as $learner) {
+            $request = $requests->firstWhere('learner_id', $learner->id);
+            $notices = $this->actingAs($learner)->getJson('/api/v1/notices')->assertOk();
+            $this->assertHidesRouteAndGroup($notices);
+            $this->assertContains([
+                'id' => 'request_cancelled_day6:'.$request->id,
+                'type' => 'request_cancelled_day6',
+                'occurred_at' => $occurredAt,
+                'party' => 'learner',
+                'person_name' => 'Imani Okafor',
+                'course_title' => 'SQL Fundamentals',
+            ], $notices->json('data'));
+        }
+
+        $this->actingAs($this->imani);
+        $inbox = $this->getJson('/api/v1/notices')->assertOk();
+        $this->assertHidesRouteAndGroup($inbox);
+        $cancellations = array_values(array_filter($inbox->json('data'), fn (array $notice): bool => $notice['type'] === 'request_cancelled_day6'));
+        $this->assertEqualsCanonicalizing(
+            $requests->map(fn (Request $request): string => 'request_cancelled_day6:'.$request->id)->all(),
+            array_column($cancellations, 'id'),
+        );
+        $this->assertSame(array_fill(0, 5, 'mentor'), array_column($cancellations, 'party'));
+
+        $this->getJson('/api/v1/requests')->assertOk()->assertExactJson(['data' => []]);
+        foreach ($requests as $request) {
+            $this->postJson("/api/v1/requests/{$request->id}/accept")
+                ->assertNotFound()
+                ->assertExactJson(['message' => 'Not found.']);
+        }
+
         $this->assertSame(5, Request::query()->whereNull('accepted_at')->count());
-        $this->assertCount(1, $this->actingAs($this->imani)->getJson('/api/v1/requests')->json('data'));
+        $this->assertSame(0, MentorMatch::query()->count());
+        $this->assertSame(0, MentorRoute::query()->count());
+        $this->actingAs($this->learners[0])->getJson("/api/v1/courses/{$this->sql->id}/mentors")
+            ->assertOk()
+            ->assertExactJson(['data' => []]);
+    }
+
+    public function test_a_chosen_employee_who_already_mentors_keeps_her_first_route(): void
+    {
+        $this->grant($this->imani, $this->sql, Route::RegistrationApproval);
+
+        $this->acceptGroupAt(0)->assertCreated();
+
+        $this->assertWholeGroupAccepted();
+        $grant = MentorRoute::query()->sole();
+        $this->assertSame(
+            [$this->imani->id, $this->sql->id, Route::RegistrationApproval],
+            [$grant->user_id, $grant->course_id, $grant->route],
+        );
     }
 
     public function test_a_draft_course_is_refused_and_nothing_is_created(): void
@@ -152,6 +388,210 @@ class GroupAssignmentTest extends MatchingTestCase
             'code' => 'MATCHING_COURSE_NOT_PUBLISHED',
         ]);
         $this->assertNothingCreated();
+    }
+
+    /**
+     * @return array{group_assignments: int, requests: int, matches: int, notifications: int, mentor_routes: int}
+     */
+    private function counts(): array
+    {
+        return [
+            'group_assignments' => GroupAssignment::query()->count(),
+            'requests' => Request::query()->count(),
+            'matches' => MentorMatch::query()->count(),
+            'notifications' => $this->getConnection()->table('notifications')->count(),
+            'mentor_routes' => MentorRoute::query()->count(),
+        ];
+    }
+
+    /**
+     * Assigns, expecting a refusal that leaves every table as it was. Returns the response.
+     *
+     * @param  array<string, mixed>  $overrides
+     */
+    private function assignRefused(array $overrides = []): TestResponse
+    {
+        $before = $this->counts();
+        Exceptions::fake();
+
+        $response = $this->assign($overrides);
+
+        Exceptions::assertNothingReported();
+        $this->assertSame($before, $this->counts());
+        $this->assertHidesRouteAndGroup($response);
+
+        return $response;
+    }
+
+    /**
+     * Puts the Learner in the state for one R7 reason on SQL Fundamentals, through another Mentor.
+     */
+    private function makeIneligible(User $learner, string $reason): void
+    {
+        $rafi = User::query()->where('name', 'Rafi Haddad')->first() ?? $this->employee('Rafi Haddad');
+        if ($reason === 'already a mentor') {
+            $this->grant($learner, $this->sql);
+
+            return;
+        }
+
+        $request = Request::factory()->create([
+            'learner_id' => $learner->id,
+            'mentor_id' => $rafi->id,
+            'course_id' => $this->sql->id,
+            'sent_at' => now(),
+            'accepted_at' => $reason === 'open request' ? null : now(),
+        ]);
+        match ($reason) {
+            'open request' => null,
+            'live match' => MentorMatch::factory()->create(['request_id' => $request->id]),
+            'course completed' => MentorMatch::factory()->courseCompleted()->create(['request_id' => $request->id]),
+        };
+    }
+
+    /**
+     * @return array<string, array{0: string}>
+     */
+    public static function r7Reasons(): array
+    {
+        return [
+            'open request' => ['open request'],
+            'live match' => ['live match'],
+            'course completed' => ['course completed'],
+            'already a mentor' => ['already a mentor'],
+        ];
+    }
+
+    private function refuseAtRegistration(User $employee, Course $course): void
+    {
+        RegistrationDecision::factory()->refused()->create(['user_id' => $employee->id, 'course_id' => $course->id]);
+    }
+
+    public function test_a_chosen_employee_refused_the_course_at_registration_is_refused_and_nothing_is_created(): void
+    {
+        $sam = $this->employee('Sam Lindqvist');
+        $this->refuseAtRegistration($sam, $this->sql);
+
+        $response = $this->assignRefused(['mentor_id' => $sam->id]);
+
+        $response->assertConflict()->assertExactJson([
+            'message' => "This employee can't be chosen for this course.",
+            'code' => 'MATCHING_MENTOR_NOT_ELIGIBLE',
+            'errors' => ['mentor_id' => ["This employee can't be chosen for this course."]],
+        ]);
+        $this->assertNothingCreated();
+    }
+
+    public function test_a_refusal_on_another_course_or_an_approval_does_not_stop_the_chosen_employee(): void
+    {
+        $this->refuseAtRegistration($this->imani, $this->publishedCourse('Python Basics'));
+        RegistrationDecision::factory()->create(['user_id' => $this->imani->id, 'course_id' => $this->sql->id]);
+
+        $this->assign()->assertCreated();
+        $this->assertSame(5, Request::query()->count());
+    }
+
+    public function test_the_chosen_employee_as_a_learner_is_a_422_on_learner_ids(): void
+    {
+        $learnerIds = array_map(fn (User $learner): int => $learner->id, $this->learners);
+
+        $response = $this->assignRefused(['learner_ids' => [$learnerIds[0], $this->imani->id]]);
+
+        $response->assertUnprocessable()->assertOnlyJsonValidationErrors(['learner_ids']);
+        $this->assertSame(["The chosen employee can't also be a learner."], $response->json('errors.learner_ids'));
+        $this->assertNothingCreated();
+    }
+
+    public function test_a_learner_with_a_live_match_refuses_the_whole_group_and_marks_only_that_learner(): void
+    {
+        [$asha, $ben, $chloe] = $this->learners;
+        $this->makeIneligible($ben, 'live match');
+
+        $response = $this->assignRefused(['learner_ids' => [$asha->id, $ben->id, $chloe->id]]);
+
+        $response->assertConflict()->assertExactJson([
+            'message' => "Nothing was assigned. Some learners can't be assigned to this course.",
+            'code' => 'MATCHING_LEARNER_NOT_ASSIGNABLE',
+            'errors' => ['learner_ids.1' => ["This learner can't be assigned to this course."]],
+        ]);
+        $this->assertSame(0, GroupAssignment::query()->count());
+        $this->assertSame(1, Request::query()->count());
+    }
+
+    #[DataProvider('r7Reasons')]
+    public function test_every_r7_reason_gives_the_same_body_naming_no_reason(string $reason): void
+    {
+        $this->makeIneligible($this->learners[1], $reason);
+        $this->makeIneligible($this->learners[3], $reason);
+
+        $response = $this->assignRefused();
+
+        $response->assertConflict()->assertExactJson([
+            'message' => "Nothing was assigned. Some learners can't be assigned to this course.",
+            'code' => 'MATCHING_LEARNER_NOT_ASSIGNABLE',
+            'errors' => [
+                'learner_ids.1' => ["This learner can't be assigned to this course."],
+                'learner_ids.3' => ["This learner can't be assigned to this course."],
+            ],
+        ]);
+        $this->assertSame(0, GroupAssignment::query()->count());
+    }
+
+    public function test_a_learner_who_sent_their_own_request_first_refuses_the_assignment(): void
+    {
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $this->sql);
+        $asha = $this->learners[0];
+        $this->actingAs($asha)->postJson("/api/v1/courses/{$this->sql->id}/requests", ['mentor_id' => $rafi->id])->assertCreated();
+
+        $response = $this->assignRefused(['learner_ids' => [$asha->id]]);
+
+        $response->assertConflict()->assertExactJson([
+            'message' => "Nothing was assigned. Some learners can't be assigned to this course.",
+            'code' => 'MATCHING_LEARNER_NOT_ASSIGNABLE',
+            'errors' => ['learner_ids.0' => ["This learner can't be assigned to this course."]],
+        ]);
+        $this->assertSame(1, Request::query()->where('learner_id', $asha->id)->count());
+        $this->assertSame(0, GroupAssignment::query()->count());
+    }
+
+    public function test_a_learner_assigned_first_cannot_send_their_own_request(): void
+    {
+        $rafi = $this->employee('Rafi Haddad');
+        $this->grant($rafi, $this->sql);
+        $asha = $this->learners[0];
+        $this->assign(['learner_ids' => [$asha->id]])->assertCreated();
+
+        $own = $this->actingAs($asha)->postJson("/api/v1/courses/{$this->sql->id}/requests", ['mentor_id' => $rafi->id]);
+
+        $own->assertConflict()->assertExactJson([
+            'message' => 'You already have an open request for this course.',
+            'code' => 'MATCHING_REQUEST_ALREADY_OPEN',
+        ]);
+        $this->assertSame(1, Request::query()->where('learner_id', $asha->id)->count());
+    }
+
+    public function test_the_checks_run_in_order_employees_draft_chosen_employee_then_learners(): void
+    {
+        $sam = $this->employee('Sam Lindqvist');
+        $draft = Course::factory()->create(['title' => 'Draft Course']);
+        $this->refuseAtRegistration($sam, $this->sql);
+        $this->refuseAtRegistration($sam, $draft);
+        $this->makeIneligible($this->learners[0], 'open request');
+        $learnerIds = array_map(fn (User $learner): int => $learner->id, $this->learners);
+
+        $this->assignRefused(['mentor_id' => $sam->id, 'learner_ids' => [...$learnerIds, 999999]])
+            ->assertUnprocessable()
+            ->assertOnlyJsonValidationErrors(['learner_ids']);
+        $this->assignRefused(['course_id' => $draft->id, 'mentor_id' => $sam->id])
+            ->assertConflict()
+            ->assertJsonPath('code', 'MATCHING_COURSE_NOT_PUBLISHED');
+        $this->assignRefused(['mentor_id' => $sam->id])
+            ->assertConflict()
+            ->assertJsonPath('code', 'MATCHING_MENTOR_NOT_ELIGIBLE');
+        $this->assignRefused()
+            ->assertConflict()
+            ->assertJsonPath('code', 'MATCHING_LEARNER_NOT_ASSIGNABLE');
     }
 
     public function test_an_empty_learner_list_is_a_422_on_learner_ids(): void

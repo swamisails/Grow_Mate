@@ -5,6 +5,7 @@ import type {
   MentorCheck,
   RegistrationDecision,
   RegistrationDecisionRow,
+  RefusedEmployee,
   SubmitMentorCheckRequest,
 } from './types/mentors'
 
@@ -41,5 +42,11 @@ export async function listRegistrationDecisions(): Promise<RegistrationDecisionR
 /** Admin: approves or refuses one Mentor-check Course, once; a 409 means it is already decided. */
 export async function decideRegistration(id: number, decision: 'approve' | 'refuse'): Promise<RegistrationDecision> {
   const { data } = await api.post<Resource<RegistrationDecision>>(`/api/v1/admin/registration-decisions/${id}/${decision}`)
+  return data
+}
+
+/** Admin: the Employees refused this Course at registration, who can't be a group's chosen Employee. */
+export async function listRefusedEmployees(courseId: number): Promise<RefusedEmployee[]> {
+  const { data } = await api.get<Resource<RefusedEmployee[]>>(`/api/v1/admin/courses/${courseId}/refused-employees`)
   return data
 }

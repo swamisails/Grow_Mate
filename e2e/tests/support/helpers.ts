@@ -127,3 +127,22 @@ export async function decide(adminPage: Page, row: Locator, action: 'Approve' | 
   await expect(row.locator('.tag')).toHaveText(tag)
   await expect(row.getByRole('button')).toHaveCount(0)
 }
+
+/**
+ * Asserts an API body carries none of what the API keeps to itself (AD-8): a `route` field or any
+ * Mentor route value (`gold_pass`, `registration_approval`, `group_assignment_accepted`), and any
+ * `group_assignment_id`.
+ */
+export function hidesSecrets(body: unknown) {
+  const json = JSON.stringify(body)
+  expect(json).not.toContain('"route"')
+  expect(json).not.toContain('group_assignment_id')
+  expect(json).not.toContain('gold_pass')
+  expect(json).not.toContain('registration_approval')
+  expect(json).not.toContain('group_assignment_accepted')
+}
+
+/** Waits for the page's own GET of a path. */
+export function waitForGet(page: Page, path: RegExp) {
+  return page.waitForResponse((response) => response.request().method() === 'GET' && path.test(new URL(response.url()).pathname))
+}

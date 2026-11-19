@@ -757,8 +757,10 @@ a.button {
   gap: var(--space-6);
 }
 
+/* Empty until an assignment is created. It stays in the accessibility tree so the card is
+   announced when it appears; the negative margin cancels the flex gap it would otherwise add. */
 .group-assignment > [role='status']:empty {
-  display: none;
+  margin-bottom: calc(-1 * var(--space-6));
 }
 
 .group-assignment__fields {
@@ -800,6 +802,25 @@ a.button {
 
 .group-assignment__learners .field-error {
   margin-top: var(--space-2);
+}
+
+/* A refused Assign: one summary line at the top of the card, then each marked Learner's message */
+.group-assignment__summary {
+  margin-bottom: var(--space-4);
+}
+
+/* Kept in the accessibility tree while empty, so the live region announces when it fills */
+.group-assignment__summary:empty {
+  margin: 0;
+}
+
+.group-assignment__learners .group-assignment__mark {
+  margin: var(--space-1) 0 0 calc(18px + var(--space-3));
+}
+
+.checkbox-row input[aria-invalid='true'] {
+  outline: 2px solid var(--color-error);
+  outline-offset: 1px;
 }
 
 .group-assignment__actions {

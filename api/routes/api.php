@@ -27,6 +27,7 @@ use App\Modules\Mentors\Http\Controllers\ApproveRegistrationController;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
 use App\Modules\Mentors\Http\Controllers\EmployeeRegistrationDecisionsController;
 use App\Modules\Mentors\Http\Controllers\MentorCheckController;
+use App\Modules\Mentors\Http\Controllers\RefusedEmployeesController;
 use App\Modules\Mentors\Http\Controllers\RefuseRegistrationController;
 use App\Modules\Mentors\Http\Controllers\RegistrationDecisionsController;
 use App\Modules\Mentors\Http\Controllers\SubmitMentorCheckController;
@@ -96,6 +97,8 @@ Route::prefix('v1')->group(function () {
             // Group assignment (UJ-4): the Employees to pick from, then one write-only Assign. Admin
             // never reads an assignment back, and nothing here returns Request or Match state (AD-8).
             Route::get('employees', EmployeesController::class);
+            // The Employees refused a Course at registration, by id only: never offered as the chosen Employee.
+            Route::get('courses/{course}/refused-employees', RefusedEmployeesController::class)->where('course', '[0-9]{1,18}');
             Route::post('group-assignments', AssignGroupController::class);
         });
     });

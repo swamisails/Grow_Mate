@@ -4,7 +4,6 @@ namespace Tests\Feature\Matching;
 
 use App\Modules\Accounts\Models\User;
 use App\Modules\Courses\Models\Course;
-use App\Modules\Matching\Models\GroupAssignment;
 use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
 use App\Modules\Mentors\Models\MentorRoute;
@@ -98,21 +97,22 @@ class AcceptRequestTest extends MatchingTestCase
         $this->assertNull($request->fresh()->accepted_at);
     }
 
-    public function test_a_grouped_or_already_accepted_request_leaves_no_new_match(): void
+    public function test_an_already_accepted_or_cancelled_request_leaves_no_new_match(): void
     {
         config(['app.debug' => false]);
         $course = $this->publishedCourse();
         $priya = $this->employee('Priya Nair');
         $leo = $this->employee('Leo Martins');
         $rafi = $this->employee('Rafi Haddad');
-        $this->grant($rafi, $course, Route::GroupAssignmentAccepted);
+        $this->grant($rafi, $course);
 
-        $group = GroupAssignment::factory()->create();
-        $grouped = Request::factory()->create([
+        $cancelled = Request::factory()->create([
             'learner_id' => $priya->id,
             'mentor_id' => $rafi->id,
             'course_id' => $course->id,
-            'group_assignment_id' => $group->id,
+            'sent_at' => now()->subHours(144),
+            'accepted_at' => null,
+            'group_assignment_id' => null,
         ]);
         $accepted = Request::factory()->create([
             'learner_id' => $leo->id,
@@ -123,14 +123,12 @@ class AcceptRequestTest extends MatchingTestCase
         MentorMatch::factory()->create(['request_id' => $accepted->id, 'started_at' => now()]);
 
         $this->actingAs($rafi);
-        $this->postJson("/api/v1/requests/{$grouped->id}/accept")->assertNotFound()->assertExactJson(['message' => 'Not found.']);
-        $this->postJson("/api/v1/requests/{$accepted->id}/accept")->assertNotFound();
+        $this->postJson("/api/v1/requests/{$cancelled->id}/accept")->assertNotFound()->assertExactJson(['message' => 'Not found.']);
+        $this->postJson("/api/v1/requests/{$accepted->id}/accept")->assertNotFound()->assertExactJson(['message' => 'Not found.']);
         $this->assertSame(1, MentorMatch::query()->count());
-        $this->assertNull($grouped->fresh()->accepted_at);
-        // The group stays on the list as its own row until a group Accept exists.
-        $list = $this->getJson('/api/v1/requests')->assertOk();
+        $this->assertNull($cancelled->fresh()->accepted_at);
+        $list = $this->getJson('/api/v1/requests')->assertOk()->assertExactJson(['data' => []]);
         $this->assertHidesRouteAndGroup($list);
-        $this->assertSame([['id' => $grouped->id, 'learner_names' => ['Priya Nair'], 'course_title' => 'Python Basics']], $list->json('data'));
     }
 
     public function test_a_guest_is_unauthorized_and_an_admin_is_forbidden(): void
@@ -190,7 +188,6 @@ class AcceptRequestTest extends MatchingTestCase
         $this->travelTo('2026-11-15 09:00:00');
         $course = $this->publishedCourse();
         $priya = $this->employee('Priya Nair');
-        $leo = $this->employee('Leo Martins');
         $nora = $this->employee('Nora Berg');
         $rafi = $this->employee('Rafi Haddad');
         $stranger = $this->employee('Sam Lindqvist');
@@ -204,14 +201,6 @@ class AcceptRequestTest extends MatchingTestCase
             'accepted_at' => null,
             'group_assignment_id' => null,
         ]);
-        $group = GroupAssignment::factory()->create();
-        $grouped = Request::factory()->create([
-            'learner_id' => $leo->id,
-            'mentor_id' => $rafi->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'group_assignment_id' => $group->id,
-        ]);
         $already = Request::factory()->create([
             'learner_id' => $nora->id,
             'mentor_id' => $rafi->id,
@@ -224,16 +213,14 @@ class AcceptRequestTest extends MatchingTestCase
 
         $this->actingAs($rafi);
         $this->postJson("/api/v1/requests/{$cancelled->id}/accept")->assertNotFound()->assertExactJson(['message' => 'Not found.']);
-        $this->postJson("/api/v1/requests/{$grouped->id}/accept")->assertNotFound();
         $this->postJson("/api/v1/requests/{$already->id}/accept")->assertNotFound();
         $this->actingAs($stranger)->postJson("/api/v1/requests/{$open->id}/accept")->assertNotFound();
 
         $this->assertSame(1, MentorMatch::query()->count());
         $this->assertNull($cancelled->fresh()->accepted_at);
-        $this->assertNull($grouped->fresh()->accepted_at);
         $this->assertNull($open->fresh()->accepted_at);
         $this->assertDatabaseCount('notifications', 0);
-        foreach ([$priya, $rafi, $leo, $nora, $stranger] as $person) {
+        foreach ([$priya, $rafi, $nora, $stranger] as $person) {
             $inbox = $this->actingAs($person)->getJson('/api/v1/notices')->assertOk();
             $this->assertNotContains('request_accepted', array_column($inbox->json('data'), 'type'));
             $this->assertNotContains('request_sent', array_column($inbox->json('data'), 'type'));
