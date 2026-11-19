@@ -16,7 +16,7 @@ class RequestTimeTest extends MatchingTestCase
     public function test_before_day_3_there_is_no_reminder_and_accept_works(): void
     {
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $this->travelTo($sent->copy()->addHours(71)->addMinutes(59));
 
@@ -40,7 +40,7 @@ class RequestTimeTest extends MatchingTestCase
     public function test_on_day_3_both_parties_are_reminded_and_the_request_stays(): void
     {
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $this->travelTo($sent->copy()->addHours(72));
 
@@ -86,7 +86,7 @@ class RequestTimeTest extends MatchingTestCase
     public function test_just_before_day_6_the_request_is_still_reminded_and_accept_works(): void
     {
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $this->travelTo($sent->copy()->addHours(143)->addMinutes(59));
 
@@ -111,7 +111,7 @@ class RequestTimeTest extends MatchingTestCase
     {
         config(['app.debug' => false]);
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $this->travelTo($sent->copy()->addHours(144));
 
@@ -158,7 +158,7 @@ class RequestTimeTest extends MatchingTestCase
     public function test_a_request_accepted_before_the_reminder_never_gets_a_time_notice(): void
     {
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $acceptedAt = $sent->copy()->addHour();
         $this->travelTo($acceptedAt);
@@ -187,7 +187,7 @@ class RequestTimeTest extends MatchingTestCase
     public function test_a_request_accepted_after_the_reminder_keeps_the_day_3_notice(): void
     {
         $sent = $this->at('2026-11-15 00:00:00');
-        [$course, $priya, $rafi, $request] = $this->openRequest($sent);
+        [$course, $priya, $rafi, $request] = $this->openRequestSentAt($sent);
 
         $acceptedAt = $sent->copy()->addHours(80);
         $this->travelTo($acceptedAt);
@@ -269,20 +269,13 @@ class RequestTimeTest extends MatchingTestCase
     /**
      * @return array{0: Course, 1: User, 2: User, 3: Request}
      */
-    private function openRequest(Carbon $sent): array
+    private function openRequestSentAt(Carbon $sent): array
     {
         $course = $this->publishedCourse();
         $priya = $this->employee('Priya Nair');
         $rafi = $this->employee('Rafi Haddad');
         $this->grant($rafi, $course);
-        $request = Request::factory()->create([
-            'learner_id' => $priya->id,
-            'mentor_id' => $rafi->id,
-            'course_id' => $course->id,
-            'sent_at' => $sent,
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
+        $request = $this->openRequest($priya, $rafi, $course, $sent);
 
         return [$course, $priya, $rafi, $request];
     }

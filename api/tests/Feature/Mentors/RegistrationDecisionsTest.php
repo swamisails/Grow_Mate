@@ -40,7 +40,7 @@ class RegistrationDecisionsTest extends MentorsTestCase
 
     private function course(string $title): Course
     {
-        return Course::factory()->create(['title' => $title, 'published_at' => now()]);
+        return Course::factory()->published()->create(['title' => $title]);
     }
 
     /**

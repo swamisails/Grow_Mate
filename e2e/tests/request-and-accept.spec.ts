@@ -1,19 +1,11 @@
 import { expect, test, type Page } from '@playwright/test'
+import { hidesSecrets } from './support/helpers'
 
 // Seeded by MentorsSeeder: Rafi and Imani mentor Python Basics. Priya mentors nothing.
 const demoPassword = 'demo-password'
 const priya = { name: 'Priya Nair', email: 'priya.nair@example.com' }
 const rafi = { name: 'Rafi Haddad', email: 'rafi.haddad@example.com' }
 const imani = { name: 'Imani Okafor', email: 'imani.okafor@example.com' }
-
-function hidesSecrets(body: unknown) {
-  const json = JSON.stringify(body)
-  expect(json).not.toContain('"route"')
-  expect(json).not.toContain('group_assignment_id')
-  expect(json).not.toContain('gold_pass')
-  expect(json).not.toContain('registration_approval')
-  expect(json).not.toContain('group_assignment_accepted')
-}
 
 async function signIn(page: Page, email: string) {
   await page.goto('/sign-in')

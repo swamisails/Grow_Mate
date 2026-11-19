@@ -27,7 +27,7 @@ class MentorRouteFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'course_id' => Course::factory()->state(['published_at' => now()]),
+            'course_id' => Course::factory()->published(),
             'route' => Route::RegistrationApproval,
         ];
     }

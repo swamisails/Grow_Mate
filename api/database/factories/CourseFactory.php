@@ -30,6 +30,11 @@ class CourseFactory extends Factory
         ];
     }
 
+    public function published(): static
+    {
+        return $this->state(fn (): array => ['published_at' => now()]);
+    }
+
     public function configure(): static
     {
         return $this->afterCreating(function (Course $course) {

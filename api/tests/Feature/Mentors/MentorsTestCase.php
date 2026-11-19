@@ -12,7 +12,7 @@ abstract class MentorsTestCase extends ApiTestCase
 {
     protected function publishedCourse(): Course
     {
-        return Course::factory()->create(['published_at' => now()]);
+        return Course::factory()->published()->create();
     }
 
     protected function employee(string $name): User

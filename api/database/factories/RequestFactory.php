@@ -27,7 +27,7 @@ class RequestFactory extends Factory
         return [
             'learner_id' => User::factory(),
             'mentor_id' => User::factory(),
-            'course_id' => Course::factory()->state(['published_at' => now()]),
+            'course_id' => Course::factory()->published(),
             'group_assignment_id' => null,
             'sent_at' => now(),
             'accepted_at' => null,

@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { clearClock, setClock } from '../helpers/clock'
+import { hidesSecrets } from './support/helpers'
 
 // Seeded by MentorsSeeder: Rafi and Imani mentor Python Basics. Priya mentors nothing.
 const demoPassword = 'demo-password'
@@ -12,12 +13,6 @@ const learnerDay6 = 'Your request to Rafi Haddad for Python Basics was cancelled
 const mentorDay6 = "Priya Nair's request for Python Basics was cancelled."
 
 let pending: { sentAt: string; requestId: number } | null = null
-
-function hidesSecrets(body: unknown) {
-  const json = JSON.stringify(body)
-  expect(json).not.toContain('"route"')
-  expect(json).not.toContain('group_assignment_id')
-}
 
 function plus(iso: string, hours: number, minutes = 0): string {
   const date = new Date(iso)

@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 import { clearClock, setClock } from '../helpers/clock'
-import { adminSignIn, employeePassword, newEmployee, signIn, signOut, signUp } from './support/helpers'
+import { adminSignIn, employeePassword, newEmployee, signIn, signOut, signUp, hidesSecrets } from './support/helpers'
 
 // Seeded by MentorsSeeder. The clock spec accepts Priya's request to Rafi before this file runs,
 // so that Match is already live. Imani has no Match yet, so a new Learner's request stays pending.
@@ -8,15 +8,6 @@ const demoPassword = 'demo-password'
 const priya = { name: 'Priya Nair', email: 'priya.nair@example.com' }
 const rafi = { name: 'Rafi Haddad', email: 'rafi.haddad@example.com' }
 const imani = { name: 'Imani Okafor', email: 'imani.okafor@example.com' }
-
-function hidesSecrets(body: unknown) {
-  const json = JSON.stringify(body)
-  expect(json).not.toContain('"route"')
-  expect(json).not.toContain('group_assignment_id')
-  expect(json).not.toContain('gold_pass')
-  expect(json).not.toContain('registration_approval')
-  expect(json).not.toContain('group_assignment_accepted')
-}
 
 function plus(iso: string, hours: number): string {
   const date = new Date(iso)

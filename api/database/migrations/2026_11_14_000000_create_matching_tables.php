@@ -6,8 +6,8 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Matching's facts (AD-4): a Request's sent and accepted times, and a Match's start.
- * Open, accepted and Progress status are derived, never stored. `group_assignments` is unused
- * until a later entry; its id is stored on a Request and never returned (AD-8).
+ * Open, accepted and Progress status are derived, never stored. `group_assignments` holds the
+ * Admin's group assignments (AssignGroup); its id is stored on a Request and never returned (AD-8).
  */
 return new class extends Migration
 {

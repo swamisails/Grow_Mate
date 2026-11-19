@@ -173,18 +173,6 @@ class HomeAndMatchTest extends MatchingTestCase
         $this->getJson('/api/v1/matches/999999')->assertForbidden();
     }
 
-    private function openRequest(User $learner, User $mentor, Course $course): Request
-    {
-        return Request::factory()->create([
-            'learner_id' => $learner->id,
-            'mentor_id' => $mentor->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
-    }
-
     /**
      * @return array{0: User, 1: User, 2: Course, 3: MentorMatch}
      */

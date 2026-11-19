@@ -5,7 +5,6 @@ namespace Tests\Feature\Matching;
 use App\Modules\Accounts\Models\User;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Models\MatchEndReason;
-use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -83,27 +82,5 @@ class CompleteCourseTest extends MatchingTestCase
         $this->app['auth']->forgetGuards();
         $this->postJson("/api/v1/matches/{$match->id}/course-completed")->assertUnauthorized();
         $this->assertNull($match->refresh()->ended_at);
-    }
-
-    /**
-     * @return array{0: User, 1: User, 2: Course, 3: MentorMatch}
-     */
-    private function liveMatch(): array
-    {
-        $course = $this->publishedCourse();
-        $priya = $this->employee('Priya Nair');
-        $rafi = $this->employee('Rafi Haddad');
-        $this->grant($rafi, $course);
-        $request = Request::factory()->create([
-            'learner_id' => $priya->id,
-            'mentor_id' => $rafi->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
-        $this->actingAs($rafi)->postJson("/api/v1/requests/{$request->id}/accept")->assertCreated();
-
-        return [$priya, $rafi, $course, MentorMatch::query()->where('request_id', $request->id)->firstOrFail()];
     }
 }

@@ -12,7 +12,7 @@ class PublishedCoursesTest extends CoursesTestCase
     {
         config(['app.debug' => false]);
         $draft = Course::factory()->create();
-        $published = Course::factory()->create(['published_at' => now()]);
+        $published = Course::factory()->published()->create();
         $this->signedInEmployee();
         $expected = ['id' => $published->id, 'title' => $published->title, 'description' => $published->description];
 

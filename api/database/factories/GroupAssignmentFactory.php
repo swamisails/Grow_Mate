@@ -25,7 +25,7 @@ class GroupAssignmentFactory extends Factory
     public function definition(): array
     {
         return [
-            'course_id' => Course::factory()->state(['published_at' => now()]),
+            'course_id' => Course::factory()->published(),
             'mentor_id' => User::factory(),
             'created_at' => now(),
         ];
