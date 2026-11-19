@@ -114,6 +114,7 @@ class HomeAndMatchTest extends MatchingTestCase
             'person_name' => 'Rafi Haddad',
             'course_title' => 'Python Basics',
             'status' => 'in_progress',
+            'can_complete_course' => false,
         ]]);
         $this->assertHidesRouteAndGroup($learner);
 
@@ -122,6 +123,7 @@ class HomeAndMatchTest extends MatchingTestCase
             'person_name' => 'Priya Nair',
             'course_title' => 'Python Basics',
             'status' => 'in_progress',
+            'can_complete_course' => true,
         ]]);
         $this->assertHidesRouteAndGroup($mentor);
     }

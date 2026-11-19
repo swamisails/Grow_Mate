@@ -19,7 +19,8 @@ function open(match: () => Response) {
   render(<App />)
 }
 
-const screenBody: MatchScreen = { person_name: 'Rafi Haddad', course_title: 'Python Basics', status: 'in_progress' }
+const screenBody: MatchScreen = { person_name: 'Rafi Haddad', course_title: 'Python Basics', status: 'in_progress', can_complete_course: false }
+const mentorBody: MatchScreen = { person_name: 'Priya Nair', course_title: 'Python Basics', status: 'in_progress', can_complete_course: true }
 
 beforeEach(() => {
   // jsdom has no modal dialog support.
@@ -138,6 +139,64 @@ it('shows Not found when the Match is gone by the time of Quit', async () => {
   const dialog = await screen.findByRole('dialog', { name: 'Quit Course' })
   fireEvent.change(within(dialog).getByLabelText('Reason'), { target: { value: 'Too busy' } })
   fireEvent.click(within(dialog).getByRole('button', { name: 'Quit Course' }))
+
+  expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
+})
+
+function openAsMentor(complete: () => Response) {
+  window.history.replaceState(null, '', '/matches/9')
+  const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+    const url = String(input)
+    if (url === '/api/v1/me') return jsonResponse(200, { data: { id: 3, name: 'Rafi Haddad', email: 'rafi@example.com', is_admin: false } })
+    if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
+    if (url === '/api/v1/matches/9') return jsonResponse(200, { data: mentorBody })
+    if (url === '/api/v1/matches/9/course-completed') return complete()
+    if (url === '/api/v1/home') return jsonResponse(200, { data: { learning: [], mentoring: [] } })
+    return jsonResponse(404, { message: 'Not Found' })
+  })
+  vi.stubGlobal('fetch', fetchMock)
+  render(<App />)
+  return fetchMock
+}
+
+it('shows the Mentor Course Completed and Quit Course', async () => {
+  openAsMentor(() => new Response(null, { status: 204 }))
+
+  await screen.findByRole('button', { name: 'Course Completed' })
+  expect(within(screen.getByRole('main')).getAllByRole('button').map((button) => button.textContent)).toEqual(['Course Completed', 'Quit Course'])
+})
+
+it('confirms Course Completed, calls the API once and returns to Home', async () => {
+  const fetchMock = openAsMentor(() => new Response(null, { status: 204 }))
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Course Completed' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Course Completed' })
+  expect(within(dialog).getByText('Mark Priya Nair ready for Bronze? This ends the match.')).toBeTruthy()
+  const confirm = within(dialog).getByRole('button', { name: 'Course Completed' })
+  fireEvent.click(confirm)
+  fireEvent.click(confirm)
+
+  expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
+  expect(fetchMock.mock.calls.filter(([url]) => String(url) === '/api/v1/matches/9/course-completed')).toHaveLength(1)
+})
+
+it('does not call the API when Course Completed is cancelled', async () => {
+  const fetchMock = openAsMentor(() => new Response(null, { status: 204 }))
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Course Completed' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Course Completed' })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/course-completed'))).toBe(false)
+})
+
+it('shows Not found when the Match is gone by the time of Course Completed', async () => {
+  openAsMentor(() => jsonResponse(404, { message: 'Not found.' }))
+
+  fireEvent.click(await screen.findByRole('button', { name: 'Course Completed' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Course Completed' })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Course Completed' }))
 
   expect(await screen.findByRole('heading', { level: 1, name: 'Page not found.' })).toBeTruthy()
 })

@@ -172,3 +172,15 @@ it('shows a Quit note with its reason quoted below, as text', async () => {
   ])
   expect(card.querySelector('b')).toBeNull()
 })
+
+it('shows the Bronze notice with no extra line', async () => {
+  open(() =>
+    jsonResponse(200, {
+      data: [{ id: '0193b0c2-0004-7000-8000-000000000004', type: 'bronze_available', occurred_at: '2026-11-16T10:00:00Z', course_title: 'Python Basics' }],
+    }),
+  )
+
+  const card = await screen.findByRole('region', { name: 'Notices' })
+  const row = within(card).getByRole('listitem')
+  expect([...row.querySelectorAll('p')].map((line) => line.textContent)).toEqual(['Bronze is open for Python Basics.', '16 Nov 2026'])
+})

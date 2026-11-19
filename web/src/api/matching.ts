@@ -47,6 +47,11 @@ export async function quitMatch(id: number, reason: string): Promise<void> {
   await api.post(`/api/v1/matches/${id}/quit`, { reason })
 }
 
+/** The Mentor marks the Learner ready for Bronze, ending the Match. A 404 means it is gone or the viewer is not its Mentor. */
+export async function completeCourse(id: number): Promise<void> {
+  await api.post(`/api/v1/matches/${id}/course-completed`)
+}
+
 /** Admin: assigns Learners to a chosen Employee on a Course. A 409 means the Course isn't published. */
 export async function assignGroup(assignment: AssignGroupRequest): Promise<GroupAssignment> {
   const { data } = await api.post<Resource<GroupAssignment>>('/api/v1/admin/group-assignments', assignment)

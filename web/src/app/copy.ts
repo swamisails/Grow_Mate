@@ -83,6 +83,8 @@ export const copy = {
     matchQuit: (person: string, course: string) => `${person} quit ${course}.`,
     /** The quoted reason under a Quit note. */
     quitReason: (reason: string) => `“${reason}”`,
+    /** The Bronze notice, to the Learner when the Mentor clicks Course Completed. */
+    bronzeAvailable: (course: string) => `Bronze is open for ${course}.`,
   },
   /** People's names in a sentence: "A", "A and B", "A, B and C". No count. */
   names: (list: readonly string[]) =>
@@ -120,6 +122,11 @@ export const copy = {
     /** The page name while the Match loads, before its Course title is known. */
     pageName: 'Match',
     quitCourse: 'Quit Course',
+    courseCompleted: 'Course Completed',
+    courseCompletedConfirm: {
+      title: 'Course Completed',
+      message: (learner: string) => `Mark ${learner} ready for Bronze? This ends the match.`,
+    },
     quitDialog: {
       title: 'Quit Course',
       reason: 'Reason',

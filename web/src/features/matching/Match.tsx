@@ -1,7 +1,8 @@
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { ApiError } from '../../api/client'
-import { getMatch } from '../../api/matching'
+import { completeCourse, getMatch } from '../../api/matching'
 import type { MatchScreen } from '../../api/types/matching'
+import { Confirmation } from '../../app/Confirmation'
 import { copy } from '../../app/copy'
 import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
@@ -23,6 +24,9 @@ export function Match() {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const nameId = useId()
   const [quitting, setQuitting] = useState(false)
+  const [completing, setCompleting] = useState(false)
+  const [completeError, setCompleteError] = useState(false)
+  const sending = useRef(false)
 
   useEffect(() => {
     if (!valid) {
@@ -44,6 +48,25 @@ export function Match() {
     }
   }, [id, valid])
 
+  async function onComplete() {
+    if (sending.current) {
+      return
+    }
+    sending.current = true
+    try {
+      await completeCourse(id)
+      navigate('/home')
+    } catch (caught) {
+      sending.current = false
+      setCompleting(false)
+      if (caught instanceof ApiError && caught.status === 404) {
+        setState({ status: 'notFound' })
+      } else {
+        setCompleteError(true)
+      }
+    }
+  }
+
   if (!valid || state.status === 'notFound') {
     return <NotFound />
   }
@@ -59,6 +82,11 @@ export function Match() {
           {copy.errors.generic}
         </p>
       )}
+      {completeError && (
+        <p className="field-error" role="alert">
+          {copy.errors.generic}
+        </p>
+      )}
       {match && (
         <section className="card" aria-labelledby={nameId}>
           <h2 className="card__header" id={nameId}>
@@ -67,11 +95,25 @@ export function Match() {
           <div className="card__body">
             <p>{match.course_title}</p>
             {match.status && <ProgressBar status={match.status} />}
+            {match.can_complete_course && (
+              <button type="button" className="button button--primary" onClick={() => setCompleting(true)}>
+                {copy.match.courseCompleted}
+              </button>
+            )}
             <button type="button" className="button button--secondary" onClick={() => setQuitting(true)}>
               {copy.match.quitCourse}
             </button>
           </div>
         </section>
+      )}
+      {completing && match && (
+        <Confirmation
+          title={copy.match.courseCompletedConfirm.title}
+          message={copy.match.courseCompletedConfirm.message(match.person_name)}
+          confirmLabel={copy.match.courseCompleted}
+          onCancel={() => setCompleting(false)}
+          onConfirm={onComplete}
+        />
       )}
       {quitting && (
         <QuitDialog

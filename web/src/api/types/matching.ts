@@ -61,4 +61,6 @@ export type MatchScreen = {
   person_name: string
   course_title: string
   status: 'not_yet_started' | 'in_progress' | 'quit' | null
+  /** True only for the Mentor of the Match: Course Completed is theirs alone. */
+  can_complete_course: boolean
 }

@@ -181,6 +181,7 @@ class GroupAssignmentTest extends MatchingTestCase
                 'person_name' => 'Imani Okafor',
                 'course_title' => 'SQL Fundamentals',
                 'status' => 'in_progress',
+                'can_complete_course' => false,
             ]]);
 
             foreach ([$notices, $home, $read] as $response) {

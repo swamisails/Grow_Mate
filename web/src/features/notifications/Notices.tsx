@@ -26,6 +26,8 @@ function sentence(notice: Notice): string {
       return copy.notices.requestAccepted(notice.person_name, notice.course_title)
     case 'match_quit':
       return copy.notices.matchQuit(notice.person_name, notice.course_title)
+    case 'bronze_available':
+      return copy.notices.bronzeAvailable(notice.course_title)
   }
 }
 
