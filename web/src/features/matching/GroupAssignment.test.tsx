@@ -88,6 +88,7 @@ describe('Group assignment', () => {
       ['Courses', '/admin/courses'],
       ['Registration decisions', '/admin/registration-decisions'],
       ['Group assignment', '/admin/group-assignments'],
+      ['Upskilling', '/upskilling'],
     ])
     expect(within(nav).getByRole('link', { name: 'Group assignment' }).getAttribute('aria-current')).toBe('page')
 

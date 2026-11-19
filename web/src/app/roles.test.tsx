@@ -60,7 +60,7 @@ afterEach(() => {
 })
 
 describe('Employee routing', () => {
-  it('lands on Home under a top bar of GrowMate, Home, Courses, Requests, Notices, the theme toggle, the name and Sign out only', async () => {
+  it('lands on Home under a top bar of GrowMate, Home, Courses, Requests, Notices, Upskilling, the theme toggle, the name and Sign out only', async () => {
     open('/', employee)
 
     expect(await screen.findByRole('heading', { level: 1, name: 'Home' })).toBeTruthy()
@@ -75,6 +75,7 @@ describe('Employee routing', () => {
       ['Courses', '/courses'],
       ['Requests', '/requests'],
       ['Notices', '/notices'],
+      ['Upskilling', '/upskilling'],
     ])
     // Every top-bar link carries its icon, and none carries a count or badge.
     for (const link of within(screen.getByRole('navigation')).getAllByRole('link')) {
@@ -253,5 +254,28 @@ describe('Signed out', () => {
     const toSignIn = screen.getByRole('link', { name: 'Sign in' })
     expect(toSignIn.getAttribute('href')).toBe('/sign-in?return=%2Fhome')
     expect(toSignIn.parentElement?.textContent).toBe('Have an account? Sign in')
+  })
+})
+
+describe('Upskilling', () => {
+  it('opens for an Employee and for Admin, each under their own top bar', async () => {
+    open('/upskilling', employee)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Upskilling' })).toBeTruthy()
+    expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Requests' })).toBeTruthy()
+    cleanup()
+
+    open('/upskilling', admin)
+    expect(await screen.findByRole('heading', { level: 1, name: 'Upskilling' })).toBeTruthy()
+    expect(within(screen.getByRole('navigation')).getByRole('link', { name: 'Registration decisions' })).toBeTruthy()
+    expect(within(screen.getByRole('navigation')).queryByRole('link', { name: 'Requests' })).toBeNull()
+  })
+
+  it('sends a signed-out visitor to Sign in, and a pending Mentor check to the step', async () => {
+    open('/upskilling', null)
+    await waitFor(() => expect(location()).toBe('/sign-in?return=%2Fupskilling'))
+    cleanup()
+
+    open('/upskilling', employee, pending)
+    await waitFor(() => expect(location()).toBe('/mentor-check'))
   })
 })

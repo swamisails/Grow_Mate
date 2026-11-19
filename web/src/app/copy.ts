@@ -14,6 +14,7 @@ export const copy = {
     groupAssignment: 'Group assignment',
     requests: 'Requests',
     notices: 'Notices',
+    upskilling: 'Upskilling',
     signOut: 'Sign out',
     primary: 'Main',
   },
@@ -138,6 +139,13 @@ export const copy = {
     accept: 'Accept',
     /** `name` is one name, or a group's names joined with `copy.names`. */
     sentence: (name: string, course: string) => `${name} requested you to guide them with ${course}`,
+  },
+  upskilling: {
+    title: 'Upskilling',
+    empty: 'No one is in progress.',
+    columnName: 'Name',
+    columnCourse: 'Course',
+    columnStatus: 'Status',
   },
   progress: {
     notYetStarted: 'Not yet started',
