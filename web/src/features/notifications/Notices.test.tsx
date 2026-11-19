@@ -146,3 +146,29 @@ it('shows the generic error when the list cannot load', async () => {
   expect((await screen.findByRole('alert')).textContent).toBe('Something went wrong. Try again.')
   expect(screen.queryByRole('region', { name: 'Notices' })).toBeNull()
 })
+
+it('shows a Quit note with its reason quoted below, as text', async () => {
+  open(() =>
+    jsonResponse(200, {
+      data: [
+        {
+          id: '0193b0c2-0003-7000-8000-000000000003',
+          type: 'match_quit',
+          occurred_at: '2026-11-16T10:00:00Z',
+          person_name: 'Rafi Haddad',
+          course_title: 'Python Basics',
+          reason: 'Moving <b>teams</b>, sorry',
+        },
+      ],
+    }),
+  )
+
+  const card = await screen.findByRole('region', { name: 'Notices' })
+  const row = within(card).getByRole('listitem')
+  expect([...row.querySelectorAll('p')].map((line) => line.textContent)).toEqual([
+    'Rafi Haddad quit Python Basics.',
+    '“Moving <b>teams</b>, sorry”',
+    '16 Nov 2026',
+  ])
+  expect(card.querySelector('b')).toBeNull()
+})

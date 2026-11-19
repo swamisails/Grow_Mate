@@ -22,13 +22,13 @@ class PartyMatch
     ) {}
 
     /**
-     * @return array{person_name: string, course_title: string, status: 'not_yet_started'|'in_progress'|null}
+     * @return array{person_name: string, course_title: string, status: 'not_yet_started'|'in_progress'|'quit'|null}
      *
      * @throws NotFoundHttpException
      */
     public function handle(int $matchId, int $viewerId): array
     {
-        $match = MentorMatch::query()->find($matchId);
+        $match = MentorMatch::query()->whereNull('ended_at')->find($matchId);
         $request = $match === null ? null : Request::query()->find($match->request_id);
         if ($request === null) {
             throw new NotFoundHttpException('Not found.');

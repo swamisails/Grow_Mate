@@ -7,19 +7,22 @@ import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
 import { useRouter } from '../../app/router'
 import { ProgressBar } from '../progress/ProgressBar'
+import { QuitDialog } from './QuitDialog'
 
 type LoadState = { status: 'loading' } | { status: 'notFound' } | { status: 'error' } | { status: 'ready'; match: MatchScreen }
 
 /**
  * The Match, for either party: the Course as the page title, the other person's name, and that
- * Learner's bar. No actions. A missing Match and anyone else look like Not found.
+ * Learner's bar, and Quit Course, which opens the Quit dialog. A missing or ended Match and anyone
+ * else look like Not found.
  */
 export function Match() {
-  const { params } = useRouter()
+  const { params, navigate } = useRouter()
   const id = /^\d+$/.test(params.id ?? '') ? Number(params.id) : NaN
   const valid = Number.isSafeInteger(id)
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const nameId = useId()
+  const [quitting, setQuitting] = useState(false)
 
   useEffect(() => {
     if (!valid) {
@@ -64,8 +67,22 @@ export function Match() {
           <div className="card__body">
             <p>{match.course_title}</p>
             {match.status && <ProgressBar status={match.status} />}
+            <button type="button" className="button button--secondary" onClick={() => setQuitting(true)}>
+              {copy.match.quitCourse}
+            </button>
           </div>
         </section>
+      )}
+      {quitting && (
+        <QuitDialog
+          matchId={id}
+          onCancel={() => setQuitting(false)}
+          onQuit={() => navigate('/home')}
+          onGone={() => {
+            setQuitting(false)
+            setState({ status: 'notFound' })
+          }}
+        />
       )}
     </>
   )

@@ -306,6 +306,12 @@ a {
   background: var(--color-status-in-progress);
 }
 
+/* A quit Learner's bar is red and full, with the word Quit beside it (C9). */
+.progress__fill--quit {
+  width: 100%;
+  background: var(--color-status-quit);
+}
+
 /* Form */
 .form {
   display: flex;

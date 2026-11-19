@@ -29,7 +29,22 @@ class MentorMatchFactory extends Factory
             'started_at' => now(),
             'ended_at' => null,
             'end_reason' => null,
+            'quit_by_id' => null,
+            'quit_reason' => null,
         ];
+    }
+
+    /**
+     * A Match ended because a party quit.
+     */
+    public function quit(?int $quitById = null, string $reason = 'Moving teams, sorry'): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'ended_at' => now(),
+            'end_reason' => MatchEndReason::Quit,
+            'quit_by_id' => $quitById,
+            'quit_reason' => $reason,
+        ]);
     }
 
     /**

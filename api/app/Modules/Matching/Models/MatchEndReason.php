@@ -7,7 +7,7 @@ namespace App\Modules\Matching\Models;
  */
 enum MatchEndReason: string
 {
-    /** The Learner quit the Match. An ended Match with this reason does not block a new Request. */
+    /** Either party quit the Match. An ended Match with this reason does not block a new Request. */
     case Quit = 'quit';
 
     /** Course Completed was clicked. The Learner may not request this Course again. */
