@@ -76,6 +76,7 @@ describe('Registration decisions', () => {
       ['Courses', '/admin/courses'],
       ['Registration decisions', '/admin/registration-decisions'],
       ['Group assignment', '/admin/group-assignments'],
+      ['Upskilling', '/upskilling'],
     ])
   })
 

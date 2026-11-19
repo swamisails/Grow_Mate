@@ -2,15 +2,15 @@
 
 import { createContext, useContext, type ComponentType } from 'react'
 
-/** Who may open a route: `guest` (signed out), `admin` or `employee` (signed in, with that role). */
-export type Access = 'guest' | 'admin' | 'employee'
+/** Who may open a route: `guest` (signed out), `admin` or `employee` (signed in, with that role), or `user` (any signed-in user). */
+export type Access = 'guest' | 'admin' | 'employee' | 'user'
 
 export type RouteDef = {
   /** An exact path (`/admin/courses`) or a pattern with `:name` segments (`/admin/courses/:id`). */
   path: string
   access: Access
-  /** `employee-step`: the Employee bar without nav links, for sign-up step 2 (the Mentor check). */
-  layout: 'bare' | 'admin' | 'employee' | 'employee-step'
+  /** `user`: the layout of the signed-in user's role, for a page both roles share. `employee-step`: the Employee bar without nav links, for sign-up step 2 (the Mentor check). */
+  layout: 'bare' | 'admin' | 'employee' | 'employee-step' | 'user'
   Component: ComponentType
 }
 

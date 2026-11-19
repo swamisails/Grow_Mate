@@ -7,7 +7,7 @@ import { routes } from './routes'
 import { homePath, mentorCheckPath, mentorCheckPending, returnPath, signInPath, useSession } from './session'
 import { SessionProvider } from './SessionProvider'
 
-const layouts: Record<RouteDef['layout'], ComponentType<{ children: ReactNode }>> = {
+const layouts: Record<Exclude<RouteDef['layout'], 'user'>, ComponentType<{ children: ReactNode }>> = {
   bare: BareLayout,
   admin: AdminLayout,
   employee: EmployeeLayout,
@@ -69,11 +69,13 @@ function CurrentPage() {
   }
 
   // Pending: every Employee page goes to the step. Done: the step goes Home, never to be shown again.
-  if (route.access === 'employee' && pending !== (path === mentorCheckPath)) {
+  // A shared page (`user`) is an Employee page too while the step is pending, so it goes to the step as well.
+  if ((route.access === 'employee' || route.access === 'user') && pending !== (path === mentorCheckPath)) {
     return <Navigate to={pending ? mentorCheckPath : homePath(user)} />
   }
 
-  const Layout = layouts[route.layout]
+  // A shared page uses the signed-in role's layout (never the step bar: it has no links).
+  const Layout = route.layout === 'user' ? UserLayout : layouts[route.layout]
   return (
     <Layout>
       <RouterContext.Provider value={{ ...router, params }}>

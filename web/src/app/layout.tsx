@@ -61,7 +61,7 @@ function SignedInLayout({ name, nav, children }: { name: ReactNode; nav?: ReactN
   )
 }
 
-/** Admin pages: Courses, Registration decisions and Group assignment. */
+/** Admin pages: Courses, Registration decisions, Group assignment and Upskilling. */
 export function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <SignedInLayout
@@ -80,6 +80,10 @@ export function AdminLayout({ children }: { children: ReactNode }) {
             <Icon name="group_add" className="app-header__icon" />
             {copy.nav.groupAssignment}
           </NavLink>
+          <NavLink to="/upskilling" className="app-header__link">
+            <Icon name="trending_up" className="app-header__icon" />
+            {copy.nav.upskilling}
+          </NavLink>
         </>
       }
     >
@@ -88,7 +92,7 @@ export function AdminLayout({ children }: { children: ReactNode }) {
   )
 }
 
-/** Employee pages: "GrowMate" links to Home; the bar links Home, Courses, Requests and Notices. */
+/** Employee pages: "GrowMate" links to Home; the bar links Home, Courses, Requests, Notices and Upskilling. */
 export function EmployeeLayout({ children }: { children: ReactNode }) {
   return (
     <SignedInLayout
@@ -114,6 +118,10 @@ export function EmployeeLayout({ children }: { children: ReactNode }) {
           <NavLink to="/notices" className="app-header__link">
             <Icon name="notifications" className="app-header__icon" />
             {copy.nav.notices}
+          </NavLink>
+          <NavLink to="/upskilling" className="app-header__link">
+            <Icon name="trending_up" className="app-header__icon" />
+            {copy.nav.upskilling}
           </NavLink>
         </>
       }

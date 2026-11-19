@@ -25,6 +25,7 @@ use App\Modules\Matching\Http\Controllers\QuitMatchController;
 use App\Modules\Matching\Http\Controllers\RequestEligibilityController;
 use App\Modules\Matching\Http\Controllers\SendRequestController;
 use App\Modules\Matching\Http\Controllers\ShowMatchController;
+use App\Modules\Matching\Http\Controllers\UpskillingController;
 use App\Modules\Mentors\Http\Controllers\ApproveRegistrationController;
 use App\Modules\Mentors\Http\Controllers\CourseMentorsController;
 use App\Modules\Mentors\Http\Controllers\EmployeeRegistrationDecisionsController;
@@ -54,6 +55,8 @@ Route::prefix('v1')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('logout', SignOutController::class);
         Route::get('me', MeController::class);
+        // The Upskilling list: every signed-in user, Admin included. Names, Courses and status only (C4, C6).
+        Route::get('upskilling', UpskillingController::class);
 
         // Employee routes. The role check runs before any lookup.
         Route::middleware('can:employee')->group(function () {
