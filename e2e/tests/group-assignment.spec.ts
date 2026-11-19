@@ -1,33 +1,9 @@
-import { expect, test, type Browser, type Page } from '@playwright/test'
-import { adminSignIn, newEmployee, newPage, publishCourse, signUp } from './support/helpers'
+import { expect, test } from '@playwright/test'
+import { adminSignIn, hidesSecrets, newSignedUpEmployee, publishCourse, waitForGet } from './support/helpers'
 
 // Admin assigns a group and the chosen Employee Accepts it (UJ-4, stories 4.1 and 4.2). The spec
 // publishes its own Course and signs up its own chosen Employee and Learners: the seed has only
 // three Employees, and their Requests stay as seeded.
-
-function hidesSecrets(body: unknown) {
-  const json = JSON.stringify(body)
-  expect(json).not.toContain('"route"')
-  expect(json).not.toContain('group_assignment_id')
-  expect(json).not.toContain('gold_pass')
-  expect(json).not.toContain('registration_approval')
-  expect(json).not.toContain('group_assignment_accepted')
-}
-
-/** A new Employee who skips the Mentor check; their page stays signed in on Home. */
-async function newSignedUpEmployee(browser: Browser, label: string, first: string) {
-  const employee = newEmployee(label, { first, nameWithId: true })
-  const session = await newPage(browser)
-  await signUp(session.page, employee)
-  await expect(session.page).toHaveURL(/\/mentor-check$/)
-  await session.page.getByRole('button', { name: 'Skip' }).click()
-  await expect(session.page).toHaveURL(/\/home$/)
-  return { ...employee, ...session }
-}
-
-function waitForGet(page: Page, path: RegExp) {
-  return page.waitForResponse((response) => response.request().method() === 'GET' && path.test(new URL(response.url()).pathname))
-}
 
 test('Admin assigns three Learners to a chosen Employee, who sees them as one Request and Accepts them all at once', async ({ page, browser }) => {
   await page.emulateMedia({ colorScheme: 'light' })
