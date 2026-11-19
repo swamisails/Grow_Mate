@@ -127,3 +127,29 @@ export async function decide(adminPage: Page, row: Locator, action: 'Approve' | 
   await expect(row.locator('.tag')).toHaveText(tag)
   await expect(row.getByRole('button')).toHaveCount(0)
 }
+
+/** Fails when an API body carries anything the SPA must never see: a route, a group, or a hidden reason. */
+export function hidesSecrets(body: unknown) {
+  const json = JSON.stringify(body)
+  expect(json).not.toContain('"route"')
+  expect(json).not.toContain('group_assignment_id')
+  expect(json).not.toContain('gold_pass')
+  expect(json).not.toContain('registration_approval')
+  expect(json).not.toContain('group_assignment_accepted')
+}
+
+/** A new Employee who skips the Mentor check; their page stays signed in on Home. */
+export async function newSignedUpEmployee(browser: Browser, label: string, first: string) {
+  const employee = newEmployee(label, { first, nameWithId: true })
+  const session = await newPage(browser)
+  await signUp(session.page, employee)
+  await expect(session.page).toHaveURL(/\/mentor-check$/)
+  await session.page.getByRole('button', { name: 'Skip' }).click()
+  await expect(session.page).toHaveURL(/\/home$/)
+  return { ...employee, ...session }
+}
+
+/** Waits for the page's own GET of a path matching `path`. */
+export function waitForGet(page: Page, path: RegExp) {
+  return page.waitForResponse((response) => response.request().method() === 'GET' && path.test(new URL(response.url()).pathname))
+}
