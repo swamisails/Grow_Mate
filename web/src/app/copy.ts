@@ -179,6 +179,7 @@ export const copy = {
   progress: {
     notYetStarted: 'Not yet started',
     inProgress: 'In progress',
+    completed: 'Completed',
     quit: 'Quit',
     label: (word: string) => `Progress: ${word}`,
   },

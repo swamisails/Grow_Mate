@@ -22,7 +22,7 @@ class PartyMatch
     ) {}
 
     /**
-     * @return array{person_name: string, course_title: string, status: 'not_yet_started'|'in_progress'|'quit'|null, can_complete_course: bool}
+     * @return array{person_name: string, course_title: string, status: 'not_yet_started'|'in_progress'|'completed'|'quit'|null, can_complete_course: bool}
      *
      * @throws NotFoundHttpException
      */

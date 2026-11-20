@@ -40,7 +40,7 @@ export type GroupAssignment = {
 export type LearningRow = {
   course_id: number
   course_title: string
-  status: 'not_yet_started' | 'in_progress' | 'quit'
+  status: 'not_yet_started' | 'in_progress' | 'completed' | 'quit'
   match_id: number | null
 }
 
@@ -60,7 +60,7 @@ export type HomeScreen = {
 export type MatchScreen = {
   person_name: string
   course_title: string
-  status: 'not_yet_started' | 'in_progress' | 'quit' | null
+  status: 'not_yet_started' | 'in_progress' | 'completed' | 'quit' | null
   /** True only for the Mentor of the Match: Course Completed is theirs alone. */
   can_complete_course: boolean
 }
