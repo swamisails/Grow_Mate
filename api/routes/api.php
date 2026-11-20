@@ -8,6 +8,9 @@ use App\Modules\Accounts\Http\Controllers\MeController;
 use App\Modules\Accounts\Http\Controllers\SignInController;
 use App\Modules\Accounts\Http\Controllers\SignOutController;
 use App\Modules\Accounts\Http\Controllers\SignUpController;
+use App\Modules\Assessments\Http\Controllers\CourseStagesController;
+use App\Modules\Assessments\Http\Controllers\ShowAssessmentController;
+use App\Modules\Assessments\Http\Controllers\SubmitAttemptController;
 use App\Modules\Courses\Http\Controllers\AdminCoursesController;
 use App\Modules\Courses\Http\Controllers\CreateCourseController;
 use App\Modules\Courses\Http\Controllers\PublishCourseController;
@@ -76,6 +79,13 @@ Route::prefix('v1')->group(function () {
             Route::get('matches/{match}', ShowMatchController::class)->where('match', '[0-9]{1,18}');
             Route::post('matches/{match}/quit', QuitMatchController::class)->where('match', '[0-9]{1,18}');
             Route::post('matches/{match}/course-completed', CompleteCourseController::class)->where('match', '[0-9]{1,18}');
+            // Stages and Assessments (R16, R17): the Stages the Learner has reached, the Assessment to
+            // take (never which option is correct, AD-14), and one scored attempt.
+            Route::get('courses/{course}/stages', CourseStagesController::class)->where('course', '[0-9]{1,18}');
+            Route::get('courses/{course}/stages/{stage}/assessment', ShowAssessmentController::class)
+                ->where(['course' => '[0-9]{1,18}', 'stage' => 'bronze|silver|gold']);
+            Route::post('courses/{course}/stages/{stage}/attempts', SubmitAttemptController::class)
+                ->where(['course' => '[0-9]{1,18}', 'stage' => 'bronze|silver|gold']);
             // The Employee's one Mentor check (R2, AD-15): its status, then one submission or skip.
             Route::get('mentor-check', MentorCheckController::class);
             Route::post('mentor-check', SubmitMentorCheckController::class);

@@ -12,6 +12,7 @@ function open(path: string, status = 200, courses = [course], detail: typeof cou
     if (url === '/api/v1/mentor-check') return jsonResponse(200, { data: { pending: false, courses: [] } })
     if (url === '/api/v1/courses') return jsonResponse(status, { data: courses })
     if (url.endsWith('/mentors')) return jsonResponse(200, { data: [] })
+    if (url.endsWith('/stages')) return jsonResponse(200, { data: [] })
     return jsonResponse(status, { data: detail })
   }))
   render(<App />)

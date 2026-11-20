@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Modules\Accounts\Database\Seeders\AccountsSeeder;
+use App\Modules\Assessments\Database\Seeders\AssessmentsSeeder;
 use App\Modules\Courses\Database\Seeders\CoursesSeeder;
 use App\Modules\Mentors\Database\Seeders\MentorsSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
@@ -22,6 +23,7 @@ class DatabaseSeeder extends Seeder
             AccountsSeeder::class,
             CoursesSeeder::class,
             MentorsSeeder::class,
+            AssessmentsSeeder::class,
         ]);
     }
 }

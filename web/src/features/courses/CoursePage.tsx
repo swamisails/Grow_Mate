@@ -8,15 +8,16 @@ import { copy } from '../../app/copy'
 import { PageHeader } from '../../app/PageHeader'
 import { Loading, NotFound } from '../../app/PageStates'
 import { useRouter } from '../../app/router'
+import { StagesCard } from '../assessments/StagesCard'
 import { CourseMentors } from '../mentors/CourseMentors'
 import { ProgressBar } from '../progress/ProgressBar'
 
 type LoadState = { status: 'loading' } | { status: 'notFound' } | { status: 'error' } | { status: 'ready'; course: PublishedCourse }
 
 /**
- * The Course page for an Employee: the published Course's description and its Mentors (R6), in the
- * two-column card grid. A draft, a missing Course and a non-numeric id all show Not found. Stages
- * arrive in a later epic.
+ * The Course page for an Employee: the published Course's description, the Stages the Learner has
+ * reached, and its Mentors (R6), in the two-column card grid. A draft, a missing Course and a
+ * non-numeric id all show Not found.
  */
 export function CoursePage() {
   const { params } = useRouter()
@@ -107,6 +108,7 @@ export function CoursePage() {
             </section>
           )}
           {!state.course.description && progress && <ProgressBar status={progress} />}
+          <StagesCard key={`stages-${state.course.id}`} courseId={state.course.id} />
           <CourseMentors key={state.course.id} courseId={state.course.id} onRequested={readProgress} />
         </div>
       )}
