@@ -20,7 +20,7 @@ class EmployeeRegistrationDecisionsTest extends MentorsTestCase
 
         $this->travelTo(now()->startOfSecond());
         foreach (['Python Basics', 'git Essentials', 'SQL Fundamentals', 'Docker Basics', 'Agile Ways'] as $title) {
-            $this->courses[$title] = Course::factory()->create(['title' => $title, 'published_at' => now()]);
+            $this->courses[$title] = Course::factory()->published()->create(['title' => $title]);
         }
         // Employees made from here on may name all of them (published before their accounts).
         $this->travel(1)->seconds();

@@ -27,8 +27,8 @@ class RegistrationDecisionNoticesTest extends NotificationsTestCase
     {
         parent::setUp();
 
-        $this->python = Course::factory()->create(['title' => 'Python Basics', 'published_at' => now()]);
-        $this->git = Course::factory()->create(['title' => 'Git Essentials', 'published_at' => now()]);
+        $this->python = Course::factory()->published()->create(['title' => 'Python Basics']);
+        $this->git = Course::factory()->published()->create(['title' => 'Git Essentials']);
         $this->travel(1)->seconds();
         $this->sam = $this->employee('Sam Lindqvist');
     }

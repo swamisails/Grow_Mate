@@ -24,7 +24,7 @@ class UpskillingListTest extends MatchingTestCase
         $this->acceptedMatch($priya, $rafi, $python);
         $this->acceptedMatch($imani, $rafi, $python);
         // Not yet started: a pending Request. Quit: a quit Match. Neither is listed.
-        $this->pendingRequest($sam, $rafi, $python);
+        $this->openRequest($sam, $rafi, $python);
         $quitter = $this->employee('Quinn Quitter');
         $match = $this->acceptedMatch($quitter, $rafi, $python);
         $this->actingAs($rafi)->postJson("/api/v1/matches/{$match->id}/quit", ['reason' => 'Busy'])->assertNoContent();
@@ -63,7 +63,7 @@ class UpskillingListTest extends MatchingTestCase
         $rafi = $this->employee('Rafi Haddad');
         $this->grant($rafi, $course);
         $priya = $this->employee('Priya Nair');
-        $this->pendingRequest($priya, $rafi, $course);
+        $this->openRequest($priya, $rafi, $course);
         $this->actingAs($priya)->getJson('/api/v1/upskilling')->assertExactJson(['data' => []]);
 
         $this->travelTo(now()->addDays(7));
@@ -75,21 +75,9 @@ class UpskillingListTest extends MatchingTestCase
         $this->getJson('/api/v1/upskilling')->assertUnauthorized();
     }
 
-    private function pendingRequest(User $learner, User $mentor, Course $course): Request
-    {
-        return Request::factory()->create([
-            'learner_id' => $learner->id,
-            'mentor_id' => $mentor->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
-    }
-
     private function acceptedMatch(User $learner, User $mentor, Course $course): MentorMatch
     {
-        $request = $this->pendingRequest($learner, $mentor, $course);
+        $request = $this->openRequest($learner, $mentor, $course);
         $this->actingAs($mentor)->postJson("/api/v1/requests/{$request->id}/accept")->assertCreated();
 
         return MentorMatch::query()->where('request_id', $request->id)->firstOrFail();

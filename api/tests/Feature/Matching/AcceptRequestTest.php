@@ -3,7 +3,6 @@
 namespace Tests\Feature\Matching;
 
 use App\Modules\Accounts\Models\User;
-use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Models\MentorMatch;
 use App\Modules\Matching\Models\Request;
 use App\Modules\Mentors\Models\MentorRoute;
@@ -255,17 +254,5 @@ class AcceptRequestTest extends MatchingTestCase
         $this->actingAs($admin)->getJson('/api/v1/notices')->assertForbidden();
         $this->actingAs($priya)->getJson('/api/v1/notices')->assertJsonPath('data.0.type', 'request_accepted');
         $this->actingAs($rafi)->getJson('/api/v1/notices')->assertJsonPath('data.0.type', 'request_sent');
-    }
-
-    private function openRequest(User $learner, User $mentor, Course $course): Request
-    {
-        return Request::factory()->create([
-            'learner_id' => $learner->id,
-            'mentor_id' => $mentor->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
     }
 }

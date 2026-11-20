@@ -2,11 +2,7 @@
 
 namespace Tests\Feature\Matching;
 
-use App\Modules\Accounts\Models\User;
-use App\Modules\Courses\Models\Course;
 use App\Modules\Matching\Models\MatchEndReason;
-use App\Modules\Matching\Models\MentorMatch;
-use App\Modules\Matching\Models\Request;
 use Illuminate\Support\Facades\DB;
 
 class QuitMatchTest extends MatchingTestCase
@@ -120,27 +116,5 @@ class QuitMatchTest extends MatchingTestCase
             }
         }
         $this->assertStringNotContainsString('Secret reason', $this->actingAs($rafi)->getJson('/api/v1/notices')->getContent());
-    }
-
-    /**
-     * @return array{0: User, 1: User, 2: Course, 3: MentorMatch}
-     */
-    private function liveMatch(): array
-    {
-        $course = $this->publishedCourse();
-        $priya = $this->employee('Priya Nair');
-        $rafi = $this->employee('Rafi Haddad');
-        $this->grant($rafi, $course);
-        $request = Request::factory()->create([
-            'learner_id' => $priya->id,
-            'mentor_id' => $rafi->id,
-            'course_id' => $course->id,
-            'sent_at' => now(),
-            'accepted_at' => null,
-            'group_assignment_id' => null,
-        ]);
-        $this->actingAs($rafi)->postJson("/api/v1/requests/{$request->id}/accept")->assertCreated();
-
-        return [$priya, $rafi, $course, MentorMatch::query()->where('request_id', $request->id)->firstOrFail()];
     }
 }
