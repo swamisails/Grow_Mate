@@ -8,6 +8,8 @@ use App\Modules\Assessments\Models\StageAttempt;
 use App\Modules\Assessments\Queries\StageAvailability;
 use App\Modules\Courses\Models\StageLevel;
 use App\Modules\Courses\Queries\StageAnswerKey;
+use App\Modules\Mentors\Actions\GrantMentor;
+use App\Modules\Mentors\Models\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,6 +19,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * each with one of its own options. Inside one transaction the Learner's row is locked, so two
  * submits serialise, availability is checked again, and the attempt is scored and stored once with
  * the Pass mark used (AD-14). A pass is correct × 100 ≥ Pass mark × questions, in integers.
+ *
+ * A Gold pass makes the Learner a Mentor for the Course in the same transaction (R19, AD-7):
+ * `GrantMentor` keeps an existing Mentor's first route. No notice is sent (C6, C8).
  */
 class SubmitAttempt
 {
@@ -24,6 +29,7 @@ class SubmitAttempt
         private readonly StageAnswerKey $stageAnswerKey,
         private readonly StageAvailability $stageAvailability,
         private readonly LockUser $lockUser,
+        private readonly GrantMentor $grantMentor,
     ) {}
 
     /**
@@ -60,10 +66,12 @@ class SubmitAttempt
         $total = count($key['questions']);
 
         return DB::transaction(function () use ($learnerId, $courseId, $level, $key, $correct, $total): StageAttempt {
+            // The user first, then the Course (through `GrantMentor`'s foreign key): the same
+            // user → course order `AcceptRequest` takes (AD-3).
             $this->lockUser->handle($learnerId);
             $this->stageAvailability->assertAvailable($learnerId, $courseId, $level);
 
-            return StageAttempt::query()->create([
+            $attempt = StageAttempt::query()->create([
                 'learner_id' => $learnerId,
                 'course_id' => $courseId,
                 'stage_id' => $key['stage_id'],
@@ -73,6 +81,12 @@ class SubmitAttempt
                 'passed' => $correct * 100 >= $key['pass_mark'] * $total,
                 'submitted_at' => now(),
             ]);
+
+            if ($level === StageLevel::Gold && $attempt->passed) {
+                $this->grantMentor->handle($learnerId, $courseId, Route::GoldPass);
+            }
+
+            return $attempt;
         });
     }
 }

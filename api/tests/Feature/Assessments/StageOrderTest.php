@@ -11,7 +11,7 @@ use Illuminate\Testing\TestResponse;
 /**
  * The Stages unlock in order (AD-4): Bronze after Course Completed, Silver once Bronze is passed,
  * Gold once Silver is passed. Each Stage runs its own Retake walk, and the list stops at the first
- * Stage that isn't passed. Progress stays In progress throughout.
+ * Stage that isn't passed. Progress stays In progress until Gold is passed, then is Completed.
  */
 class StageOrderTest extends AssessmentsTestCase
 {
@@ -123,7 +123,7 @@ class StageOrderTest extends AssessmentsTestCase
         $this->assertInProgress($priya, $course);
     }
 
-    public function test_when_all_three_are_passed_gold_is_refused_as_already_passed_and_progress_stays_in_progress(): void
+    public function test_when_all_three_are_passed_gold_is_refused_as_already_passed_and_progress_is_completed(): void
     {
         [$course, $priya] = $this->completed();
         foreach (StageLevel::cases() as $level) {
@@ -134,7 +134,9 @@ class StageOrderTest extends AssessmentsTestCase
         $this->read($priya, $course, StageLevel::Gold)->assertConflict()->assertExactJson(self::ALREADY_PASSED);
         $this->submit($priya, $course, StageLevel::Gold, true)->assertConflict()->assertExactJson(self::ALREADY_PASSED);
         $this->assertSame(3, StageAttempt::query()->count());
-        $this->assertInProgress($priya, $course);
+        $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/progress")
+            ->assertOk()
+            ->assertExactJson(['data' => ['status' => 'completed']]);
     }
 
     public function test_a_stray_later_pass_opens_nothing_while_an_earlier_stage_is_unpassed(): void

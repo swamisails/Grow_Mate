@@ -4,17 +4,20 @@ import { copy } from '../../app/copy'
 const words = {
   not_yet_started: copy.progress.notYetStarted,
   in_progress: copy.progress.inProgress,
+  completed: copy.progress.completed,
   quit: copy.progress.quit,
 } as const
 
 const modifiers = {
   not_yet_started: 'not-yet-started',
   in_progress: 'in-progress',
+  completed: 'completed',
   quit: 'quit',
 } as const
 
 /**
- * The plain Progress bar (AD-16): grey when not yet started, half blue when in progress, red and full when quit.
+ * The plain Progress bar (AD-16): grey when not yet started, half blue when in progress, green and full
+ * when completed, red and full when quit.
  * The state word sits beside the bar. No numbers.
  */
 export function ProgressBar({ status }: { status: NonNullable<CourseProgress['status']> }) {

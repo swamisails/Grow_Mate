@@ -35,3 +35,7 @@
 - source_plan: `_bmad-output/initiative-growmate/tickets/epic-stages-and-gold/tickets/story-a-learner-takes-bronze-and-sees-the-result-plan.md`
   summary: `web/src/features/matching/QuitDialog.tsx` failed `tsc -b` on main (TS2677 type predicate, from story 2.6), so `npm run build` and the e2e web image were red on main; story 3.1 carries a type-only fix.
   evidence: The implementer found `npm run build` red at af96089b, which shows CI is not gating builds (epic-4 retro item 15).
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-stages-and-gold/tickets/story-passing-gold-makes-the-learner-a-mentor-plan.md`
+  summary: `SubmitAttempt` (locks the submitter's user row, then FK-share-locks the Course) can deadlock with `SendRequest` (locks the requester, then the Course FOR UPDATE, then FK-share-locks the Mentor's user row) when a Mentor still learning the same Course submits a Stage while being requested.
+  evidence: Medium, unverified at runtime. Found in the story 3.4 review by reading both lock orders. It dates from story 3.1's `stage_attempts.course_id` foreign key, and 3.4's grant adds no new lock. MySQL would abort one transaction with a deadlock error. A two-connection test on MySQL, or locking the Course in `SubmitAttempt` before the user, would settle it.

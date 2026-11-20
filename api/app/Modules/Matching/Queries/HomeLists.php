@@ -25,7 +25,7 @@ class HomeLists
 
     /**
      * @return array{
-     *     learning: list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'quit', match_id: int|null}>,
+     *     learning: list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'completed'|'quit', match_id: int|null}>,
      *     mentoring: list<array{id: int, person_name: string, course_title: string}>
      * }
      */
@@ -38,7 +38,7 @@ class HomeLists
     }
 
     /**
-     * @return list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'quit', match_id: int|null}>
+     * @return list<array{course_id: int, course_title: string, status: 'not_yet_started'|'in_progress'|'completed'|'quit', match_id: int|null}>
      */
     private function learning(int $learnerId): array
     {
