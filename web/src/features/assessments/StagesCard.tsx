@@ -5,9 +5,10 @@ import { copy } from '../../app/copy'
 import { Link } from '../../app/Router'
 
 /**
- * The Course page's Stages card: one Stage block per Stage the API reports (available or passed),
- * in its order. A Stage not reached isn't rendered, and with none reached the card isn't either.
- * Available: a "Take [Stage]" button to the Assessment. Passed: "Passed" in plain text.
+ * The Course page's Stages card: one Stage block per Stage the API reports (available, Locked or
+ * passed), in its order. A Stage not reached isn't rendered, and with none reached the card isn't
+ * either. Available: a "Take [Stage]" button to the Assessment. Locked: "Locked until [date]" and no
+ * button. Passed: "Passed" in plain text.
  */
 export function StagesCard({ courseId }: { courseId: number }) {
   const [stages, setStages] = useState<StageState[]>([])
@@ -45,6 +46,8 @@ export function StagesCard({ courseId }: { courseId: number }) {
                 <Link to={`/courses/${courseId}/stages/${stage.level}`} className="button button--primary">
                   {copy.assessments.take(name)}
                 </Link>
+              ) : stage.state === 'locked' ? (
+                <span className="meta">{copy.assessments.lockedUntil(copy.date(stage.locked_until))}</span>
               ) : (
                 <span className="meta">{copy.assessments.passed}</span>
               )}

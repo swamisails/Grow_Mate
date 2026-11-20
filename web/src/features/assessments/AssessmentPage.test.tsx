@@ -136,6 +136,39 @@ it('shows the API message when the Stage is not available to read', async () => 
   expect(screen.getByRole('link', { name: 'Back to the course' }).getAttribute('href')).toBe('/courses/3')
 })
 
+it('shows the API message when the Stage is Locked', async () => {
+  open({ read: () => jsonResponse(409, { message: 'This stage is locked for now.', code: 'ASSESSMENTS_STAGE_LOCKED' }) })
+
+  const message = await screen.findByText('This stage is locked for now.')
+  expect(message.getAttribute('aria-live')).toBe('polite')
+  expect(message.className).toContain('field-error')
+  expect(screen.queryByRole('group')).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Submit answers' })).toBeNull()
+  expect(screen.getByRole('link', { name: 'Back to the course' }).getAttribute('href')).toBe('/courses/3')
+})
+
+it('shows the Locked message when a submit is refused because the Stage just Locked', async () => {
+  let reads = 0
+  const fetchMock = open({
+    read: () => {
+      reads++
+      return reads === 1
+        ? jsonResponse(200, { data: assessment })
+        : jsonResponse(409, { message: 'This stage is locked for now.', code: 'ASSESSMENTS_STAGE_LOCKED' })
+    },
+    submit: () => jsonResponse(409, { message: 'This stage is locked for now.', code: 'ASSESSMENTS_STAGE_LOCKED' }),
+  })
+
+  fireEvent.click(await screen.findByRole('radio', { name: '2' }))
+  fireEvent.click(screen.getByRole('radio', { name: 'def' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Submit answers' }))
+
+  expect(await screen.findByText('This stage is locked for now.')).toBeTruthy()
+  await waitFor(() => expect(screen.queryByRole('group')).toBeNull())
+  expect(posts(fetchMock)).toHaveLength(1)
+  expect(screen.queryByText(/Passed\.|Not passed\./)).toBeNull()
+})
+
 it('shows the API message and re-reads when a submit is refused', async () => {
   let reads = 0
   const fetchMock = open({

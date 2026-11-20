@@ -3,12 +3,18 @@ export type StageLevel = 'bronze' | 'silver' | 'gold'
 
 /**
  * App\Modules\Assessments\Http\Resources\StageStateResource: one Stage the Learner has reached.
- * A Stage not reached is not in the list.
+ * A Stage not reached is not in the list. A Locked Stage carries `locked_until` (ISO-8601 UTC).
  */
-export type StageState = {
-  level: StageLevel
-  state: 'available' | 'passed'
-}
+export type StageState =
+  | {
+      level: StageLevel
+      state: 'available' | 'passed'
+    }
+  | {
+      level: StageLevel
+      state: 'locked'
+      locked_until: string
+    }
 
 /** One option of a question, in authored order. Never says whether it is correct (AD-14). */
 export type AssessmentOption = {
