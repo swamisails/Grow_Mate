@@ -102,6 +102,20 @@ it('renders only the Stages the API reports, in its order', async () => {
   expect(within(card).getAllByRole('listitem').map((row) => row.textContent)).toEqual(['BronzePassed', 'SilverTake Silver'])
 })
 
+it('shows Bronze Passed and Silver Locked, with no Gold row and no link, when Silver is Locked', async () => {
+  const stages: StageState[] = [
+    { level: 'bronze', state: 'passed' },
+    { level: 'silver', state: 'locked', locked_until: '2027-02-10T10:00:00Z' },
+  ]
+  open(() => jsonResponse(200, { data: stages }))
+
+  const card = await screen.findByRole('region', { name: 'Stages' })
+  expect(within(card).getAllByRole('listitem').map((row) => row.textContent)).toEqual(['BronzePassed', 'SilverLocked until 10 Feb 2027'])
+  expect(within(card).queryByText(/Gold/)).toBeNull()
+  expect(within(card).queryByRole('link')).toBeNull()
+  expect(within(card).queryByRole('button')).toBeNull()
+})
+
 it('shows no Stages card, and keeps the page, when the Stages read fails', async () => {
   const fetchMock = open(() => jsonResponse(500, { message: 'Server Error' }))
 

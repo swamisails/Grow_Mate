@@ -45,7 +45,7 @@ class StageAvailabilityTest extends AssessmentsTestCase
         $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages")->assertExactJson(['data' => []]);
     }
 
-    public function test_after_a_bronze_pass_bronze_is_passed_and_a_fail_leaves_it_available(): void
+    public function test_after_a_bronze_pass_bronze_is_passed_and_silver_available_and_a_fail_leaves_bronze_available(): void
     {
         $course = $this->publishedCourse();
         $priya = $this->employee();
@@ -57,7 +57,7 @@ class StageAvailabilityTest extends AssessmentsTestCase
 
         StageAttempt::factory()->create(['learner_id' => $priya->id, 'course_id' => $course->id]);
         $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages")
-            ->assertExactJson(['data' => [['level' => 'bronze', 'state' => 'passed']]]);
+            ->assertExactJson(['data' => [['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']]]);
     }
 
     public function test_a_pass_on_another_stage_or_by_another_learner_does_not_count(): void

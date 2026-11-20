@@ -77,7 +77,7 @@ class RetakeRuleTest extends AssessmentsTestCase
         $this->travelTo('2027-03-15 14:30:00');
         $this->failBronze($priya, $course)->assertCreated();
         $this->passBronze($priya, $course)->assertCreated()->assertExactJson(['data' => ['passed' => true]]);
-        $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed']);
+        $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']);
         $this->assertSame(6, StageAttempt::query()->count());
     }
 
@@ -104,7 +104,7 @@ class RetakeRuleTest extends AssessmentsTestCase
         $this->failBronze($priya, $course)->assertCreated();
         $this->passBronze($priya, $course)->assertCreated();
 
-        $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed']);
+        $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']);
     }
 
     public function test_the_walk_follows_id_order_and_counts_only_this_learner_course_and_stage(): void
@@ -187,12 +187,12 @@ class RetakeRuleTest extends AssessmentsTestCase
     }
 
     /**
-     * @param  array<string, string>  $bronze
+     * @param  array<string, string>  ...$stages  Bronze first, then any later Stage it opened
      */
-    private function assertStages(User $learner, Course $course, array $bronze): TestResponse
+    private function assertStages(User $learner, Course $course, array ...$stages): TestResponse
     {
         return $this->actingAs($learner)->getJson("/api/v1/courses/{$course->id}/stages")
             ->assertOk()
-            ->assertExactJson(['data' => [$bronze]]);
+            ->assertExactJson(['data' => $stages]);
     }
 }
