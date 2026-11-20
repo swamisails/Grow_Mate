@@ -12,4 +12,7 @@ enum ErrorCode: string
 
     /** The Learner already passed this Stage. */
     case StageAlreadyPassed = 'ASSESSMENTS_STAGE_ALREADY_PASSED';
+
+    /** Two failures in a row Locked this Stage, and the Lock hasn't ended yet. */
+    case StageLocked = 'ASSESSMENTS_STAGE_LOCKED';
 }

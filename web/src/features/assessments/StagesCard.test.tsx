@@ -68,6 +68,26 @@ it('shows Passed in plain text, with no button, once Bronze is passed', async ()
   expect(within(card).queryByRole('button')).toBeNull()
 })
 
+it('shows "Locked until [UTC date]", with no button and no attempt count, when Bronze is Locked', async () => {
+  const stages: StageState[] = [{ level: 'bronze', state: 'locked', locked_until: '2027-02-28T10:00:00Z' }]
+  open(() => jsonResponse(200, { data: stages }))
+
+  const card = await screen.findByRole('region', { name: 'Stages' })
+  const row = within(card).getByRole('listitem')
+  expect(row.textContent).toBe('BronzeLocked until 28 Feb 2027')
+  expect(within(row).getByText('Locked until 28 Feb 2027').className).toBe('meta')
+  expect(within(card).queryByRole('link')).toBeNull()
+  expect(within(card).queryByRole('button')).toBeNull()
+  expect(within(card).queryByText(/attempt|left|Take /i)).toBeNull()
+})
+
+it('shows the UTC calendar date of the Lock end, not the local one', async () => {
+  open(() => jsonResponse(200, { data: [{ level: 'bronze', state: 'locked', locked_until: '2027-02-10T23:30:00Z' }] }))
+
+  const card = await screen.findByRole('region', { name: 'Stages' })
+  expect(within(card).getByRole('listitem').textContent).toBe('BronzeLocked until 10 Feb 2027')
+})
+
 it('renders only the Stages the API reports, in its order', async () => {
   open(() =>
     jsonResponse(200, {

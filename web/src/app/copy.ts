@@ -130,6 +130,8 @@ export const copy = {
     take: (stage: string) => `Take ${stage}`,
     /** A passed Stage's block, in plain text. */
     passed: 'Passed',
+    /** A Locked Stage's block: the UTC date the Lock ends, and no button. */
+    lockedUntil: (date: string) => `Locked until ${date}`,
     /** The page name while the Assessment loads, before its Course title is known. */
     pageName: 'Assessment',
     /** The Assessment page's title: the Course, then the Stage. */

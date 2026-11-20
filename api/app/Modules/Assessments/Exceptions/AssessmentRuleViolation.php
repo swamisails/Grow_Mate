@@ -19,6 +19,7 @@ class AssessmentRuleViolation extends RuntimeException implements ShouldntReport
         parent::__construct(match ($errorCode) {
             ErrorCode::StageUnavailable => "This stage isn't open to you.",
             ErrorCode::StageAlreadyPassed => 'You have already passed this stage.',
+            ErrorCode::StageLocked => 'This stage is locked for now.',
         });
     }
 
