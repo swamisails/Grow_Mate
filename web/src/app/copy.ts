@@ -119,6 +119,33 @@ export const copy = {
     empty: 'No mentors for this course yet.',
     request: 'Request',
   },
+  assessments: {
+    /** The Course page's Stages card: only the Stages the API reports. */
+    stages: 'Stages',
+    level: {
+      bronze: 'Bronze',
+      silver: 'Silver',
+      gold: 'Gold',
+    },
+    take: (stage: string) => `Take ${stage}`,
+    /** A passed Stage's block, in plain text. */
+    passed: 'Passed',
+    /** The page name while the Assessment loads, before its Course title is known. */
+    pageName: 'Assessment',
+    /** The Assessment page's title: the Course, then the Stage. */
+    title: (course: string, stage: string) => `${course} — ${stage}`,
+    /** A question's legend, numbered in authored order. */
+    question: (n: number, text: string) => `${n}. ${text}`,
+    submit: 'Submit answers',
+    /** The result sentences (FR-17): nothing else, no score. */
+    result: {
+      passed: 'Passed.',
+      notPassed: 'Not passed.',
+    },
+    backTo: (course: string) => `Back to ${course}`,
+    /** The way back when the Assessment can't be read, so its Course title isn't known. */
+    backToCourse: 'Back to the course',
+  },
   match: {
     /** The page name while the Match loads, before its Course title is known. */
     pageName: 'Match',

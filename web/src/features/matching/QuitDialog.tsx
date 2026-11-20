@@ -46,12 +46,14 @@ export function QuitDialog({ matchId, onCancel, onQuit, onGone }: QuitDialogProp
     if (event.key !== 'Tab') {
       return
     }
-    const order = [reasonField.current, cancel.current, submit.current].filter((element): element is HTMLElement => element !== null && !(element as HTMLButtonElement).disabled)
+    const order = [reasonField.current, cancel.current, submit.current].filter(
+      (element): element is HTMLTextAreaElement | HTMLButtonElement => element !== null && !element.disabled,
+    )
     if (order.length === 0) {
       return
     }
     event.preventDefault()
-    const index = order.indexOf(document.activeElement as HTMLElement)
+    const index = order.indexOf(document.activeElement as HTMLTextAreaElement | HTMLButtonElement)
     const next = event.shiftKey ? (index <= 0 ? order.length - 1 : index - 1) : (index + 1) % order.length
     order[next].focus()
   }

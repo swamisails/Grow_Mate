@@ -23,3 +23,15 @@
 - source_plan: `_bmad-output/initiative-growmate/tickets/epic-group-assignment/tickets/story-group-assignment-refusals-plan.md`
   summary: The uncommitted `api/.env.example` edit (`APP_ENV=e2e` after `APP_ENV=local`) is still in the working tree during story 4.3.
   evidence: The 4.3 quick review flagged it a third time. It is epic 1 retro item 8.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-stages-and-gold/tickets/story-a-learner-takes-bronze-and-sees-the-result-plan.md`
+  summary: Web vitest is timing-flaky under full-suite load: about 1 run in 8 fails a default 1 s `findBy*` wait in a file story 3.1 did not touch (`CourseMentors.test.tsx` "shows Loading until the list arrives", `MentorCheckCard.test.tsx` "renders nothing while loading…"). Owner: Swami.
+  evidence: The failing files differ between runs, and `MentorCheckCard` is on Home, which makes no Stages call. Each file passes alone. The baseline af96089b passed 3 of 3 full runs with 151 tests; with 3.1's 14 extra tests, 7 of 8 runs passed. The fix is raising the async-util timeout in `web/src/test/setup.ts` or reducing jsdom parallelism; ties to epic-4 retro item 16.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-stages-and-gold/tickets/story-a-learner-takes-bronze-and-sees-the-result-plan.md`
+  summary: The full Playwright suite has 9 failures in specs story 3.1 did not touch (home-and-match ×4, registration-decisions, employee-accounts, group-assignment, registration-decision-notices, uj-3-and-course-publishing). Owner: Swami.
+  evidence: The implementer reran `home-and-match` (4) and `registration-decisions` (1) without 3.1's changes, and they failed identically. Priya's Home Learning list comes back empty, and the navigation assertion predates story 2.8's Upskilling link. The other 4 were not rerun on the baseline but are the same kind of text assertion. Overlaps epic-4 retro item 16.
+
+- source_plan: `_bmad-output/initiative-growmate/tickets/epic-stages-and-gold/tickets/story-a-learner-takes-bronze-and-sees-the-result-plan.md`
+  summary: `web/src/features/matching/QuitDialog.tsx` failed `tsc -b` on main (TS2677 type predicate, from story 2.6), so `npm run build` and the e2e web image were red on main; story 3.1 carries a type-only fix.
+  evidence: The implementer found `npm run build` red at af96089b, which shows CI is not gating builds (epic-4 retro item 15).
