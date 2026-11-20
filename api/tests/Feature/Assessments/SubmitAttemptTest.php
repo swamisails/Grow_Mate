@@ -37,7 +37,7 @@ class SubmitAttemptTest extends AssessmentsTestCase
         $this->assertSame('2026-11-20T10:00:00.000000Z', $attempt->submitted_at->toJSON());
 
         $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages")
-            ->assertExactJson(['data' => [['level' => 'bronze', 'state' => 'passed']]]);
+            ->assertExactJson(['data' => [['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']]]);
     }
 
     public function test_two_of_three_fails_a_pass_mark_of_67(): void
@@ -106,20 +106,24 @@ class SubmitAttemptTest extends AssessmentsTestCase
         $this->assertSame(1, StageAttempt::query()->count());
     }
 
-    public function test_silver_and_gold_are_unavailable_after_a_bronze_pass(): void
+    public function test_after_a_bronze_pass_silver_is_submitted_and_gold_is_unavailable(): void
     {
         $course = $this->publishedCourse();
         $priya = $this->employee();
         $this->match($priya, $course);
         StageAttempt::factory()->create(['learner_id' => $priya->id, 'course_id' => $course->id]);
 
-        foreach ([StageLevel::Silver, StageLevel::Gold] as $level) {
-            $this->actingAs($priya)->postJson(
-                "/api/v1/courses/{$course->id}/stages/{$level->value}/attempts",
-                ['answers' => $this->answers($course, $level, [0])],
-            )->assertConflict()->assertJsonPath('code', 'ASSESSMENTS_STAGE_UNAVAILABLE');
-        }
+        $this->actingAs($priya)->postJson(
+            "/api/v1/courses/{$course->id}/stages/gold/attempts",
+            ['answers' => $this->answers($course, StageLevel::Gold, [0])],
+        )->assertConflict()->assertExactJson(['message' => "This stage isn't open to you.", 'code' => 'ASSESSMENTS_STAGE_UNAVAILABLE']);
         $this->assertSame(1, StageAttempt::query()->count());
+
+        $this->actingAs($priya)->postJson(
+            "/api/v1/courses/{$course->id}/stages/silver/attempts",
+            ['answers' => $this->answers($course, StageLevel::Silver, [1])],
+        )->assertCreated()->assertExactJson(['data' => ['passed' => false]]);
+        $this->assertSame($this->stage($course, StageLevel::Silver)->id, StageAttempt::query()->latest('id')->firstOrFail()->stage_id);
     }
 
     public function test_answers_that_do_not_fit_the_stage_are_refused_and_nothing_is_stored(): void

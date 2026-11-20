@@ -12,10 +12,11 @@ import {
   waitForGet,
 } from './support/helpers'
 
-// Epic 3's tracer bullet (UJ-1 step 7, Bronze only): a run-tagged Course, a Mentor approved at
+// Epic 3's tracer bullet (UJ-1 step 7, through Bronze): a run-tagged Course, a Mentor approved at
 // registration, and a Learner. Before Course Completed the Course page has no Stages card; after it,
-// Take Bronze leads to "Passed." and Bronze then reads Passed. No API response the Learner gets ever
-// says which option is correct, nor a score or count. Seeded Employees and demo Courses are never used.
+// Take Bronze leads to "Passed." and Bronze then reads Passed, with Take Silver and no Gold. No API
+// response the Learner gets ever says which option is correct, nor a score or count. Seeded
+// Employees and demo Courses are never used.
 
 /** Fails when a body carries the correct option, a score, a count or the Pass mark. */
 function hidesAnswers(body: unknown) {
@@ -154,16 +155,27 @@ test('a Learner takes Bronze after Course Completed and sees "Passed."', async (
     await expect(learnerPage).toHaveURL(new RegExp(`/courses/${courseId}/stages/bronze$`))
   })
 
-  await test.step('back on the Course, Bronze reads Passed, and Bronze is refused again', async () => {
+  await test.step('back on the Course, Bronze reads Passed with Take Silver and no Gold, and Bronze is refused again', async () => {
     const stages = waitForGet(learnerPage, /^\/api\/v1\/courses\/\d+\/stages$/)
     await learnerPage.getByRole('link', { name: `Back to ${course}` }).click()
     await expect(learnerPage).toHaveURL(new RegExp(`/courses/${courseId}$`))
     const stagesBody = await (await stages).json()
     hidesAnswers(stagesBody)
-    expect(stagesBody.data).toEqual([{ level: 'bronze', state: 'passed' }])
+    expect(stagesBody.data).toEqual([
+      { level: 'bronze', state: 'passed' },
+      { level: 'silver', state: 'available' },
+    ])
     const card = learnerPage.getByRole('region', { name: 'Stages' })
-    await expect(card.getByRole('listitem')).toHaveText('BronzePassed')
-    await expect(card.getByRole('link')).toHaveCount(0)
+    await expect(card.getByRole('listitem')).toHaveText(['BronzePassed', 'SilverTake Silver'])
+    await expect(card).not.toContainText('Gold')
+    await expect(card.getByRole('link')).toHaveCount(1)
+    const takeSilver = card.getByRole('link', { name: 'Take Silver' })
+    await expect(takeSilver).toHaveAttribute('href', `/courses/${courseId}/stages/silver`)
+
+    const gold = await apiRequest(learnerPage, 'GET', `/api/v1/courses/${courseId}/stages/gold/assessment`)
+    expect(gold.status).toBe(409)
+    expect(gold.body.code).toBe('ASSESSMENTS_STAGE_UNAVAILABLE')
+    hidesAnswers(gold.body)
 
     const again = await apiRequest(learnerPage, 'GET', `/api/v1/courses/${courseId}/stages/bronze/assessment`)
     expect(again.status).toBe(409)

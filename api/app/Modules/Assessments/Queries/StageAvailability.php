@@ -13,13 +13,15 @@ use Illuminate\Support\Carbon;
 /**
  * The only computation of Stage availability (AD-4). It lists the Stages the Learner has reached,
  * in order, each `available`, `locked` (with `locked_until`) or `passed`; a Stage not reached is
- * not listed. Before Course Completed nothing is reached. After it, Bronze is. Silver and Gold come
- * in a later entry.
+ * not listed. Before Course Completed nothing is reached. After it, Bronze is; Silver is reached
+ * once Bronze is passed, and Gold once Silver is passed. The list stops at the first Stage that
+ * isn't passed, so a pass on a later Stage opens nothing while an earlier one is unpassed.
  *
  * The Retake rule is derived from the stored attempts against `now()`, never stored (AD-5): every
  * second failure in a cycle Locks the Stage until that failure's `submitted_at` plus one month
  * (no overflow), and the cycle starts again after it. Attempts carry no Match, so a Quit or a new
- * Match changes nothing.
+ * Match changes nothing. Each Stage walks only its own attempts, so a Lock on one Stage never
+ * touches another.
  */
 class StageAvailability
 {
@@ -37,8 +39,8 @@ class StageAvailability
             return [];
         }
 
-        $bronzeId = $this->courseStageIds->handle($courseId)[StageLevel::Bronze->value] ?? null;
-        if ($bronzeId === null) {
+        $stageIds = $this->courseStageIds->handle($courseId);
+        if (! isset($stageIds[StageLevel::Bronze->value])) {
             return [];
         }
 
@@ -49,7 +51,22 @@ class StageAvailability
             ->get(['id', 'stage_id', 'passed', 'submitted_at'])
             ->groupBy('stage_id');
 
-        return [['level' => StageLevel::Bronze->value] + $this->walk($attempts->get($bronzeId, collect())->all())];
+        $stages = [];
+        foreach (StageLevel::cases() as $level) {
+            $stageId = $stageIds[$level->value] ?? null;
+            if ($stageId === null) {
+                break;
+            }
+
+            $entry = ['level' => $level->value] + $this->walk($attempts->get($stageId, collect())->all());
+            $stages[] = $entry;
+
+            if ($entry['state'] !== 'passed') {
+                break;
+            }
+        }
+
+        return $stages;
     }
 
     /**

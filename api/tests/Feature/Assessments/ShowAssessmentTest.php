@@ -64,18 +64,19 @@ class ShowAssessmentTest extends AssessmentsTestCase
             ->assertConflict()->assertExactJson(['message' => 'You have already passed this stage.', 'code' => 'ASSESSMENTS_STAGE_ALREADY_PASSED']);
     }
 
-    public function test_silver_and_gold_are_unavailable_even_after_a_bronze_pass(): void
+    public function test_after_a_bronze_pass_silver_is_read_and_gold_is_unavailable(): void
     {
         $course = $this->publishedCourse();
         $priya = $this->employee();
         $this->match($priya, $course);
         StageAttempt::factory()->create(['learner_id' => $priya->id, 'course_id' => $course->id]);
 
-        foreach (['silver', 'gold'] as $level) {
-            $response = $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages/{$level}/assessment");
-            $response->assertConflict()->assertJsonPath('code', 'ASSESSMENTS_STAGE_UNAVAILABLE');
-            $this->assertStringNotContainsString('Question', (string) $response->getContent());
-        }
+        $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages/silver/assessment")
+            ->assertOk()->assertJsonPath('data.level', 'silver')->assertJsonPath('data.questions.0.text', 'Question silver 1?');
+
+        $response = $this->actingAs($priya)->getJson("/api/v1/courses/{$course->id}/stages/gold/assessment");
+        $response->assertConflict()->assertExactJson(['message' => "This stage isn't open to you.", 'code' => 'ASSESSMENTS_STAGE_UNAVAILABLE']);
+        $this->assertStringNotContainsString('Question', (string) $response->getContent());
     }
 
     public function test_a_draft_or_missing_course_and_an_unknown_stage_are_not_found(): void
