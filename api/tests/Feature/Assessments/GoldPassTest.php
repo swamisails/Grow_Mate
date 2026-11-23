@@ -9,7 +9,6 @@ use App\Modules\Courses\Models\StageLevel;
 use App\Modules\Mentors\Actions\GrantMentor;
 use App\Modules\Mentors\Models\Route;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Testing\TestResponse;
 
 /**
  * Passing Gold makes the Learner a Mentor for the Course (R19, AD-7) and their Progress Completed
@@ -138,9 +137,7 @@ class GoldPassTest extends AssessmentsTestCase
      */
     private function completedWithBronzeAndSilver(): array
     {
-        $course = $this->publishedCourse();
-        $priya = $this->employee();
-        $this->match($priya, $course);
+        [$course, $priya] = $this->completed();
         foreach ([StageLevel::Bronze, StageLevel::Silver] as $level) {
             StageAttempt::factory()->create([
                 'learner_id' => $priya->id,
@@ -150,14 +147,6 @@ class GoldPassTest extends AssessmentsTestCase
         }
 
         return [$course, $priya];
-    }
-
-    private function submit(User $learner, Course $course, StageLevel $level, bool $pass): TestResponse
-    {
-        return $this->actingAs($learner)->postJson(
-            "/api/v1/courses/{$course->id}/stages/{$level->value}/attempts",
-            ['answers' => $this->answers($course, $level, [$pass ? 0 : 1])],
-        );
     }
 
     private function assertProgress(User $learner, Course $course, string $status): void

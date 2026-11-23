@@ -22,19 +22,19 @@ class RetakeRuleTest extends AssessmentsTestCase
         [$course, $priya] = $this->completed();
         $this->travelTo('2027-01-10 09:00:00');
 
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'available']);
-        $this->read($priya, $course)->assertOk();
+        $this->read($priya, $course, StageLevel::Bronze)->assertOk();
     }
 
     public function test_the_second_failure_locks_bronze_for_a_month_and_refuses_reads_and_submits_until_it_ends(): void
     {
         [$course, $priya] = $this->completed();
         $this->travelTo('2027-01-09 08:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
         $this->travelTo('2027-01-10 10:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
         $response = $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => '2027-02-10T10:00:00Z']);
         $this->assertHidesAnswersAndScores($response);
@@ -43,16 +43,16 @@ class RetakeRuleTest extends AssessmentsTestCase
         // A minute before the end it is still Locked: the read and the submit are refused, nothing is stored.
         $this->travelTo('2027-02-10 09:59:00');
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => '2027-02-10T10:00:00Z']);
-        $this->read($priya, $course)->assertConflict()->assertExactJson(self::LOCKED);
-        $this->failBronze($priya, $course)->assertConflict()->assertExactJson(self::LOCKED);
-        $this->passBronze($priya, $course)->assertConflict()->assertExactJson(self::LOCKED);
+        $this->read($priya, $course, StageLevel::Bronze)->assertConflict()->assertExactJson(self::LOCKED);
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertConflict()->assertExactJson(self::LOCKED);
+        $this->submit($priya, $course, StageLevel::Bronze, true)->assertConflict()->assertExactJson(self::LOCKED);
         $this->assertSame(2, StageAttempt::query()->count());
 
         // From `locked_until` on, Bronze is available with two fresh attempts.
         $this->travelTo('2027-02-10 10:00:00');
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'available']);
-        $this->read($priya, $course)->assertOk();
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->read($priya, $course, StageLevel::Bronze)->assertOk();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'available']);
     }
 
@@ -60,23 +60,23 @@ class RetakeRuleTest extends AssessmentsTestCase
     {
         [$course, $priya] = $this->completed();
         $this->travelTo('2027-01-09 08:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
         $this->travelTo('2027-01-10 10:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
         $this->travelTo('2027-02-12 11:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
         $this->travelTo('2027-02-15 14:30:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => '2027-03-15T14:30:00Z']);
         $this->travelTo('2027-03-15 14:29:59');
-        $this->failBronze($priya, $course)->assertConflict()->assertExactJson(self::LOCKED);
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertConflict()->assertExactJson(self::LOCKED);
 
         // After the second Lock, a pass ends it.
         $this->travelTo('2027-03-15 14:30:00');
-        $this->failBronze($priya, $course)->assertCreated();
-        $this->passBronze($priya, $course)->assertCreated()->assertExactJson(['data' => ['passed' => true]]);
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, true)->assertCreated()->assertExactJson(['data' => ['passed' => true]]);
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']);
         $this->assertSame(6, StageAttempt::query()->count());
     }
@@ -88,9 +88,9 @@ class RetakeRuleTest extends AssessmentsTestCase
             $priya = $this->employee("Learner {$second}");
             $this->match($priya, $course);
             $this->travelTo(Carbon::parse($second)->subHour());
-            $this->failBronze($priya, $course)->assertCreated();
+            $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
             $this->travelTo($second);
-            $this->failBronze($priya, $course)->assertCreated();
+            $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
             $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => $until]);
         }
@@ -101,8 +101,8 @@ class RetakeRuleTest extends AssessmentsTestCase
         [$course, $priya] = $this->completed();
         $this->travelTo('2027-01-10 09:00:00');
 
-        $this->failBronze($priya, $course)->assertCreated();
-        $this->passBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, true)->assertCreated();
 
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'passed'], ['level' => 'silver', 'state' => 'available']);
     }
@@ -135,55 +135,20 @@ class RetakeRuleTest extends AssessmentsTestCase
     {
         [$course, $priya] = $this->completed();
         $this->travelTo('2027-01-10 09:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
         $this->travelTo('2027-01-10 10:00:00');
-        $this->failBronze($priya, $course)->assertCreated();
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertCreated();
 
         $this->travelTo('2027-01-20 10:00:00');
         $this->match($priya, $course, 'quit');
         $this->match($priya, $course, 'live');
 
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => '2027-02-10T10:00:00Z']);
-        $this->failBronze($priya, $course)->assertConflict()->assertExactJson(self::LOCKED);
+        $this->submit($priya, $course, StageLevel::Bronze, false)->assertConflict()->assertExactJson(self::LOCKED);
 
         // A second Course Completed changes nothing either.
         $this->match($priya, $course);
         $this->assertStages($priya, $course, ['level' => 'bronze', 'state' => 'locked', 'locked_until' => '2027-02-10T10:00:00Z']);
-    }
-
-    /**
-     * A published Course with one Bronze question and a Learner whose Match on it ended in Course Completed.
-     *
-     * @return array{Course, User}
-     */
-    private function completed(): array
-    {
-        $course = $this->publishedCourse();
-        $priya = $this->employee();
-        $this->match($priya, $course);
-
-        return [$course, $priya];
-    }
-
-    private function failBronze(User $learner, Course $course): TestResponse
-    {
-        return $this->actingAs($learner)->postJson(
-            "/api/v1/courses/{$course->id}/stages/bronze/attempts",
-            ['answers' => $this->answers($course, StageLevel::Bronze, [1])],
-        );
-    }
-
-    private function passBronze(User $learner, Course $course): TestResponse
-    {
-        return $this->actingAs($learner)->postJson(
-            "/api/v1/courses/{$course->id}/stages/bronze/attempts",
-            ['answers' => $this->answers($course, StageLevel::Bronze, [0])],
-        );
-    }
-
-    private function read(User $learner, Course $course): TestResponse
-    {
-        return $this->actingAs($learner)->getJson("/api/v1/courses/{$course->id}/stages/bronze/assessment");
     }
 
     /**

@@ -6,7 +6,6 @@ use App\Modules\Accounts\Models\User;
 use App\Modules\Assessments\Models\StageAttempt;
 use App\Modules\Courses\Models\Course;
 use App\Modules\Courses\Models\StageLevel;
-use Illuminate\Testing\TestResponse;
 
 /**
  * The Stages unlock in order (AD-4): Bronze after Course Completed, Silver once Bronze is passed,
@@ -178,31 +177,6 @@ class StageOrderTest extends AssessmentsTestCase
         foreach (StageLevel::cases() as $level) {
             $this->read($priya, $course, $level)->assertConflict()->assertExactJson(self::UNAVAILABLE);
         }
-    }
-
-    /**
-     * @return array{Course, User}
-     */
-    private function completed(): array
-    {
-        $course = $this->publishedCourse();
-        $priya = $this->employee();
-        $this->match($priya, $course);
-
-        return [$course, $priya];
-    }
-
-    private function submit(User $learner, Course $course, StageLevel $level, bool $pass): TestResponse
-    {
-        return $this->actingAs($learner)->postJson(
-            "/api/v1/courses/{$course->id}/stages/{$level->value}/attempts",
-            ['answers' => $this->answers($course, $level, [$pass ? 0 : 1])],
-        );
-    }
-
-    private function read(User $learner, Course $course, StageLevel $level): TestResponse
-    {
-        return $this->actingAs($learner)->getJson("/api/v1/courses/{$course->id}/stages/{$level->value}/assessment");
     }
 
     private function strayPass(User $learner, Course $course, StageLevel $level): void

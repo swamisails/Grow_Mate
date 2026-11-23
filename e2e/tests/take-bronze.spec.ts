@@ -2,13 +2,13 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   adminSignIn,
   apiRequest,
-  decide,
+  approvedMentorOnCourse,
   hidesSecrets,
   newEmployee,
   newPage,
   newSignedUpEmployee,
+  openCourse as openCourseAndReadStages,
   publishCourse,
-  signUp,
   waitForGet,
 } from './support/helpers'
 
@@ -27,15 +27,10 @@ function hidesAnswers(body: unknown) {
   hidesSecrets(body)
 }
 
-/** Opens the Course page and returns the body of its own Stages read. */
+/** Opens the Course page and returns the body of its own Stages read, which must hide the answers. */
 async function openCourse(page: Page, courseId: number, title: string) {
-  const stages = waitForGet(page, /^\/api\/v1\/courses\/\d+\/stages$/)
-  await page.goto(`/courses/${courseId}`)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(title)
-  const body = await (await stages).json()
+  const body = await openCourseAndReadStages(page, courseId, title)
   hidesAnswers(body)
-  // The Mentors card has loaded too, so a missing Stages card is not just a slow one.
-  await expect(page.getByRole('region', { name: 'Mentors' })).toBeVisible()
   return body
 }
 
@@ -58,15 +53,7 @@ test('a Learner takes Bronze after Course Completed and sees "Passed."', async (
   const mentorSession = await newPage(browser)
   const mentorPage = mentorSession.page
   await test.step('the Mentor names the Course at the Mentor check and Noor approves it', async () => {
-    await signUp(mentorPage, mentor)
-    await expect(mentorPage).toHaveURL(/\/mentor-check$/)
-    await mentorPage.getByRole('group', { name: 'Courses you can mentor' }).getByRole('checkbox', { name: course }).check()
-    await mentorPage.getByRole('button', { name: 'Submit' }).click()
-    await expect(mentorPage).toHaveURL(/\/home$/)
-
-    await admin.getByRole('navigation').getByRole('link', { name: 'Registration decisions' }).click()
-    await expect(admin).toHaveURL(/\/admin\/registration-decisions$/)
-    await decide(admin, admin.getByRole('row').filter({ hasText: mentor.name }).filter({ hasText: course }), 'Approve', 'Approved')
+    await approvedMentorOnCourse(admin, mentorPage, mentor, course)
   })
 
   const learner = await newSignedUpEmployee(browser, `${mentor.id}-learner`, 'Priya')
