@@ -208,3 +208,16 @@ export async function toCourseCompleted(
   expect((await completed).status()).toBe(204)
   await expect(mentorPage).toHaveURL(/\/home$/)
 }
+
+/** Passes a Stage through the API, choosing the correct "Yes" option. */
+export async function passStageThroughApi(page: Page, courseId: number, level: 'bronze' | 'silver') {
+  const read = await apiRequest(page, 'GET', `/api/v1/courses/${courseId}/stages/${level}/assessment`)
+  expect(read.status).toBe(200)
+  const question = read.body.data.questions[0]
+  const yes = question.options.find((option: { text: string }) => option.text === 'Yes')
+  const submit = await apiRequest(page, 'POST', `/api/v1/courses/${courseId}/stages/${level}/attempts`, {
+    answers: [{ question_id: question.id, option_id: yes.id }],
+  })
+  expect(submit.status).toBe(201)
+  expect(submit.body).toEqual({ data: { passed: true } })
+}
