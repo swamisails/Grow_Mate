@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 11-10-2026 16:57
-last_updated: 11-19-2026 11:13
+last_updated: 11-24-2026 14:41
 project: GROW_MATE
 project_key: NOKEY
 tracking_system: file-system
@@ -49,27 +49,27 @@ development_status:
   1-10-uj-3-and-course-publishing-pass-end-to-end: done
   epic-1-retrospective: done
 
-  epic-2: backlog
-  2-1-a-learner-requests-a-mentor-and-the-mentor-accepts: backlog
-  2-2-un-accepted-requests-are-reminded-on-day-3-and-cancelled-on: backlog
-  2-3-request-refusals-hold: backlog
-  2-4-request-and-accept-notices: backlog
-  2-5-home-and-the-match-screen: backlog
-  2-6-either-party-quits-a-match: backlog
-  2-7-the-mentor-clicks-course-completed: backlog
-  2-8-the-upskilling-list: backlog
-  2-9-refactor-sweep: backlog
-  2-10-uj-1-to-bronze-uj-2-and-day-6-pass-end-to-end: backlog
+  epic-2: done
+  2-1-a-learner-requests-a-mentor-and-the-mentor-accepts: done
+  2-2-un-accepted-requests-are-reminded-on-day-3-and-cancelled-on: done
+  2-3-request-refusals-hold: done
+  2-4-request-and-accept-notices: done
+  2-5-home-and-the-match-screen: done
+  2-6-either-party-quits-a-match: done
+  2-7-the-mentor-clicks-course-completed: done
+  2-8-the-upskilling-list: done
+  2-9-refactor-sweep: done
+  2-10-uj-1-to-bronze-uj-2-and-day-6-pass-end-to-end: done
   epic-2-retrospective: optional
 
-  epic-3: in-progress
-  3-1-a-learner-takes-bronze-and-sees-the-result: review
-  3-2-two-failures-lock-a-stage-for-a-month: review
-  3-3-silver-and-gold-unlock-in-order: backlog
-  3-4-passing-gold-makes-the-learner-a-mentor: backlog
-  3-5-refactor-sweep: backlog
-  3-6-uj-1-to-gold-the-lock-and-a-gold-mentor-s-accept-pass-end-to: backlog
-  epic-3-retrospective: optional
+  epic-3: done
+  3-1-a-learner-takes-bronze-and-sees-the-result: done
+  3-2-two-failures-lock-a-stage-for-a-month: done
+  3-3-silver-and-gold-unlock-in-order: done
+  3-4-passing-gold-makes-the-learner-a-mentor: done
+  3-5-refactor-sweep: done
+  3-6-uj-1-to-gold-the-lock-and-a-gold-mentor-s-accept-pass-end-to: done
+  epic-3-retrospective: done
 
   epic-4: done
   4-1-admin-assigns-a-group-and-the-chosen-employee-sees-it: done
@@ -83,7 +83,7 @@ action_items:
     epic: 1
     action: "Add rate limiting to POST /api/v1/login and POST /api/v1/register (F1)."
     owner: "Swami"
-    status: done
+    status: open
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"
   - id: "epic-1-retro-item-2-fix-focus-return-in-the-shared-confirmat"
     epic: 1
@@ -104,7 +104,7 @@ action_items:
     action: "Consolidate test helpers: stubApi role parameter, CourseFactory published()
       state, shared API helpers (F18)."
     owner: "Swami"
-    status: open
+    status: in-progress
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-11-17.md"
   - id: "epic-1-retro-item-5-replace-the-three-e2e-waitfortimeout-110"
     epic: 1
@@ -191,7 +191,7 @@ action_items:
       assertion copes with the Request button, fix the playwright.config comment,
       fix or quarantine RateLimitTest's proxy test (M3, M4, M5, V4)."
     owner: "Swami"
-    status: open
+    status: in-progress
     ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
   - id: "epic-4-retro-item-17-close-group-assignment-test-gaps-two-gro"
     epic: 4
@@ -207,7 +207,7 @@ action_items:
       change and drop the chosen from ticked; patch stale comments in web/src/api/matching.ts:45
       and create_matching_tables.php:9-10 (B5, S3)."
     owner: "Swami"
-    status: open
+    status: in-progress
     ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
   - id: "epic-4-retro-item-19-apply-spec-reconciliations-epic-4-done-w"
     epic: 4
@@ -237,5 +237,73 @@ action_items:
     action: "Update sprint-status.yaml and the ticket tree when a story PR merges;
       sync epic 2's stories now (L3)."
     owner: "Swami"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-4-retro-2026-11-19.md"
+  - id: "epic-3-retro-item-23-restore-trustproxies-in-api-bootstrap-ap"
+    epic: 3
+    action: "Restore trustProxies in api/bootstrap/app.php (lost in merge b02f0879)
+      and make RateLimitTest green (B1)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-24-decide-q1-and-fix-how-a-gold-pass-intera"
+    epic: 3
+    action: "Decide (Q1) and fix how a Gold pass interacts with a refused or pending
+      Registration decision: DecideRegistration and RefusedForCourse consistent with
+      the grant, with a feature test (D1)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-25-one-global-lock-order-all-referenced-use"
+    epic: 3
+    action: "One global lock order (all referenced users sorted, then the Course;
+      lock the Mentor in SendRequest and AssignGroup) plus DB::transaction attempts:
+      3 in SubmitAttempt, SendRequest and AssignGroup; rewrite the unsafe fix in deferred-work.md:41
+      (D2, D3)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-26-cap-the-attempts-body-answers-max-sized"
+    epic: 3
+    action: "Cap the attempts body: answers max sized to the largest Stage, drop distinct:strict
+      (D4)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-27-deterministic-last-attempt-race-test-for"
+    epic: 3
+    action: "Deterministic last-attempt race test for SubmitAttempt via a bound LockUser
+      subclass (D5, S3)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-28-e2e-clock-derive-frozen-instants-from-re"
+    epic: 3
+    action: "E2E clock: derive frozen instants from real now in bronze-lock and uj-1-to-gold;
+      replace waitForTimeout(1100) with an API-clock wait helper; fold signInAgain
+      and the fail/pass helpers into helpers.ts (D6, P4, A7)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-29-assert-no-notice-is-sent-for-bronze-silv"
+    epic: 3
+    action: "Assert no notice is sent for Bronze/Silver results, a fail, or a Lock
+      (S1)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-30-apply-spec-reconciliations-ad-3-enums-ac"
+    epic: 3
+    action: "Apply spec reconciliations: AD-3 enums, Accounts edges and the Matching/Progress/Assessments
+      cycle (Q2); AD-4 counts not score; Module creation table; EXPERIENCE.md result
+      URL and Take link; AD-17 seeder order; deferred-work vitest note (A1-A4, S-list)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
+  - id: "epic-3-retro-item-31-run-the-full-api-suite-after-any-conflic"
+    epic: 3
+    action: "Run the full API suite after any conflict-resolving merge; rebase story
+      branches on main and open each PR against main only, no stacking (P1, B1)."
+    owner: "Swami"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-3-retro-2026-11-24.md"
