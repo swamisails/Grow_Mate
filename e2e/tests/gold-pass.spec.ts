@@ -1,13 +1,13 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import {
   adminSignIn,
-  apiRequest,
   approvedMentorOnCourse,
   hidesSecrets,
   newEmployee,
   newPage,
   newSignedUpEmployee,
   openCourse,
+  passStageThroughApi,
   publishCourse,
   toCourseCompleted,
   waitForGet,
@@ -18,19 +18,6 @@ import {
 // the API and Gold through the UI. The result reads "Passed." as for Bronze; the bar reads Completed
 // on the Course page and Home; the Learner leaves the Upskilling list; and another Employee finds them
 // in the Course's Mentors list, with no route or badge. Seeded Employees and demo Courses are never used.
-
-/** Passes a Stage through the API, choosing the correct "Yes" option. */
-async function passThroughApi(page: Page, courseId: number, level: 'bronze' | 'silver') {
-  const read = await apiRequest(page, 'GET', `/api/v1/courses/${courseId}/stages/${level}/assessment`)
-  expect(read.status).toBe(200)
-  const question = read.body.data.questions[0]
-  const yes = question.options.find((option: { text: string }) => option.text === 'Yes')
-  const submit = await apiRequest(page, 'POST', `/api/v1/courses/${courseId}/stages/${level}/attempts`, {
-    answers: [{ question_id: question.id, option_id: yes.id }],
-  })
-  expect(submit.status).toBe(201)
-  expect(submit.body).toEqual({ data: { passed: true } })
-}
 
 test('a Learner who passes Gold sees "Passed.", reads Completed and becomes a Mentor', async ({ page, browser }) => {
   // Three sign-ups, a decision, a Match and three Stages run past the default 30 s timeout.
@@ -62,8 +49,8 @@ test('a Learner who passes Gold sees "Passed.", reads Completed and becomes a Me
   await mentorSession.close()
 
   await test.step('the Learner passes Bronze and Silver through the API and is still In progress', async () => {
-    await passThroughApi(learnerPage, courseId, 'bronze')
-    await passThroughApi(learnerPage, courseId, 'silver')
+    await passStageThroughApi(learnerPage, courseId, 'bronze')
+    await passStageThroughApi(learnerPage, courseId, 'silver')
 
     expect((await openCourse(learnerPage, courseId, course)).data).toEqual([
       { level: 'bronze', state: 'passed' },
