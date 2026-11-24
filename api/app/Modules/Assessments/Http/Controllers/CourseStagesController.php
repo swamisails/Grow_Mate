@@ -3,8 +3,7 @@
 namespace App\Modules\Assessments\Http\Controllers;
 
 use App\Modules\Assessments\Http\Resources\StageStateResource;
-use App\Modules\Assessments\Queries\StageAvailability;
-use App\Modules\Courses\Queries\PublishedCourse;
+use App\Modules\Assessments\Queries\CourseStages;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -13,11 +12,10 @@ class CourseStagesController
     /**
      * The Stages the Learner has reached on a published Course; a draft or missing Course is a 404.
      */
-    public function __invoke(int $course, Request $request, PublishedCourse $publishedCourse, StageAvailability $stageAvailability): AnonymousResourceCollection
+    public function __invoke(int $course, Request $request, CourseStages $courseStages): AnonymousResourceCollection
     {
-        $publishedCourse->handle($course);
         $learnerId = (int) $request->user()?->getAuthIdentifier();
 
-        return StageStateResource::collection($stageAvailability->handle($learnerId, $course));
+        return StageStateResource::collection($courseStages->handle($learnerId, $course));
     }
 }

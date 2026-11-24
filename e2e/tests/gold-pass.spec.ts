@@ -2,13 +2,14 @@ import { expect, test, type Page } from '@playwright/test'
 import {
   adminSignIn,
   apiRequest,
-  decide,
+  approvedMentorOnCourse,
   hidesSecrets,
   newEmployee,
   newPage,
   newSignedUpEmployee,
+  openCourse,
   publishCourse,
-  signUp,
+  toCourseCompleted,
   waitForGet,
 } from './support/helpers'
 
@@ -17,16 +18,6 @@ import {
 // the API and Gold through the UI. The result reads "Passed." as for Bronze; the bar reads Completed
 // on the Course page and Home; the Learner leaves the Upskilling list; and another Employee finds them
 // in the Course's Mentors list, with no route or badge. Seeded Employees and demo Courses are never used.
-
-/** Opens the Course page and returns the body of its own Stages read. */
-async function openCourse(page: Page, courseId: number, title: string) {
-  const stages = waitForGet(page, /^\/api\/v1\/courses\/\d+\/stages$/)
-  await page.goto(`/courses/${courseId}`)
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText(title)
-  const body = await (await stages).json()
-  await expect(page.getByRole('region', { name: 'Mentors' })).toBeVisible()
-  return body
-}
 
 /** Passes a Stage through the API, choosing the correct "Yes" option. */
 async function passThroughApi(page: Page, courseId: number, level: 'bronze' | 'silver') {
@@ -60,40 +51,13 @@ test('a Learner who passes Gold sees "Passed.", reads Completed and becomes a Me
   const mentorSession = await newPage(browser)
   const mentorPage = mentorSession.page
   await test.step('the Mentor names the Course at the Mentor check and Noor approves it', async () => {
-    await signUp(mentorPage, mentor)
-    await expect(mentorPage).toHaveURL(/\/mentor-check$/)
-    await mentorPage.getByRole('group', { name: 'Courses you can mentor' }).getByRole('checkbox', { name: course }).check()
-    await mentorPage.getByRole('button', { name: 'Submit' }).click()
-    await expect(mentorPage).toHaveURL(/\/home$/)
-
-    await admin.getByRole('navigation').getByRole('link', { name: 'Registration decisions' }).click()
-    await expect(admin).toHaveURL(/\/admin\/registration-decisions$/)
-    await decide(admin, admin.getByRole('row').filter({ hasText: mentor.name }).filter({ hasText: course }), 'Approve', 'Approved')
+    await approvedMentorOnCourse(admin, mentorPage, mentor, course)
   })
 
   const learner = await newSignedUpEmployee(browser, `${mentor.id}-learner`, 'Priya')
   const learnerPage = learner.page
   await test.step('the Learner Requests, the Mentor Accepts and clicks Course Completed', async () => {
-    await openCourse(learnerPage, courseId, course)
-    const send = learnerPage.waitForResponse(
-      (response) => response.request().method() === 'POST' && /\/api\/v1\/courses\/\d+\/requests$/.test(response.url()),
-    )
-    await learnerPage.getByRole('region', { name: 'Mentors' }).getByRole('listitem').filter({ hasText: mentor.name }).getByRole('button', { name: 'Request' }).click()
-    expect((await send).status()).toBe(201)
-
-    await mentorPage.getByRole('navigation').getByRole('link', { name: 'Requests' }).click()
-    const accepted = mentorPage.waitForResponse((response) => /\/api\/v1\/requests\/\d+\/accept$/.test(response.url()))
-    await mentorPage.getByRole('listitem').filter({ hasText: learner.name }).getByRole('button', { name: 'Accept' }).click()
-    expect((await accepted).status()).toBe(201)
-
-    await mentorPage.getByRole('navigation').getByRole('link', { name: 'Home' }).click()
-    await mentorPage.getByRole('region', { name: 'Mentoring' }).getByRole('link', { name: new RegExp(learner.name) }).click()
-    await expect(mentorPage).toHaveURL(/\/matches\/\d+$/)
-    await mentorPage.getByRole('button', { name: 'Course Completed' }).click()
-    const completed = mentorPage.waitForResponse((response) => /\/api\/v1\/matches\/\d+\/course-completed$/.test(response.url()))
-    await mentorPage.getByRole('dialog', { name: 'Course Completed' }).getByRole('button', { name: 'Course Completed' }).click()
-    expect((await completed).status()).toBe(204)
-    await expect(mentorPage).toHaveURL(/\/home$/)
+    await toCourseCompleted(learnerPage, mentorPage, { courseId, course, mentorName: mentor.name, learnerName: learner.name })
   })
   await mentorSession.close()
 

@@ -91,6 +91,40 @@ abstract class AssessmentsTestCase extends ApiTestCase
         ])->all();
     }
 
+    /**
+     * A published Course with one question per Stage and a Learner whose Match on it ended in
+     * Course Completed.
+     *
+     * @return array{Course, User}
+     */
+    protected function completed(): array
+    {
+        $course = $this->publishedCourse();
+        $priya = $this->employee();
+        $this->match($priya, $course);
+
+        return [$course, $priya];
+    }
+
+    /**
+     * Submits an attempt on the Stage that picks the correct option (a pass) or a wrong one (a failure).
+     */
+    protected function submit(User $learner, Course $course, StageLevel $level, bool $pass): TestResponse
+    {
+        return $this->actingAs($learner)->postJson(
+            "/api/v1/courses/{$course->id}/stages/{$level->value}/attempts",
+            ['answers' => $this->answers($course, $level, [$pass ? 0 : 1])],
+        );
+    }
+
+    /**
+     * The taking read of the Stage.
+     */
+    protected function read(User $learner, Course $course, StageLevel $level): TestResponse
+    {
+        return $this->actingAs($learner)->getJson("/api/v1/courses/{$course->id}/stages/{$level->value}/assessment");
+    }
+
     protected function assertHidesAnswersAndScores(TestResponse $response): void
     {
         $body = (string) $response->getContent();
